@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "id": 123,
+  "msg": {
+    "code": 8,
+    "msg": "Unknown channel name"
+  }
+}

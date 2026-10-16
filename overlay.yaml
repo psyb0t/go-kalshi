@@ -1,0 +1,12 @@
+overlay: 1.0.0
+info:
+  title: go-kalshi generation fixes
+  version: 1.0.0
+actions:
+  # Market.expiration_time is an optional time.Time without a pointer. On a
+  # struct type omitempty never omits anything, so go fix flags it; omitzero
+  # is what the spec means.
+  - target: $.components.schemas.Market.properties.expiration_time
+    update:
+      x-omitempty: false
+      x-omitzero: true

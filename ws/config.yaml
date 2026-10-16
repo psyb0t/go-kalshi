@@ -1,0 +1,2 @@
+package: kalshiws
+output: kalshiws.gen.go

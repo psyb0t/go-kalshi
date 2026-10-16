@@ -1,0 +1,14 @@
+{
+  "type": "rfq_created",
+  "sending_ts_ms": 1669149841234,
+  "sid": 15,
+  "seq": 11,
+  "msg": {
+    "id": "rfq_123",
+    "creator_id": "43fc3733603f4830a8c3b2986011a5f78d67b03b473dbfd3a3847abd85b63a51",
+    "market_ticker": "FED-23DEC-T3.00",
+    "event_ticker": "FED-23DEC",
+    "contracts_fp": "100.00",
+    "created_ts": "2024-12-01T10:00:00Z"
+  }
+}

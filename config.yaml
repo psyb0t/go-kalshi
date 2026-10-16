@@ -1,0 +1,13 @@
+package: kalshi
+generate:
+  client: true
+  models: true
+output: client.gen.go
+output-options:
+  # The Kalshi spec reuses names across component sections (GetBalanceResponse
+  # is both a schema and a client response wrapper).
+  resolve-type-name-collisions: true
+  overlay:
+    path: overlay.yaml
+compatibility:
+  always-prefix-enum-values: true
