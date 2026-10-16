@@ -24,6 +24,7 @@ The REST client lives in the repo root; the WebSocket clients and the signer are
 - [REST](#rest)
 - [WebSocket](#websocket)
 - [Regenerating](#regenerating)
+- [Agent integrations](#agent-integrations)
 - [Development](#development)
 - [License](#license)
 
@@ -193,6 +194,34 @@ Each package's `gen.go` declares its own steps, so `make generate` is just `go g
 
 - The root `gen.go` downloads `openapi.yaml` and runs oapi-codegen with `config.yaml` and `overlay.yaml`. The overlay turns one optional `time.Time` field from `omitempty` into `omitzero`.
 - `ws/gen.go` and `perpsws/gen.go` download `asyncapi.yaml` and `perps_asyncapi.yaml`, run `scripts/match-client-spec.sh`, and run gen-asyncapi. Kalshi's AsyncAPI documents describe the server, so the match step swaps every operation's `send` and `receive` to get the client side. It also drops the market ticker pattern `^[A-Z0-9-]+$`, which rejects real tickers such as `FED-23DEC-T3.00`.
+
+## Agent integrations
+
+The [skill](.agents/skills/go-kalshi) teaches a coding agent how to use go-kalshi when it writes Go. It works in any agent that reads `.agents/skills/`, and installs natively in the clients below.
+
+### Claude Code
+
+```bash
+claude plugin marketplace add psyb0t/agents
+claude plugin install go-kalshi@psyb0t
+```
+
+### Codex
+
+```bash
+codex plugin marketplace add psyb0t/agents
+codex plugin add go-kalshi@psyb0t
+```
+
+Codex also picks the skill up with no install in any checkout of this repo.
+
+### OpenClaw
+
+The skill is published to ClawHub on every release:
+
+```bash
+openclaw skills install @psyb0t/go-kalshi
+```
 
 ## Development
 

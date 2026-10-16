@@ -6,7 +6,6 @@
 .python-version
 .nvmrc
 pyrightconfig.json
-AGENTS.md
 CODEX.local.md
 .agent_notes/
 .agent_knowledge/
@@ -26,6 +25,7 @@ htmlcov/
 __pycache__
 *.out
 CLAUDE.md
+.claude
 .research_files
 .refactor/
 .anustimes/

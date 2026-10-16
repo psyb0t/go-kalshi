@@ -1,0 +1,8 @@
+{
+  "name": "go-kalshi",
+  "description": "Unofficial Go client for Kalshi: a typed Trade REST client, market data and perps WebSocket clients, and a request signer, generated from the specs Kalshi publishes.",
+  "author": { "name": "psyb0t", "url": "https://github.com/psyb0t" },
+  "homepage": "https://github.com/psyb0t/go-kalshi",
+  "license": "MIT",
+  "keywords": ["kalshi", "prediction-markets", "trading", "api-client", "go-library", "websocket", "openapi", "asyncapi"]
+}

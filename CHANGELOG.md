@@ -2,6 +2,10 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.1.1, 2026-10-16
+
+- Added the `go-kalshi` agent skill. The README's new Agent integrations section has the install commands for Claude Code, Codex and ClawHub.
+
 ## v0.1.0, 2026-10-16
 
 - Added `kalshi` (repo root, `github.com/psyb0t/go-kalshi`), a REST client generated with oapi-codegen from Kalshi's OpenAPI document (spec version 3.34.0).
