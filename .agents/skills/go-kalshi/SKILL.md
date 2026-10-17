@@ -1,6 +1,7 @@
 ---
 name: go-kalshi
 description: Unofficial Go client for Kalshi, generated from the API specs Kalshi publishes. The root package `kalshi` (`github.com/psyb0t/go-kalshi`) is an oapi-codegen REST client for the Trade API at `https://external-api.kalshi.com/trade-api/v2` with a typed `...WithResponse` method per endpoint (markets, events, series, orderbooks, trades, balance, positions, fills, orders, RFQs and quotes). `kalshiws` (`/ws`) streams market data (orderbook, ticker, trade, fill, lifecycle, RFQ and index pushes) through a typed `Handler`, `kalshiperpsws` (`/perpsws`) does the same for the perps channels, and `kalshiauth` (`/auth`) signs REST requests and WebSocket handshakes with an RSA-PSS or Ed25519 API key. Use when Go code needs to read Kalshi markets, manage a Kalshi account or stream Kalshi data, or already imports go-kalshi.
+license: MIT
 homepage: https://github.com/psyb0t/go-kalshi
 user-invocable: true
 metadata:
@@ -9,9 +10,6 @@ metadata:
     requires:
       bins:
         - go
-      env:
-        - KALSHI_API_KEY_ID
-        - KALSHI_PRIVATE_KEY
 permissions:
   filesystem: "Guides edits to the Go source of the current project. The library reads and writes no files; your code supplies the private key bytes."
   shell: "The Go toolchain (`go get`, `go build`, `go test`) to add and compile the dependency."
@@ -42,6 +40,25 @@ For install, environments, response fields, the handler list and errors, see [re
 - The code is not Go. This module ships only Go packages.
 - You need a client maintained by Kalshi. This one is unofficial and not affiliated with Kalshi.
 - You want to change the generated clients themselves. See `AGENTS.md` in the repo.
+
+## Finding endpoints and types
+
+The examples below cover a few calls. Every operation in the specs has a generated method, and the spec's descriptions are on them as Go doc comments. Look names and fields up instead of guessing. After `go get github.com/psyb0t/go-kalshi`, from inside your module:
+
+```bash
+go doc github.com/psyb0t/go-kalshi ClientWithResponsesInterface  # every REST endpoint method
+go doc github.com/psyb0t/go-kalshi GetMarketsParams              # one method, params type or model
+go doc -all github.com/psyb0t/go-kalshi                          # the whole REST package
+go doc github.com/psyb0t/go-kalshi/ws Handler                    # every market data push handler
+go doc github.com/psyb0t/go-kalshi/ws Client                     # the Send... commands
+go doc github.com/psyb0t/go-kalshi/perpsws Handler               # every perps push handler
+go doc github.com/psyb0t/go-kalshi/perpsws Client                # the perps Send... commands
+go doc github.com/psyb0t/go-kalshi/auth Signer                   # request and handshake signing
+```
+
+The same documentation is at https://pkg.go.dev/github.com/psyb0t/go-kalshi.
+
+Method names come from the spec's operation IDs. `<OperationId>WithResponse` takes the context, then the path parameters in order, then `*<OperationId>Params` when the operation has query or header parameters, then the request body when it has one. The `JSON200` field (or `JSON201` and so on, per declared status) holds the decoded body; it is nil for any other status. Response wrappers whose names clash with a schema get a `2` suffix (`GetBalanceWithResponse` returns `*GetBalanceResponse2`).
 
 ## REST
 

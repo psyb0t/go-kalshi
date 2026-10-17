@@ -35,7 +35,7 @@ Public endpoints such as `GetMarketsWithResponse` work without the signer.
 
 - `kalshi.NewClientWithResponses(server, opts...)`. Options: `kalshi.WithRequestEditorFn`, `kalshi.WithHTTPClient` (your own `*http.Client`, for timeouts), `kalshi.WithBaseURL`.
 - Each operation has `Client.X` (raw `*http.Response`), `ClientWithResponses.XWithResponse` (parsed) and `NewXRequest` (request only). Operations with a body also have `XWithBodyWithResponse`.
-- Names come from Kalshi's operation IDs. Look one up with `grep -n 'WithResponse(ctx' client.gen.go` in the module source rather than guessing.
+- Names come from Kalshi's operation IDs. Look one up with `go doc github.com/psyb0t/go-kalshi ClientWithResponsesInterface` rather than guessing.
 - Response wrappers whose names clash with a schema get a `2` suffix: `GetBalanceWithResponse` returns `*kalshi.GetBalanceResponse2`, whose `JSON200` is the `*kalshi.GetBalanceResponse` schema.
 - Money: `...Dollars` fields are `FixedPointDollars`, a decimal string such as `"0.5600"`. Plain integer fields such as `Balance` are cents.
 - Lists page with `Cursor`: pass the previous response's `Cursor` in the params until it comes back empty.
@@ -61,10 +61,10 @@ Public endpoints such as `GetMarketsWithResponse` work without the signer.
 |---|---|
 | Command responses | `HandleSubscribedResponse`, `HandleUnsubscribedResponse`, `HandleOkResponse`, `HandleListSubscriptionsResponse`, `HandleErrorResponse`, `HandleSubscribedUnderlyingsResponse`, `HandleSubscribedIndicesResponse` |
 | Market data | `HandleOrderbookSnapshot`, `HandleOrderbookDelta`, `HandleTicker`, `HandleTrade`, `HandleMarketMetadataUpdated` |
-| Lifecycle | `HandleEventLifecycle`, `HandleEventFeeUpdate`, `HandleMultivariateMarketLifecycle` |
+| Lifecycle | `HandleMarketLifecycleV2`, `HandleEventLifecycle`, `HandleEventFeeUpdate`, `HandleMultivariateMarketLifecycle` |
 | Account | `HandleFill`, `HandleMarketPosition`, `HandleUserOrder`, `HandleOrderGroupUpdates` |
 | RFQ | `HandleRfqCreated`, `HandleRfqDeleted`, `HandleQuoteCreated`, `HandleQuoteAccepted`, `HandleQuoteExecuted` |
-| Indices | `HandleCfbenchmarksValue`, `HandleCfbenchmarksIndexList`, `HandlePythValue`, `HandlePythUnderlyingList` |
+| Indices | `HandleCfbenchmarksValue`, `HandleCfbenchmarksIndexList`, `HandleCfbenchmarksValue5Hz`, `HandleCfbenchmarks5HzIndexList`, `HandlePythValue`, `HandlePythUnderlyingList` |
 | Other | `HandleUnknownMessage` |
 
 `kalshiperpsws.Handler` has the command responses, `HandleOrderbookSnapshot`, `HandleOrderbookDelta`, `HandleTicker`, `HandleTrade`, `HandleFill`, `HandleUserOrder`, `HandleOrderGroupUpdates` and `HandleUnknownMessage`.
@@ -76,6 +76,7 @@ Each push payload has `Type`, `Sid` (the subscription ID) and `Msg` with the dat
 | Error | When |
 |---|---|
 | `commerr.ErrParseFailed` | `ParsePrivateKeyPEM` got no PEM block or an unsupported one. |
+| `commerr.ErrValidationFailed` | The key is neither RSA nor Ed25519 (`NewSigner`, or a PKCS#8 key in `ParsePrivateKeyPEM`). |
 | `asyncapirt.ErrUnknownMessage` | Passed to `HandleUnknownMessage` for a frame whose type the spec does not list. `Run` keeps going unless the handler returns an error. |
 | A validation error | A command you send, or a frame you receive, does not match Kalshi's schema. |
 | `context.Canceled`, `context.DeadlineExceeded` | `Run` stopped because the context ended (wrapped). |

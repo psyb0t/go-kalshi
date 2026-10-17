@@ -90,6 +90,8 @@ func main() {
 
 The demo environment lives at `https://external-api.demo.kalshi.co/trade-api/v2`.
 
+The full API, with the spec's descriptions as doc comments, is in the [Go reference](https://pkg.go.dev/github.com/psyb0t/go-kalshi) and in `go doc github.com/psyb0t/go-kalshi` (add `/ws`, `/perpsws` or `/auth` for the subpackages).
+
 ## WebSocket
 
 `kalshiws` sends the subscribe, unsubscribe, list and update commands, and decodes the orderbook, ticker, trade, fill, position, lifecycle, RFQ, order and index pushes plus the command responses. Every message is checked against Kalshi's schema both ways. `kalshiperpsws` does the same for the perps channels.
