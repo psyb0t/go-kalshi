@@ -4992,7 +4992,7 @@ type GetHistoricalPositionsParams struct {
 	// EventTicker Event ticker to filter by. Only a single event ticker is supported.
 	EventTicker SingleEventTickerQuery `form:"event_ticker,omitempty" json:"event_ticker,omitempty"`
 
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 
 	// Limit Number of results per page. Defaults to 100.
@@ -5250,7 +5250,7 @@ type GetMultivariateEventCollectionsParamsStatus string
 
 // GetBalanceParams defines parameters for GetBalance.
 type GetBalanceParams struct {
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 
 	// ExchangeIndex Exchange index used to scope the balance and portfolio value. If omitted, both include all exchange indexes.
@@ -5274,7 +5274,7 @@ type CancelAllOrdersParams struct {
 
 // CancelOrderV2Params defines parameters for CancelOrderV2.
 type CancelOrderV2Params struct {
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 
 	// ExchangeIndex Exchange shard index. If omitted, auto-routes when market_ticker is provided; otherwise defaults to 0. Use -1 to require auto-routing. The market_ticker parameter is required for auto-routing.
@@ -5286,13 +5286,13 @@ type CancelOrderV2Params struct {
 
 // AmendOrderV2Params defines parameters for AmendOrderV2.
 type AmendOrderV2Params struct {
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 }
 
 // DecreaseOrderV2Params defines parameters for DecreaseOrderV2.
 type DecreaseOrderV2Params struct {
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 }
 
@@ -5340,7 +5340,7 @@ type GetOrderGroupsParams struct {
 
 // DeleteOrderGroupParams defines parameters for DeleteOrderGroup.
 type DeleteOrderGroupParams struct {
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 
 	// ExchangeIndex Identifier for an exchange shard. Defaults to 0.
@@ -5355,7 +5355,7 @@ type GetOrderGroupParams struct {
 
 // UpdateOrderGroupLimitParams defines parameters for UpdateOrderGroupLimit.
 type UpdateOrderGroupLimitParams struct {
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 
 	// ExchangeIndex Identifier for an exchange shard. Defaults to 0.
@@ -5364,7 +5364,7 @@ type UpdateOrderGroupLimitParams struct {
 
 // ResetOrderGroupParams defines parameters for ResetOrderGroup.
 type ResetOrderGroupParams struct {
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 
 	// ExchangeIndex Identifier for an exchange shard. Defaults to 0.
@@ -5373,7 +5373,7 @@ type ResetOrderGroupParams struct {
 
 // TriggerOrderGroupParams defines parameters for TriggerOrderGroup.
 type TriggerOrderGroupParams struct {
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 
 	// ExchangeIndex Identifier for an exchange shard. Defaults to 0.
@@ -5418,7 +5418,7 @@ type GetOrderQueuePositionsParams struct {
 	// EventTicker Event ticker to filter by
 	EventTicker *string `form:"event_ticker,omitempty" json:"event_ticker,omitempty"`
 
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 }
 
@@ -5442,7 +5442,7 @@ type GetPositionsParams struct {
 	// EventTicker Event ticker to filter by. Only a single event ticker is supported.
 	EventTicker SingleEventTickerQuery `form:"event_ticker,omitempty" json:"event_ticker,omitempty"`
 
-	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0.
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
 	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
 
 	// ExchangeIndex Filter results by exchange shard. Omit to return results from all exchange shards.

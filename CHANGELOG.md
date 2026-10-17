@@ -2,6 +2,14 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.1.4, 2026-10-17
+
+- `perpsws` adds the exported `MarketID` type, an alias for `string`. `OkResponsePayloadMsg.MarketIds` now has type `[]MarketID` instead of `[]string`; code written against `[]string` still compiles and runs the same.
+- The `Subaccount` parameter comment on `GetBalanceParams`, `CancelOrderV2Params`, `AmendOrderV2Params`, `DecreaseOrderV2Params`, `DeleteOrderGroupParams`, `UpdateOrderGroupLimitParams`, `ResetOrderGroupParams`, `TriggerOrderGroupParams`, `GetOrderQueuePositionsParams`, `GetPositionsParams` and `GetHistoricalPositionsParams` now explains that subaccount-restricted API keys default to their locked subaccount and must omit the parameter or pass that same subaccount.
+- In `perpsws`, the `ID` field comment on the command and response payloads (for example `SubscribeCommandPayload`, `OkResponsePayload`, `ErrorResponsePayload`) now explains that the client generates the ID, that IDs should count up from 1, and that an ID of 0 is treated the same as no ID.
+- The `Sid` field comment across the `perpsws` payloads now says it identifies the channel, and the `Seq` field comment now says to check it to confirm no messages were missed.
+- `UnsubscribeCommandPayloadParams.Sids`, `OkResponsePayloadMsg.MarketTickers`, `ListSubscriptionsResponsePayload.Msg` and `ListSubscriptionsResponsePayloadMsgItem.Channel` each get a new doc comment describing the field.
+
 ## v0.1.3, 2026-10-17
 
 - Documentation only. The agent skill explains how to look up every endpoint, parameter and model with `go doc` or on pkg.go.dev, and declares its license.
