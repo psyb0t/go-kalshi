@@ -45,6 +45,7 @@ make sec       # gitleaks, govulncheck, semgrep
 - `make generate` always downloads Kalshi's current specs, so it can change the client even when nothing here changed. Review the generated diff before committing it.
 - The signature covers the URL path without the query string. Signing `req.URL.String()` or `RequestURI` breaks every request with query parameters.
 - Kalshi reuses names across component sections, so `config.yaml` turns on `resolve-type-name-collisions` and some response wrappers get a `2` suffix (`GetBalanceResponse2`).
+- `.github/workflows/regen.yml` regenerates the client every day and releases the result. When the checks fail, Claude edits the repository to fix them, but a fix may not touch the paths listed under `fix_protected_paths` in that workflow: the workflows, the Makefile, `AGENTS.md`, `.agents/rules/`, the lint, security and spec download scripts and their configs. A problem that needs a change there fails the run and needs a manual fix.
 
 ## Rules
 

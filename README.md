@@ -195,6 +195,8 @@ Each package's `gen.go` declares its own steps, so `make generate` is just `go g
 - The root `gen.go` downloads `openapi.yaml` and runs oapi-codegen with `config.yaml` and `overlay.yaml`. The overlay turns one optional `time.Time` field from `omitempty` into `omitzero`.
 - `ws/gen.go` and `perpsws/gen.go` download `asyncapi.yaml` and `perps_asyncapi.yaml`, run `scripts/match-client-spec.sh`, and run gen-asyncapi. Kalshi's AsyncAPI documents describe the server, so the match step swaps every operation's `send` and `receive` to get the client side. It also drops the market ticker pattern `^[A-Z0-9-]+$`, which rejects real tickers such as `FED-23DEC-T3.00`.
 
+`.github/workflows/regen.yml` does the same every day in CI. When the new spec changes the client, it runs `make lint`, `make test` and `make sec`. If a check fails, Claude edits the code and the checks run again, up to three times, and a review step reads the result. A passing change is committed with a CHANGELOG entry and tagged as the next release: a patch version for fixes and additions, a minor version for breaking changes.
+
 ## Agent integrations
 
 The [skill](.agents/skills/go-kalshi) teaches a coding agent how to use go-kalshi when it writes Go. It works in any agent that reads `.agents/skills/`, and installs natively in the clients below.
