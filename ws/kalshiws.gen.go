@@ -5009,15 +5009,15 @@ type UserOrderPayloadMsg struct {
 	OrderGroupID *string `json:"order_group_id,omitempty"`
 	// Self-trade prevention type
 	SelfTradePreventionType *UserOrderPayloadMsgSelfTradePreventionType `json:"self_trade_prevention_type,omitempty"`
-	// Deprecated - Order creation time in RFC3339 format. Use created_ts_ms instead.
+	// Deprecated - Order creation time in RFC3339 format, truncated to milliseconds. Use created_ts_ms instead.
 	//
 	// Deprecated: the schema marks this as deprecated.
 	CreatedTime *time.Time `json:"created_time"`
-	// Deprecated - Last update time in RFC3339 format. Use last_updated_ts_ms instead.
+	// Deprecated - Last update time in RFC3339 format, truncated to milliseconds. Use last_updated_ts_ms instead.
 	//
 	// Deprecated: the schema marks this as deprecated.
 	LastUpdateTime *time.Time `json:"last_update_time,omitempty"`
-	// Deprecated - Order expiration time in RFC3339 format. Use expiration_ts_ms instead.
+	// Deprecated - Order expiration time in RFC3339 format, truncated to milliseconds. Use expiration_ts_ms instead.
 	//
 	// Deprecated: the schema marks this as deprecated.
 	ExpirationTime *time.Time `json:"expiration_time,omitempty"`
@@ -5027,7 +5027,7 @@ type UserOrderPayloadMsg struct {
 	CreatedTsMs *int64 `json:"created_ts_ms"`
 	// Last update time as a Unix timestamp in milliseconds
 	LastUpdatedTsMs *int64 `json:"last_updated_ts_ms,omitempty"`
-	// Order update reason. ReduceOnlyCancel means reduce_only capped the order at placement.
+	// Order update reason. The value ReduceOnlyCancel means reduce_only capped the order at placement.
 	LastUpdateReason *LastUpdateReason `json:"last_update_reason,omitempty"`
 	// Subaccount number (0 for primary, 1-63 for subaccounts)
 	SubaccountNumber *int64 `json:"subaccount_number,omitempty"`
@@ -5125,7 +5125,7 @@ func (v UserOrderPayloadMsgSelfTradePreventionType) Validate() error {
 	return asyncapirt.Invalid("UserOrderPayloadMsgSelfTradePreventionType", fmt.Sprintf("unknown value %v", v))
 }
 
-// Order update reason. ReduceOnlyCancel means reduce_only capped the order at placement.
+// Order update reason. The value ReduceOnlyCancel means reduce_only capped the order at placement.
 type LastUpdateReason string
 
 // Values of LastUpdateReason.

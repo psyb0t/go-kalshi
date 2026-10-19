@@ -46,6 +46,22 @@ const ControlFramesAddressTemplate = "/"
 // - supports `get_snapshot` on `update_subscription` to request a fresh snapshot without changing the subscription
 const OrderbookDeltaAddressTemplate = "orderbook_delta"
 
+// CorporateActionsAddressTemplate is the address of the CorporateActions channel.
+//
+// Sent when the exchange applies a stock split, final settlement or ticker change to a
+// margin market. Each message has a type and one matching terms object: `split`,
+// `final_settlement` or `ticker_change`. Cash corporate actions are not streamed.
+//
+// Positions are not streamed over WebSocket, and an applied corporate action can change
+// positions and balances without a fill. Re-fetch them from `GET /trade-api/v2/margin/positions`
+// and `GET /trade-api/v2/margin/balance` after each message.
+//
+// Requirements:
+// - market specification optional via `market_ticker` or `market_tickers`; filters follow ticker changes
+// - no snapshot on subscribe; `GET /trade-api/v2/margin/corporate_actions` lists upcoming and recent notices
+// - supports `update_subscription` with `add_markets` and `delete_markets`
+const CorporateActionsAddressTemplate = "corporate_actions"
+
 // TickerAddressTemplate is the address of the Ticker channel.
 //
 // Margin market updates are delivered on a single channel. `ticker` messages include
@@ -233,12 +249,13 @@ const (
 	SubscribeCommandPayloadParamsChannelsItemFill              SubscribeCommandPayloadParamsChannelsItem = "fill"
 	SubscribeCommandPayloadParamsChannelsItemUserOrders        SubscribeCommandPayloadParamsChannelsItem = "user_orders"
 	SubscribeCommandPayloadParamsChannelsItemOrderGroupUpdates SubscribeCommandPayloadParamsChannelsItem = "order_group_updates"
+	SubscribeCommandPayloadParamsChannelsItemCorporateActions  SubscribeCommandPayloadParamsChannelsItem = "corporate_actions"
 )
 
 // Validate reports whether v is one of the values the schema lists.
 func (v SubscribeCommandPayloadParamsChannelsItem) Validate() error {
 	switch v {
-	case SubscribeCommandPayloadParamsChannelsItemOrderbookDelta, SubscribeCommandPayloadParamsChannelsItemTicker, SubscribeCommandPayloadParamsChannelsItemTrade, SubscribeCommandPayloadParamsChannelsItemFill, SubscribeCommandPayloadParamsChannelsItemUserOrders, SubscribeCommandPayloadParamsChannelsItemOrderGroupUpdates:
+	case SubscribeCommandPayloadParamsChannelsItemOrderbookDelta, SubscribeCommandPayloadParamsChannelsItemTicker, SubscribeCommandPayloadParamsChannelsItemTrade, SubscribeCommandPayloadParamsChannelsItemFill, SubscribeCommandPayloadParamsChannelsItemUserOrders, SubscribeCommandPayloadParamsChannelsItemOrderGroupUpdates, SubscribeCommandPayloadParamsChannelsItemCorporateActions:
 		return nil
 	}
 
@@ -1381,7 +1398,7 @@ type MarginOrderbookDeltaPayloadMsg struct {
 	Price        string       `json:"price"`
 	Delta        string       `json:"delta"`
 	Side         BookSide     `json:"side"`
-	// Margin order update reason when the delta corresponds to the authenticated user's order. CloseCancel and HaltCancel are reserved; the current orderbook stream filters out these operations. The field is omitted when no reason applies.
+	// Margin order update reason. The value ReduceOnlyCancel means reduce_only capped the order at placement. The field is omitted when no reason applies.
 	LastUpdateReason *LastUpdateReason `json:"last_update_reason,omitempty"`
 	ClientOrderID    *string           `json:"client_order_id,omitempty"`
 	// Unix timestamp in milliseconds.
@@ -1445,7 +1462,7 @@ func (v BookSide) Validate() error {
 	return asyncapirt.Invalid("BookSide", fmt.Sprintf("unknown value %v", v))
 }
 
-// Margin order update reason when the delta corresponds to the authenticated user's order. CloseCancel and HaltCancel are reserved; the current orderbook stream filters out these operations. The field is omitted when no reason applies.
+// Margin order update reason. The value ReduceOnlyCancel means reduce_only capped the order at placement. The field is omitted when no reason applies.
 type LastUpdateReason string
 
 // Values of LastUpdateReason.
@@ -1470,6 +1487,319 @@ func (v LastUpdateReason) Validate() error {
 	}
 
 	return asyncapirt.Invalid("LastUpdateReason", fmt.Sprintf("unknown value %v", v))
+}
+
+type MarginCorporateActionsDeltaPayload struct {
+	Type string `json:"type"`
+	// Server-generated subscription identifier (sid) used to identify the channel
+	Sid SubscriptionID `json:"sid"`
+	// Sequential number that should be checked if you want to guarantee you received all the messages. Used for snapshot/delta consistency
+	Seq SequenceNumber                        `json:"seq"`
+	Msg MarginCorporateActionsDeltaPayloadMsg `json:"msg"`
+	// Unix timestamp in milliseconds when Kalshi queued this message at the network layer.
+	SendingTsMs *SendingTimestampMs `json:"sending_ts_ms,omitempty"`
+}
+
+// UnmarshalJSON decodes MarginCorporateActionsDeltaPayload strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *MarginCorporateActionsDeltaPayload) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "MarginCorporateActionsDeltaPayload")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("MarginCorporateActionsDeltaPayload", members, "type", "sid", "seq", "msg"); err != nil {
+		return err
+	}
+
+	type plain MarginCorporateActionsDeltaPayload
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("MarginCorporateActionsDeltaPayload", err)
+	}
+
+	*v = MarginCorporateActionsDeltaPayload(decoded)
+
+	if _, ok := members["type"]; ok {
+		if err := asyncapirt.CheckConst("MarginCorporateActionsDeltaPayload.type", v.Type, "corporate_actions_delta"); err != nil {
+			return err
+		}
+	}
+
+	return v.Validate()
+}
+
+// MarshalJSON encodes MarginCorporateActionsDeltaPayload with its const properties filled in.
+func (v MarginCorporateActionsDeltaPayload) MarshalJSON() ([]byte, error) {
+	type plain MarginCorporateActionsDeltaPayload
+
+	encoded := plain(v)
+	encoded.Type = "corporate_actions_delta"
+
+	data, err := json.Marshal(encoded)
+	if err != nil {
+		return nil, ctxerrors.Wrapf(commerr.ErrInvalidValue, "MarginCorporateActionsDeltaPayload: %v", err)
+	}
+
+	return data, nil
+}
+
+// Validate checks the constraints the schema declares for MarginCorporateActionsDeltaPayload.
+func (v MarginCorporateActionsDeltaPayload) Validate() error {
+	if err := asyncapirt.CheckMinimum("sid", float64(v.Sid), 1); err != nil {
+		return err
+	}
+	if err := asyncapirt.CheckMinimum("seq", float64(v.Seq), 1); err != nil {
+		return err
+	}
+	if err := v.Msg.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "msg")
+	}
+
+	return nil
+}
+
+type MarginCorporateActionsDeltaPayloadMsg struct {
+	// A corporate action the exchange applied to a margin market. Exactly one terms object matches type: split for stock_split, final_settlement for final_settlement, or ticker_change for ticker_change.
+	CorporateAction MarginCorporateAction `json:"corporate_action"`
+}
+
+// UnmarshalJSON decodes MarginCorporateActionsDeltaPayloadMsg strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *MarginCorporateActionsDeltaPayloadMsg) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "MarginCorporateActionsDeltaPayloadMsg")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("MarginCorporateActionsDeltaPayloadMsg", members, "corporate_action"); err != nil {
+		return err
+	}
+
+	type plain MarginCorporateActionsDeltaPayloadMsg
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("MarginCorporateActionsDeltaPayloadMsg", err)
+	}
+
+	*v = MarginCorporateActionsDeltaPayloadMsg(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for MarginCorporateActionsDeltaPayloadMsg.
+func (v MarginCorporateActionsDeltaPayloadMsg) Validate() error {
+	if err := v.CorporateAction.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "corporate_action")
+	}
+
+	return nil
+}
+
+// A corporate action the exchange applied to a margin market. Exactly one terms object matches type: split for stock_split, final_settlement for final_settlement, or ticker_change for ticker_change.
+type MarginCorporateAction struct {
+	// Corporate action notice id, matching `id` in `GET /trade-api/v2/margin/corporate_actions`.
+	ID string `json:"id"`
+	// Stable market UUID.
+	MarketID string `json:"market_id"`
+	// Market ticker; the new ticker for ticker_change.
+	MarketTicker string `json:"market_ticker"`
+	// Corporate action type, identifying which terms object is present.
+	Type MarginCorporateActionType `json:"type"`
+	// Unix timestamp in milliseconds when the exchange applied the action.
+	TsMs int64 `json:"ts_ms"`
+	// Terms for stock_split. Omitted for other types.
+	Split *MarginCorporateActionSplitTerms `json:"split,omitempty"`
+	// Terms for final_settlement. Omitted for other types.
+	FinalSettlement *MarginCorporateActionFinalSettlementTerms `json:"final_settlement,omitempty"`
+	// Terms for ticker_change. Omitted for other types.
+	TickerChange *MarginCorporateActionTickerChangeTerms `json:"ticker_change,omitempty"`
+}
+
+// UnmarshalJSON decodes MarginCorporateAction strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *MarginCorporateAction) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "MarginCorporateAction")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("MarginCorporateAction", members, "id", "market_id", "market_ticker", "type", "ts_ms"); err != nil {
+		return err
+	}
+
+	type plain MarginCorporateAction
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("MarginCorporateAction", err)
+	}
+
+	*v = MarginCorporateAction(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for MarginCorporateAction.
+func (v MarginCorporateAction) Validate() error {
+	if err := v.Type.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "type")
+	}
+	if v.Split != nil {
+		if err := (*v.Split).Validate(); err != nil {
+			return ctxerrors.Wrap(err, "split")
+		}
+	}
+	if v.FinalSettlement != nil {
+		if err := (*v.FinalSettlement).Validate(); err != nil {
+			return ctxerrors.Wrap(err, "final_settlement")
+		}
+	}
+	if v.TickerChange != nil {
+		if err := (*v.TickerChange).Validate(); err != nil {
+			return ctxerrors.Wrap(err, "ticker_change")
+		}
+	}
+
+	return nil
+}
+
+// Corporate action type, identifying which terms object is present.
+type MarginCorporateActionType string
+
+// Values of MarginCorporateActionType.
+const (
+	MarginCorporateActionTypeStockSplit      MarginCorporateActionType = "stock_split"
+	MarginCorporateActionTypeFinalSettlement MarginCorporateActionType = "final_settlement"
+	MarginCorporateActionTypeTickerChange    MarginCorporateActionType = "ticker_change"
+)
+
+// Validate reports whether v is one of the values the schema lists.
+func (v MarginCorporateActionType) Validate() error {
+	switch v {
+	case MarginCorporateActionTypeStockSplit, MarginCorporateActionTypeFinalSettlement, MarginCorporateActionTypeTickerChange:
+		return nil
+	}
+
+	return asyncapirt.Invalid("MarginCorporateActionType", fmt.Sprintf("unknown value %v", v))
+}
+
+// Terms for stock_split. Omitted for other types.
+type MarginCorporateActionSplitTerms struct {
+	// Old-share component of the split ratio. A 4-for-1 split is ratio_new 4, ratio_old 1.
+	RatioOld string `json:"ratio_old"`
+	// New-share component of the split ratio.
+	RatioNew string `json:"ratio_new"`
+	// Mark price in US dollars before the split.
+	PreSplitMarkPrice string `json:"pre_split_mark_price"`
+	// Mark price in US dollars after the split.
+	PostSplitMarkPrice string `json:"post_split_mark_price"`
+}
+
+// UnmarshalJSON decodes MarginCorporateActionSplitTerms strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *MarginCorporateActionSplitTerms) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "MarginCorporateActionSplitTerms")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("MarginCorporateActionSplitTerms", members, "ratio_old", "ratio_new", "pre_split_mark_price", "post_split_mark_price"); err != nil {
+		return err
+	}
+
+	type plain MarginCorporateActionSplitTerms
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("MarginCorporateActionSplitTerms", err)
+	}
+
+	*v = MarginCorporateActionSplitTerms(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for MarginCorporateActionSplitTerms.
+func (v MarginCorporateActionSplitTerms) Validate() error {
+
+	return nil
+}
+
+// Terms for final_settlement. Omitted for other types.
+type MarginCorporateActionFinalSettlementTerms struct {
+	// Final settlement price in US dollars per contract.
+	SettlementPricePerContract string `json:"settlement_price_per_contract"`
+}
+
+// UnmarshalJSON decodes MarginCorporateActionFinalSettlementTerms strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *MarginCorporateActionFinalSettlementTerms) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "MarginCorporateActionFinalSettlementTerms")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("MarginCorporateActionFinalSettlementTerms", members, "settlement_price_per_contract"); err != nil {
+		return err
+	}
+
+	type plain MarginCorporateActionFinalSettlementTerms
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("MarginCorporateActionFinalSettlementTerms", err)
+	}
+
+	*v = MarginCorporateActionFinalSettlementTerms(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for MarginCorporateActionFinalSettlementTerms.
+func (v MarginCorporateActionFinalSettlementTerms) Validate() error {
+
+	return nil
+}
+
+// Terms for ticker_change. Omitted for other types.
+type MarginCorporateActionTickerChangeTerms struct {
+	// Previous market ticker.
+	OldTicker string `json:"old_ticker"`
+	// New market ticker.
+	NewTicker string `json:"new_ticker"`
+}
+
+// UnmarshalJSON decodes MarginCorporateActionTickerChangeTerms strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *MarginCorporateActionTickerChangeTerms) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "MarginCorporateActionTickerChangeTerms")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("MarginCorporateActionTickerChangeTerms", members, "old_ticker", "new_ticker"); err != nil {
+		return err
+	}
+
+	type plain MarginCorporateActionTickerChangeTerms
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("MarginCorporateActionTickerChangeTerms", err)
+	}
+
+	*v = MarginCorporateActionTickerChangeTerms(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for MarginCorporateActionTickerChangeTerms.
+func (v MarginCorporateActionTickerChangeTerms) Validate() error {
+
+	return nil
 }
 
 type MarginTickerPayload struct {
@@ -2083,7 +2413,7 @@ type MarginUserOrderPayloadMsg struct {
 	CreatedTsMs *int64 `json:"created_ts_ms"`
 	// Unix timestamp in milliseconds.
 	LastUpdatedTsMs *int64 `json:"last_updated_ts_ms,omitempty"`
-	// Margin order update reason when the delta corresponds to the authenticated user's order. CloseCancel and HaltCancel are reserved; the current orderbook stream filters out these operations. The field is omitted when no reason applies.
+	// Margin order update reason. The value ReduceOnlyCancel means reduce_only capped the order at placement. The field is omitted when no reason applies.
 	LastUpdateReason *LastUpdateReason `json:"last_update_reason,omitempty"`
 	SubaccountNumber *int64            `json:"subaccount_number,omitempty"`
 	// `system` for liquidations and margin exit or trailing-stop
@@ -2383,6 +2713,10 @@ const (
 	// Payload: MarginOrderbookDeltaPayload.
 	// Content type: application/json.
 	MessageOrderbookDelta = "orderbook_delta"
+	// Corporate Action Delta
+	// Payload: MarginCorporateActionsDeltaPayload.
+	// Content type: application/json.
+	MessageCorporateActionsDelta = "corporate_actions_delta"
 	// Margin market ticker information
 	// Payload: MarginTickerPayload.
 	// Content type: application/json.
@@ -2413,6 +2747,20 @@ type ReceivedMessage struct {
 }
 
 var receivedMessages = []asyncapirt.Candidate{
+	{
+		Name: MessageCorporateActionsDelta,
+		Matchers: []asyncapirt.Matcher{
+			{Pointer: "/type", Value: "\"corporate_actions_delta\""},
+		},
+		Decode: func(data []byte) (any, error) {
+			var payload MarginCorporateActionsDeltaPayload
+			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
+				return nil, err
+			}
+
+			return payload, nil
+		},
+	},
 	{
 		Name: MessageOutgoingPing,
 		Decode: func(data []byte) (any, error) {
@@ -2620,6 +2968,10 @@ func DecodeReceivedMessage(data []byte) (ReceivedMessage, error) {
 // Handler receives incoming messages. Embed UnimplementedHandler to implement
 // only the methods you need.
 type Handler interface {
+	// Corporate Action Delta
+	// Payload: MarginCorporateActionsDeltaPayload.
+	// Content type: application/json.
+	HandleCorporateActionsDelta(ctx context.Context, payload MarginCorporateActionsDeltaPayload) error
 	// Kalshi sends Ping (0x9) with body 'heartbeat' to elicit Pong from client
 	// Payload: string.
 	// Content type: application/octet-stream.
@@ -2684,6 +3036,11 @@ type Handler interface {
 // UnimplementedHandler ignores every message. Its HandleUnknownMessage logs a
 // warning and keeps the receive loop running.
 type UnimplementedHandler struct{}
+
+// HandleCorporateActionsDelta ignores the message.
+func (UnimplementedHandler) HandleCorporateActionsDelta(context.Context, MarginCorporateActionsDeltaPayload) error {
+	return nil
+}
 
 // HandleOutgoingPing ignores the message.
 func (UnimplementedHandler) HandleOutgoingPing(context.Context, string) error {
@@ -2770,6 +3127,17 @@ func (UnimplementedHandler) HandleUnknownMessage(ctx context.Context, data []byt
 // Dispatch passes message to the handler method for its name.
 func Dispatch(ctx context.Context, handler Handler, message ReceivedMessage) error {
 	switch message.Name {
+	case MessageCorporateActionsDelta:
+		payload, ok := message.Payload.(MarginCorporateActionsDeltaPayload)
+		if !ok {
+			return ctxerrors.Wrapf(commerr.ErrInvalidValue, "%s payload is %T", message.Name, message.Payload)
+		}
+
+		if err := handler.HandleCorporateActionsDelta(ctx, payload); err != nil {
+			return ctxerrors.Wrapf(err, "handle %s", message.Name)
+		}
+
+		return nil
 	case MessageOutgoingPing:
 		payload, ok := message.Payload.(string)
 		if !ok {
