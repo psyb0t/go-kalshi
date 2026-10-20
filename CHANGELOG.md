@@ -2,6 +2,12 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.2.1, 2026-10-20
+
+- Doc comments only, no behavior change: the `pyth_value` channel docs on `PythValueAddressTemplate`, `MessagePythValue` and `Handler.HandlePythValue` now say the channel also streams Treasury yields. The channel's table lists the new symbols `InterestRate.US2Y`, `InterestRate.US5Y`, `InterestRate.US10Y` and `InterestRate.US30Y`, which are included in `["all"]` subscriptions or can be requested individually.
+- The `PythValuePayloadMsg.ValueUsd` comment now says that for Treasury yield symbols the value is a percent, so `"4.25000000"` means 4.25%. The field name and type are unchanged.
+- The `TickerPayloadMsg.Time` comment notes the timestamp is truncated to milliseconds.
+
 ## v0.2.0, 2026-10-19
 
 - `IntraExchangeInstanceTransfer.ClientTransferId` field added. It holds the client-supplied transfer ID from when the transfer was created, omitted if none was provided.
