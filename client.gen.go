@@ -36,6 +36,42 @@ func (e AcceptQuoteRequestAcceptedSide) Valid() bool {
 	}
 }
 
+// Defines values for AcceptRFQBatchRequestAcceptedSide.
+const (
+	AcceptRFQBatchRequestAcceptedSideAcceptRFQBatchRequestAcceptedSideNo  AcceptRFQBatchRequestAcceptedSide = "no"
+	AcceptRFQBatchRequestAcceptedSideAcceptRFQBatchRequestAcceptedSideYes AcceptRFQBatchRequestAcceptedSide = "yes"
+)
+
+// Valid indicates whether the value is a known member of the AcceptRFQBatchRequestAcceptedSide enum.
+func (e AcceptRFQBatchRequestAcceptedSide) Valid() bool {
+	switch e {
+	case AcceptRFQBatchRequestAcceptedSideAcceptRFQBatchRequestAcceptedSideNo:
+		return true
+	case AcceptRFQBatchRequestAcceptedSideAcceptRFQBatchRequestAcceptedSideYes:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AcceptRFQBatchResponseAcceptedSide.
+const (
+	AcceptRFQBatchResponseAcceptedSideAcceptRFQBatchResponseAcceptedSideNo  AcceptRFQBatchResponseAcceptedSide = "no"
+	AcceptRFQBatchResponseAcceptedSideAcceptRFQBatchResponseAcceptedSideYes AcceptRFQBatchResponseAcceptedSide = "yes"
+)
+
+// Valid indicates whether the value is a known member of the AcceptRFQBatchResponseAcceptedSide enum.
+func (e AcceptRFQBatchResponseAcceptedSide) Valid() bool {
+	switch e {
+	case AcceptRFQBatchResponseAcceptedSideAcceptRFQBatchResponseAcceptedSideNo:
+		return true
+	case AcceptRFQBatchResponseAcceptedSideAcceptRFQBatchResponseAcceptedSideYes:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ApiKeyScope.
 const (
 	ApiKeyScopeApiKeyScopeRead                  ApiKeyScope = "read"
@@ -642,6 +678,75 @@ func (e RFQStatus) Valid() bool {
 	}
 }
 
+// Defines values for RFQBatchQuoteAcceptedSide.
+const (
+	RFQBatchQuoteAcceptedSideRFQBatchQuoteAcceptedSideNo  RFQBatchQuoteAcceptedSide = "no"
+	RFQBatchQuoteAcceptedSideRFQBatchQuoteAcceptedSideYes RFQBatchQuoteAcceptedSide = "yes"
+)
+
+// Valid indicates whether the value is a known member of the RFQBatchQuoteAcceptedSide enum.
+func (e RFQBatchQuoteAcceptedSide) Valid() bool {
+	switch e {
+	case RFQBatchQuoteAcceptedSideRFQBatchQuoteAcceptedSideNo:
+		return true
+	case RFQBatchQuoteAcceptedSideRFQBatchQuoteAcceptedSideYes:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RFQBatchQuoteStatus.
+const (
+	RFQBatchQuoteStatusAccepted          RFQBatchQuoteStatus = "accepted"
+	RFQBatchQuoteStatusCancelled         RFQBatchQuoteStatus = "cancelled"
+	RFQBatchQuoteStatusConfirmed         RFQBatchQuoteStatus = "confirmed"
+	RFQBatchQuoteStatusExecuted          RFQBatchQuoteStatus = "executed"
+	RFQBatchQuoteStatusOpen              RFQBatchQuoteStatus = "open"
+	RFQBatchQuoteStatusPartiallyExecuted RFQBatchQuoteStatus = "partially_executed"
+)
+
+// Valid indicates whether the value is a known member of the RFQBatchQuoteStatus enum.
+func (e RFQBatchQuoteStatus) Valid() bool {
+	switch e {
+	case RFQBatchQuoteStatusAccepted:
+		return true
+	case RFQBatchQuoteStatusCancelled:
+		return true
+	case RFQBatchQuoteStatusConfirmed:
+		return true
+	case RFQBatchQuoteStatusExecuted:
+		return true
+	case RFQBatchQuoteStatusOpen:
+		return true
+	case RFQBatchQuoteStatusPartiallyExecuted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RFQBatchStatus.
+const (
+	RFQBatchStatusAccepted RFQBatchStatus = "accepted"
+	RFQBatchStatusClosed   RFQBatchStatus = "closed"
+	RFQBatchStatusOpen     RFQBatchStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the RFQBatchStatus enum.
+func (e RFQBatchStatus) Valid() bool {
+	switch e {
+	case RFQBatchStatusAccepted:
+		return true
+	case RFQBatchStatusClosed:
+		return true
+	case RFQBatchStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for RestingMarginReservation.
 const (
 	RestingMarginReservationRestingMarginReservationMax  RestingMarginReservation = "max"
@@ -1229,6 +1334,33 @@ type AcceptQuoteRequest struct {
 
 // AcceptQuoteRequestAcceptedSide The side of the quote to accept (yes or no)
 type AcceptQuoteRequestAcceptedSide string
+
+// AcceptRFQBatchRequest defines model for AcceptRFQBatchRequest.
+type AcceptRFQBatchRequest struct {
+	// AcceptedSide The side to accept on every child (yes or no)
+	AcceptedSide AcceptRFQBatchRequestAcceptedSide `json:"accepted_side"`
+
+	// ClientOrderId Optional idempotency key. Retrying an accept with the same client_order_id returns the result of the accept that succeeded.
+	ClientOrderId string `json:"client_order_id,omitempty"`
+
+	// MinBids Price protection, exactly one entry per child. A child whose best bid on the accepted side is now below its entry fails the accept.
+	MinBids []RFQBatchAcceptLimit `json:"min_bids" validate:"required,min=2,max=57,dive"`
+}
+
+// AcceptRFQBatchRequestAcceptedSide The side to accept on every child (yes or no)
+type AcceptRFQBatchRequestAcceptedSide string
+
+// AcceptRFQBatchResponse defines model for AcceptRFQBatchResponse.
+type AcceptRFQBatchResponse struct {
+	// AcceptedSide The side accepted on every child (yes or no)
+	AcceptedSide AcceptRFQBatchResponseAcceptedSide `json:"accepted_side"`
+
+	// Quotes The quote each child was accepted from, in batch order. Each winning maker then confirms its children.
+	Quotes []Quote `json:"quotes"`
+}
+
+// AcceptRFQBatchResponseAcceptedSide The side accepted on every child (yes or no)
+type AcceptRFQBatchResponseAcceptedSide string
 
 // AccountApiUsageLevelVolumeGoal defines model for AccountApiUsageLevelVolumeGoal.
 type AccountApiUsageLevelVolumeGoal struct {
@@ -1849,6 +1981,81 @@ type CreateQuoteRequest struct {
 type CreateQuoteResponse struct {
 	// Id UUID of the newly created quote. Pass it unchanged in subsequent requests.
 	Id string `json:"id"`
+}
+
+// CreateRFQBatchChild One combo to request quotes on. Set exactly one of market_ticker and selected_markets.
+type CreateRFQBatchChild struct {
+	// MarketTicker Ticker of an existing combo market
+	MarketTicker string `json:"market_ticker,omitempty"`
+
+	// SelectedMarkets Legs of the combo, at most 6, looked up or created in the request's mve_collection_ticker as POST /multivariate_event_collections/{collection_ticker} does.
+	SelectedMarkets []TickerPair `json:"selected_markets,omitempty" validate:"omitempty,max=6,dive"`
+}
+
+// CreateRFQBatchQuoteRequest defines model for CreateRFQBatchQuoteRequest.
+type CreateRFQBatchQuoteRequest struct {
+	// PostOnly If true, your resting orders are cancelled rather than crossed if they would take liquidity. Defaults to false.
+	PostOnly *bool `json:"post_only,omitempty"`
+
+	// Quotes Prices for every child RFQ of the batch, one entry per child.
+	Quotes []RFQBatchQuoteEntry `json:"quotes" validate:"required,min=2,max=57,dive"`
+
+	// RestRemainder Whether to rest the remainder of each child quote after execution
+	RestRemainder bool `json:"rest_remainder"`
+
+	// Subaccount Optional subaccount number to place the batch quote under (0 for primary, 1-63 for subaccounts)
+	Subaccount *int `json:"subaccount,omitempty"`
+}
+
+// CreateRFQBatchQuoteResponse defines model for CreateRFQBatchQuoteResponse.
+type CreateRFQBatchQuoteResponse struct {
+	// Id UUID of the newly created batch quote. Pass it unchanged in subsequent requests.
+	Id string `json:"id"`
+}
+
+// CreateRFQBatchRequest defines model for CreateRFQBatchRequest.
+type CreateRFQBatchRequest struct {
+	// Children The combos to request quotes on, one child RFQ each. Children must be distinct combos.
+	Children []CreateRFQBatchChild `json:"children" validate:"required,min=2,max=57,dive"`
+
+	// ClientBatchId Optional key for this batch, unique among your RFQ batches, including those closed within the last seven days. Reusing one returns HTTP 409.
+	ClientBatchId string `json:"client_batch_id,omitempty" validate:"omitempty,max=64"`
+
+	// ContractsFp Fixed-point contract count string (2 decimals, e.g., "10.00"; referred to as "fp" in field names). Requests accept 0-2 decimal places (e.g., "10", "10.0", "10.00"); responses always emit 2 decimals. Fractional contract values (e.g., "2.50") are supported; the minimum granularity is 0.01 contracts.
+	//
+	// Example: 10.00
+	ContractsFp *FixedPointCount `json:"contracts_fp,omitempty"`
+
+	// MveCollectionTicker Collection in which children given by selected_markets are looked up or created. Required when any child uses selected_markets.
+	MveCollectionTicker string `json:"mve_collection_ticker,omitempty"`
+
+	// ObscureCreatorId Same as on Create RFQ, applied to the batch and every child.
+	ObscureCreatorId bool `json:"obscure_creator_id,omitempty"`
+
+	// ReplaceExisting Close your oldest open RFQ batches as needed so this one can be created. Single RFQs are never replaced.
+	ReplaceExisting bool `json:"replace_existing,omitempty"`
+
+	// RestRemainder Whether to rest the remainder of each child RFQ after execution
+	RestRemainder bool `json:"rest_remainder,omitempty"`
+
+	// Subaccount The subaccount number to create the RFQ batch for (direct members only; 0 for primary, 1-63 for subaccounts)
+	Subaccount *int `json:"subaccount,omitempty"`
+
+	// SubtraderId The subtrader to create the RFQ batch for (FCM members only)
+	SubtraderId string `json:"subtrader_id,omitempty"`
+
+	// TargetCostDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	TargetCostDollars FixedPointDollars `json:"target_cost_dollars,omitempty"`
+
+	// TargetCostExcludesFees Same as on Create RFQ, applied to every child. Only valid together with target_cost_dollars.
+	TargetCostExcludesFees bool `json:"target_cost_excludes_fees,omitempty"`
+}
+
+// CreateRFQBatchResponse defines model for CreateRFQBatchResponse.
+type CreateRFQBatchResponse struct {
+	RfqBatch RFQBatch `json:"rfq_batch"`
 }
 
 // CreateRFQRequest defines model for CreateRFQRequest.
@@ -2816,6 +3023,31 @@ type GetQuotesResponse struct {
 
 	// Quotes List of quotes matching the query criteria
 	Quotes []Quote `json:"quotes"`
+}
+
+// GetRFQBatchBestQuotesResponse defines model for GetRFQBatchBestQuotesResponse.
+type GetRFQBatchBestQuotesResponse struct {
+	BestQuotes RFQBatchBestQuotes `json:"best_quotes"`
+}
+
+// GetRFQBatchQuotesResponse defines model for GetRFQBatchQuotesResponse.
+type GetRFQBatchQuotesResponse struct {
+	// BatchQuotes Batch quotes on the RFQ batch visible to you
+	BatchQuotes []RFQBatchQuote `json:"batch_quotes"`
+}
+
+// GetRFQBatchResponse defines model for GetRFQBatchResponse.
+type GetRFQBatchResponse struct {
+	RfqBatch RFQBatch `json:"rfq_batch"`
+}
+
+// GetRFQBatchesResponse defines model for GetRFQBatchesResponse.
+type GetRFQBatchesResponse struct {
+	// Cursor Cursor for pagination to get the next page of results
+	Cursor string `json:"cursor,omitempty"`
+
+	// RfqBatches RFQ batches matching the query criteria
+	RfqBatches []RFQBatch `json:"rfq_batches"`
 }
 
 // GetRFQResponse defines model for GetRFQResponse.
@@ -3974,6 +4206,188 @@ type RFQ struct {
 // RFQStatus Current status of the RFQ (open, closed)
 type RFQStatus string
 
+// RFQBatch defines model for RFQBatch.
+type RFQBatch struct {
+	// AcceptedTs Timestamp when a batch quote on the batch was accepted
+	AcceptedTs *time.Time `json:"accepted_ts,omitempty"`
+
+	// ClientBatchId The client_batch_id given at creation (visible to the batch creator)
+	ClientBatchId string `json:"client_batch_id,omitempty"`
+
+	// CloseReason Why the RFQ batch closed, for example executed, partially executed, or cancelled (visible to the batch creator)
+	CloseReason string `json:"close_reason,omitempty"`
+
+	// ClosedTs Timestamp when the RFQ batch closed
+	ClosedTs *time.Time `json:"closed_ts,omitempty"`
+
+	// CreatedTs Timestamp when the RFQ batch was created
+	CreatedTs time.Time `json:"created_ts"`
+
+	// CreatorId Public communications ID of the batch creator, obscured for other users like RFQ.creator_id when obscure_creator_id was set. It is revealed once a child RFQ executes.
+	CreatorId string `json:"creator_id"`
+
+	// CreatorSubaccount Subaccount number of the batch creator (visible to the batch creator)
+	CreatorSubaccount *int `json:"creator_subaccount,omitempty"`
+
+	// CreatorUserId User ID of the batch creator (private field)
+	CreatorUserId string `json:"creator_user_id,omitempty"`
+
+	// Id UUID of the RFQ batch. Preserve the exact returned string.
+	Id string `json:"id"`
+
+	// Rfqs The child RFQs, in the order they were requested
+	Rfqs []RFQ `json:"rfqs"`
+
+	// Status Status of an RFQ batch. An open batch takes batch quotes; an accepted batch is waiting for its winning makers to confirm or is executing; a closed batch is finished.
+	Status RFQBatchStatus `json:"status"`
+
+	// UpdatedTs Timestamp when the RFQ batch was last updated (visible to the batch creator)
+	UpdatedTs *time.Time `json:"updated_ts,omitempty"`
+}
+
+// RFQBatchAcceptLimit defines model for RFQBatchAcceptLimit.
+type RFQBatchAcceptLimit struct {
+	// BidDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	BidDollars FixedPointDollars `json:"bid_dollars"`
+
+	// RfqId UUID of the child RFQ. Pass it unchanged; malformed IDs return HTTP 400.
+	RfqId string `json:"rfq_id"`
+}
+
+// RFQBatchBestQuote defines model for RFQBatchBestQuote.
+type RFQBatchBestQuote struct {
+	// MarketTicker The child's combo market
+	MarketTicker string `json:"market_ticker"`
+
+	// NoBidDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	NoBidDollars *FixedPointDollars `json:"no_bid_dollars,omitempty"`
+
+	// NoContractsOfferedFp Fixed-point contract count string (2 decimals, e.g., "10.00"; referred to as "fp" in field names). Requests accept 0-2 decimal places (e.g., "10", "10.0", "10.00"); responses always emit 2 decimals. Fractional contract values (e.g., "2.50") are supported; the minimum granularity is 0.01 contracts.
+	//
+	// Example: 10.00
+	NoContractsOfferedFp *FixedPointCount `json:"no_contracts_offered_fp,omitempty"`
+
+	// RfqId UUID of the child RFQ
+	RfqId string `json:"rfq_id"`
+
+	// YesBidDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	YesBidDollars *FixedPointDollars `json:"yes_bid_dollars,omitempty"`
+
+	// YesContractsOfferedFp Fixed-point contract count string (2 decimals, e.g., "10.00"; referred to as "fp" in field names). Requests accept 0-2 decimal places (e.g., "10", "10.0", "10.00"); responses always emit 2 decimals. Fractional contract values (e.g., "2.50") are supported; the minimum granularity is 0.01 contracts.
+	//
+	// Example: 10.00
+	YesContractsOfferedFp *FixedPointCount `json:"yes_contracts_offered_fp,omitempty"`
+}
+
+// RFQBatchBestQuotes defines model for RFQBatchBestQuotes.
+type RFQBatchBestQuotes struct {
+	// NoComplete Whether every child has a NO bid, so the batch can be accepted on the no side
+	NoComplete bool `json:"no_complete"`
+
+	// RfqBatchId UUID of the RFQ batch
+	RfqBatchId string `json:"rfq_batch_id"`
+
+	// Rfqs One entry per child RFQ, in batch order
+	Rfqs []RFQBatchBestQuote `json:"rfqs"`
+
+	// Status Status of an RFQ batch. An open batch takes batch quotes; an accepted batch is waiting for its winning makers to confirm or is executing; a closed batch is finished.
+	Status RFQBatchStatus `json:"status"`
+
+	// UpdatedTs When a best bid last changed
+	UpdatedTs *time.Time `json:"updated_ts,omitempty"`
+
+	// Version Increases whenever a best bid changes
+	Version int64 `json:"version"`
+
+	// YesComplete Whether every child has a YES bid, so the batch can be accepted on the yes side
+	YesComplete bool `json:"yes_complete"`
+}
+
+// RFQBatchQuote One maker's quote on an RFQ batch. Once the batch is accepted, quotes lists only the children this maker won.
+type RFQBatchQuote struct {
+	// AcceptedSide The side that was accepted on this maker's children (yes or no)
+	AcceptedSide *RFQBatchQuoteAcceptedSide `json:"accepted_side,omitempty"`
+
+	// AcceptedTs Timestamp when the batch quote was accepted
+	AcceptedTs *time.Time `json:"accepted_ts,omitempty"`
+
+	// ConfirmedTs Timestamp when the batch quote was confirmed
+	ConfirmedTs *time.Time `json:"confirmed_ts,omitempty"`
+
+	// CreatedTs Timestamp when the batch quote was created
+	CreatedTs time.Time `json:"created_ts"`
+
+	// CreatorId Public communications ID of the batch quote creator
+	CreatorId string `json:"creator_id"`
+
+	// CreatorSubaccount Subaccount number of the batch quote creator (visible to the batch quote creator)
+	CreatorSubaccount *int `json:"creator_subaccount,omitempty"`
+
+	// CreatorUserId User ID of the batch quote creator (private field)
+	CreatorUserId string `json:"creator_user_id,omitempty"`
+
+	// Id UUID of the batch quote. Preserve the exact returned string.
+	Id string `json:"id"`
+
+	// PostOnly Whether the batch quote creator's orders are post-only (visible to the batch quote creator)
+	PostOnly *bool `json:"post_only,omitempty"`
+
+	// Quotes One quote per child RFQ, or once accepted one per child this maker won; match them to children by rfq_id. Each accepted child quote executes as its own trade.
+	Quotes []Quote `json:"quotes"`
+
+	// RestRemainder Whether to rest the remainder of each child quote after execution (visible to the batch quote creator)
+	RestRemainder *bool `json:"rest_remainder,omitempty"`
+
+	// RfqBatchId UUID of the RFQ batch this batch quote prices
+	RfqBatchId string `json:"rfq_batch_id"`
+
+	// RfqCreatorId Public communications ID of the RFQ batch creator, obscured like Quote.rfq_creator_id
+	RfqCreatorId string `json:"rfq_creator_id"`
+
+	// RfqCreatorSubaccount Subaccount number of the RFQ batch creator (visible to the RFQ batch creator)
+	RfqCreatorSubaccount *int `json:"rfq_creator_subaccount,omitempty"`
+
+	// RfqCreatorUserId User ID of the RFQ batch creator (private field)
+	RfqCreatorUserId string `json:"rfq_creator_user_id,omitempty"`
+
+	// Status Status of a batch quote. A partially_executed batch quote executed some children and failed others.
+	Status RFQBatchQuoteStatus `json:"status"`
+
+	// UpdatedTs Timestamp when the batch quote was last updated
+	UpdatedTs time.Time `json:"updated_ts"`
+}
+
+// RFQBatchQuoteAcceptedSide The side that was accepted on this maker's children (yes or no)
+type RFQBatchQuoteAcceptedSide string
+
+// RFQBatchQuoteEntry defines model for RFQBatchQuoteEntry.
+type RFQBatchQuoteEntry struct {
+	// NoBid Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	NoBid FixedPointDollars `json:"no_bid"`
+
+	// RfqId UUID of the child RFQ to price. Pass it unchanged; malformed IDs return HTTP 400.
+	RfqId string `json:"rfq_id"`
+
+	// YesBid Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	YesBid FixedPointDollars `json:"yes_bid"`
+}
+
+// RFQBatchQuoteStatus Status of a batch quote. A partially_executed batch quote executed some children and failed others.
+type RFQBatchQuoteStatus string
+
+// RFQBatchStatus Status of an RFQ batch. An open batch takes batch quotes; an accepted batch is waiting for its winning makers to confirm or is executing; a closed batch is finished.
+type RFQBatchStatus string
+
 // RestingMarginReservation Collateral an automatic rebalance leaves behind for resting orders. `none` reserves no
 // collateral for resting orders. `max` reserves the
 // largest single market-side commitment. `sum` reserves the summed margin of every resting order.
@@ -4508,6 +4922,9 @@ type WithdrawalStatus string
 // WithdrawalType Payment type used for the withdrawal.
 type WithdrawalType string
 
+// BatchQuoteIdPath defines model for BatchQuoteIdPath.
+type BatchQuoteIdPath = string
+
 // CountFilterQuery defines model for CountFilterQuery.
 type CountFilterQuery = string
 
@@ -4599,6 +5016,9 @@ type PositionsLimitQuery = int32
 
 // QuoteIdPath defines model for QuoteIdPath.
 type QuoteIdPath = string
+
+// RfqBatchIdPath defines model for RfqBatchIdPath.
+type RfqBatchIdPath = string
 
 // RfqIdPath defines model for RfqIdPath.
 type RfqIdPath = string
@@ -4714,6 +5134,22 @@ type GetQuotesParams struct {
 
 	// RfqId Filter quotes by RFQ UUID. Pass the RFQ ID unchanged; malformed IDs return HTTP 400.
 	RfqId string `form:"rfq_id,omitempty" json:"rfq_id,omitempty"`
+}
+
+// GetRFQBatchesParams defines parameters for GetRFQBatches.
+type GetRFQBatchesParams struct {
+	// Cursor Pagination cursor. Use the cursor value returned from the previous response to get the next page of results. Leave empty for the first page.
+	Cursor CursorQuery `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). If omitted, defaults to all subaccounts.
+	Subaccount *SubaccountQuery `form:"subaccount,omitempty" json:"subaccount,omitempty"`
+
+	// Limit Maximum number of batches per page. Defaults to 20. A page also stops before its child RFQs would exceed 100.
+	Limit *int32 `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Status Filter RFQ batches by status
+	Status     *RFQBatchStatus `form:"status,omitempty" json:"status,omitempty"`
+	UserFilter UserFilter      `form:"user_filter,omitempty" json:"user_filter,omitempty" validate:"omitempty,oneof=self"`
 }
 
 // GetRFQsParams defines parameters for GetRFQs.
@@ -5620,6 +6056,18 @@ type AcceptQuoteJSONRequestBody = AcceptQuoteRequest
 // Deprecated: this type has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 type ConfirmQuoteJSONRequestBody = EmptyResponse
 
+// CreateRFQBatchJSONRequestBody defines body for CreateRFQBatch for application/json ContentType.
+type CreateRFQBatchJSONRequestBody = CreateRFQBatchRequest
+
+// AcceptRFQBatchJSONRequestBody defines body for AcceptRFQBatch for application/json ContentType.
+type AcceptRFQBatchJSONRequestBody = AcceptRFQBatchRequest
+
+// CreateRFQBatchQuoteJSONRequestBody defines body for CreateRFQBatchQuote for application/json ContentType.
+type CreateRFQBatchQuoteJSONRequestBody = CreateRFQBatchQuoteRequest
+
+// ConfirmRFQBatchQuoteJSONRequestBody defines body for ConfirmRFQBatchQuote for application/json ContentType.
+type ConfirmRFQBatchQuoteJSONRequestBody = EmptyResponse
+
 // CreateRFQJSONRequestBody defines body for CreateRFQ for application/json ContentType.
 type CreateRFQJSONRequestBody = CreateRFQRequest
 
@@ -5974,6 +6422,120 @@ type ClientInterface interface {
 	//
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	ConfirmQuote(ctx context.Context, quoteId QuoteIdPath, body ConfirmQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRFQBatches Get RFQ Batches
+	//
+	// List RFQ batches, most recently updated first, each with its child RFQs in request order. A page holds at most limit batches and stops before its child RFQs would exceed 100; a batch is never split across pages. Pass pagination cursors back unchanged; a malformed cursor returns HTTP 400. Use user_filter=self to list only your own batches.
+	//
+	// Corresponds with GET /communications/rfq_batches (the `GetRFQBatches` operationId).
+	GetRFQBatches(ctx context.Context, params *GetRFQBatchesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRFQBatchWithBody Create RFQ Batch
+	//
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /communications/rfq_batches (the `CreateRFQBatch` operationId).
+	CreateRFQBatchWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRFQBatch Create RFQ Batch
+	//
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /communications/rfq_batches (the `CreateRFQBatch` operationId).
+	CreateRFQBatch(ctx context.Context, body CreateRFQBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRFQBatch Delete RFQ Batch
+	//
+	// Close an RFQ batch and all of its child RFQs. Open batch quotes on it are cancelled. An accepted batch can no longer be closed: it executes or expires as a unit.
+	//
+	// Corresponds with DELETE /communications/rfq_batches/{rfq_batch_id} (the `DeleteRFQBatch` operationId).
+	DeleteRFQBatch(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRFQBatch Get RFQ Batch
+	//
+	//  Endpoint for getting a single RFQ batch, with its child RFQs in request order.
+	//
+	// Corresponds with GET /communications/rfq_batches/{rfq_batch_id} (the `GetRFQBatch` operationId).
+	GetRFQBatch(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AcceptRFQBatchWithBody Accept RFQ Batch
+	//
+	// Accept every child RFQ of your RFQ batch on one side, each from the maker quoting it best on that side. Either every child is accepted or none is, and your balance must cover all of them. min_bids protects your price: give every child the best bid you were shown. If a child's best bid is now worse, the accept fails with rfq_batch_quotes_changed and lists that child; a better bid fills at the better price. Each winning maker then confirms its children. They execute once every winner has confirmed, and a missed confirmation closes the whole batch. An accepted batch cannot be cancelled.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/accept (the `AcceptRFQBatch` operationId).
+	AcceptRFQBatchWithBody(ctx context.Context, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AcceptRFQBatch Accept RFQ Batch
+	//
+	// Accept every child RFQ of your RFQ batch on one side, each from the maker quoting it best on that side. Either every child is accepted or none is, and your balance must cover all of them. min_bids protects your price: give every child the best bid you were shown. If a child's best bid is now worse, the accept fails with rfq_batch_quotes_changed and lists that child; a better bid fills at the better price. Each winning maker then confirms its children. They execute once every winner has confirmed, and a missed confirmation closes the whole batch. An accepted batch cannot be cancelled.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/accept (the `AcceptRFQBatch` operationId).
+	AcceptRFQBatch(ctx context.Context, rfqBatchId RfqBatchIdPath, body AcceptRFQBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRFQBatchBestQuotes Get RFQ Batch Best Quotes
+	//
+	// Get the best open bid on each side of every child of your RFQ batch, across makers. Accepting the batch fills at these prices. Makers are not identified. Only the batch creator can read the best quotes, and a batch that is no longer open has none.
+	//
+	// Corresponds with GET /communications/rfq_batches/{rfq_batch_id}/best_quotes (the `GetRFQBatchBestQuotes` operationId).
+	GetRFQBatchBestQuotes(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRFQBatchQuotes Get RFQ Batch Quotes
+	//
+	// List the batch quotes on an RFQ batch that are visible to you. A maker sees its own batch quote; once the batch is accepted, it lists only the children that maker won. Once the batch is accepted, the batch creator sees each winning maker's batch quote on the children it won. While the batch is open, the creator reads the best quotes across makers with Get RFQ Batch Best Quotes instead.
+	//
+	// Corresponds with GET /communications/rfq_batches/{rfq_batch_id}/quotes (the `GetRFQBatchQuotes` operationId).
+	GetRFQBatchQuotes(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRFQBatchQuoteWithBody Create RFQ Batch Quote
+	//
+	// Quote every child RFQ of an RFQ batch, each exactly once. Each child is accepted from the maker bidding best on the requester's side, with ties going to the earliest bid, so you may win some children and not others; you then confirm the children you won. A new batch quote replaces your previous one on the same batch, and a child resent at an unchanged price keeps its time priority. A batch quote can win children only within 30 seconds of when you last sent it, so resend it to stay eligible.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /communications/rfq_batches/{rfq_batch_id}/quotes (the `CreateRFQBatchQuote` operationId).
+	CreateRFQBatchQuoteWithBody(ctx context.Context, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRFQBatchQuote Create RFQ Batch Quote
+	//
+	// Quote every child RFQ of an RFQ batch, each exactly once. Each child is accepted from the maker bidding best on the requester's side, with ties going to the earliest bid, so you may win some children and not others; you then confirm the children you won. A new batch quote replaces your previous one on the same batch, and a child resent at an unchanged price keeps its time priority. A batch quote can win children only within 30 seconds of when you last sent it, so resend it to stay eligible.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /communications/rfq_batches/{rfq_batch_id}/quotes (the `CreateRFQBatchQuote` operationId).
+	CreateRFQBatchQuote(ctx context.Context, rfqBatchId RfqBatchIdPath, body CreateRFQBatchQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRFQBatchQuote Delete RFQ Batch Quote
+	//
+	//  Endpoint for withdrawing one of your open batch quotes, which means it can no longer be accepted.
+	//
+	// Corresponds with DELETE /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id} (the `DeleteRFQBatchQuote` operationId).
+	DeleteRFQBatchQuote(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConfirmRFQBatchQuoteWithBody Confirm RFQ Batch Quote
+	//
+	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id}/confirm (the `ConfirmRFQBatchQuote` operationId).
+	ConfirmRFQBatchQuoteWithBody(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConfirmRFQBatchQuote Confirm RFQ Batch Quote
+	//
+	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id}/confirm (the `ConfirmRFQBatchQuote` operationId).
+	ConfirmRFQBatchQuote(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, body ConfirmRFQBatchQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetRFQs Get RFQs
 	//
@@ -7538,6 +8100,260 @@ func (c *Client) ConfirmQuoteWithBody(ctx context.Context, quoteId QuoteIdPath, 
 // Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *Client) ConfirmQuote(ctx context.Context, quoteId QuoteIdPath, body ConfirmQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewConfirmQuoteRequest(c.Server, quoteId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetRFQBatches Get RFQ Batches
+//
+// List RFQ batches, most recently updated first, each with its child RFQs in request order. A page holds at most limit batches and stops before its child RFQs would exceed 100; a batch is never split across pages. Pass pagination cursors back unchanged; a malformed cursor returns HTTP 400. Use user_filter=self to list only your own batches.
+//
+// Corresponds with GET /communications/rfq_batches (the `GetRFQBatches` operationId).
+func (c *Client) GetRFQBatches(ctx context.Context, params *GetRFQBatchesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRFQBatchesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateRFQBatchWithBody Create RFQ Batch
+//
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /communications/rfq_batches (the `CreateRFQBatch` operationId).
+func (c *Client) CreateRFQBatchWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRFQBatchRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateRFQBatch Create RFQ Batch
+//
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /communications/rfq_batches (the `CreateRFQBatch` operationId).
+func (c *Client) CreateRFQBatch(ctx context.Context, body CreateRFQBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRFQBatchRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteRFQBatch Delete RFQ Batch
+//
+// Close an RFQ batch and all of its child RFQs. Open batch quotes on it are cancelled. An accepted batch can no longer be closed: it executes or expires as a unit.
+//
+// Corresponds with DELETE /communications/rfq_batches/{rfq_batch_id} (the `DeleteRFQBatch` operationId).
+func (c *Client) DeleteRFQBatch(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRFQBatchRequest(c.Server, rfqBatchId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetRFQBatch Get RFQ Batch
+//
+//	Endpoint for getting a single RFQ batch, with its child RFQs in request order.
+//
+// Corresponds with GET /communications/rfq_batches/{rfq_batch_id} (the `GetRFQBatch` operationId).
+func (c *Client) GetRFQBatch(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRFQBatchRequest(c.Server, rfqBatchId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// AcceptRFQBatchWithBody Accept RFQ Batch
+//
+// Accept every child RFQ of your RFQ batch on one side, each from the maker quoting it best on that side. Either every child is accepted or none is, and your balance must cover all of them. min_bids protects your price: give every child the best bid you were shown. If a child's best bid is now worse, the accept fails with rfq_batch_quotes_changed and lists that child; a better bid fills at the better price. Each winning maker then confirms its children. They execute once every winner has confirmed, and a missed confirmation closes the whole batch. An accepted batch cannot be cancelled.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/accept (the `AcceptRFQBatch` operationId).
+func (c *Client) AcceptRFQBatchWithBody(ctx context.Context, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptRFQBatchRequestWithBody(c.Server, rfqBatchId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// AcceptRFQBatch Accept RFQ Batch
+//
+// Accept every child RFQ of your RFQ batch on one side, each from the maker quoting it best on that side. Either every child is accepted or none is, and your balance must cover all of them. min_bids protects your price: give every child the best bid you were shown. If a child's best bid is now worse, the accept fails with rfq_batch_quotes_changed and lists that child; a better bid fills at the better price. Each winning maker then confirms its children. They execute once every winner has confirmed, and a missed confirmation closes the whole batch. An accepted batch cannot be cancelled.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/accept (the `AcceptRFQBatch` operationId).
+func (c *Client) AcceptRFQBatch(ctx context.Context, rfqBatchId RfqBatchIdPath, body AcceptRFQBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptRFQBatchRequest(c.Server, rfqBatchId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetRFQBatchBestQuotes Get RFQ Batch Best Quotes
+//
+// Get the best open bid on each side of every child of your RFQ batch, across makers. Accepting the batch fills at these prices. Makers are not identified. Only the batch creator can read the best quotes, and a batch that is no longer open has none.
+//
+// Corresponds with GET /communications/rfq_batches/{rfq_batch_id}/best_quotes (the `GetRFQBatchBestQuotes` operationId).
+func (c *Client) GetRFQBatchBestQuotes(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRFQBatchBestQuotesRequest(c.Server, rfqBatchId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetRFQBatchQuotes Get RFQ Batch Quotes
+//
+// List the batch quotes on an RFQ batch that are visible to you. A maker sees its own batch quote; once the batch is accepted, it lists only the children that maker won. Once the batch is accepted, the batch creator sees each winning maker's batch quote on the children it won. While the batch is open, the creator reads the best quotes across makers with Get RFQ Batch Best Quotes instead.
+//
+// Corresponds with GET /communications/rfq_batches/{rfq_batch_id}/quotes (the `GetRFQBatchQuotes` operationId).
+func (c *Client) GetRFQBatchQuotes(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRFQBatchQuotesRequest(c.Server, rfqBatchId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateRFQBatchQuoteWithBody Create RFQ Batch Quote
+//
+// Quote every child RFQ of an RFQ batch, each exactly once. Each child is accepted from the maker bidding best on the requester's side, with ties going to the earliest bid, so you may win some children and not others; you then confirm the children you won. A new batch quote replaces your previous one on the same batch, and a child resent at an unchanged price keeps its time priority. A batch quote can win children only within 30 seconds of when you last sent it, so resend it to stay eligible.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /communications/rfq_batches/{rfq_batch_id}/quotes (the `CreateRFQBatchQuote` operationId).
+func (c *Client) CreateRFQBatchQuoteWithBody(ctx context.Context, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRFQBatchQuoteRequestWithBody(c.Server, rfqBatchId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateRFQBatchQuote Create RFQ Batch Quote
+//
+// Quote every child RFQ of an RFQ batch, each exactly once. Each child is accepted from the maker bidding best on the requester's side, with ties going to the earliest bid, so you may win some children and not others; you then confirm the children you won. A new batch quote replaces your previous one on the same batch, and a child resent at an unchanged price keeps its time priority. A batch quote can win children only within 30 seconds of when you last sent it, so resend it to stay eligible.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /communications/rfq_batches/{rfq_batch_id}/quotes (the `CreateRFQBatchQuote` operationId).
+func (c *Client) CreateRFQBatchQuote(ctx context.Context, rfqBatchId RfqBatchIdPath, body CreateRFQBatchQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRFQBatchQuoteRequest(c.Server, rfqBatchId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteRFQBatchQuote Delete RFQ Batch Quote
+//
+//	Endpoint for withdrawing one of your open batch quotes, which means it can no longer be accepted.
+//
+// Corresponds with DELETE /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id} (the `DeleteRFQBatchQuote` operationId).
+func (c *Client) DeleteRFQBatchQuote(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRFQBatchQuoteRequest(c.Server, rfqBatchId, batchQuoteId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ConfirmRFQBatchQuoteWithBody Confirm RFQ Batch Quote
+//
+// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id}/confirm (the `ConfirmRFQBatchQuote` operationId).
+func (c *Client) ConfirmRFQBatchQuoteWithBody(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmRFQBatchQuoteRequestWithBody(c.Server, rfqBatchId, batchQuoteId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ConfirmRFQBatchQuote Confirm RFQ Batch Quote
+//
+// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id}/confirm (the `ConfirmRFQBatchQuote` operationId).
+func (c *Client) ConfirmRFQBatchQuote(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, body ConfirmRFQBatchQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmRFQBatchQuoteRequest(c.Server, rfqBatchId, batchQuoteId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -10680,6 +11496,465 @@ func NewConfirmQuoteRequestWithBody(server string, quoteId QuoteIdPath, contentT
 	}
 
 	operationPath := fmt.Sprintf("/communications/quotes/%s/confirm", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetRFQBatchesRequest constructs an http.Request for the GetRFQBatches method
+func NewGetRFQBatchesRequest(server string, params *GetRFQBatchesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.Subaccount != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "subaccount", *params.Subaccount, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int32"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "user_filter", params.UserFilter, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateRFQBatchRequest calls the generic CreateRFQBatch builder with application/json body
+func NewCreateRFQBatchRequest(server string, body CreateRFQBatchJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRFQBatchRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateRFQBatchRequestWithBody constructs an http.Request for the CreateRFQBatch method, with any body, and a specified content type
+func NewCreateRFQBatchRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteRFQBatchRequest constructs an http.Request for the DeleteRFQBatch method
+func NewDeleteRFQBatchRequest(server string, rfqBatchId RfqBatchIdPath) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "rfq_batch_id", rfqBatchId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRFQBatchRequest constructs an http.Request for the GetRFQBatch method
+func NewGetRFQBatchRequest(server string, rfqBatchId RfqBatchIdPath) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "rfq_batch_id", rfqBatchId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAcceptRFQBatchRequest calls the generic AcceptRFQBatch builder with application/json body
+func NewAcceptRFQBatchRequest(server string, rfqBatchId RfqBatchIdPath, body AcceptRFQBatchJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAcceptRFQBatchRequestWithBody(server, rfqBatchId, "application/json", bodyReader)
+}
+
+// NewAcceptRFQBatchRequestWithBody constructs an http.Request for the AcceptRFQBatch method, with any body, and a specified content type
+func NewAcceptRFQBatchRequestWithBody(server string, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "rfq_batch_id", rfqBatchId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches/%s/accept", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetRFQBatchBestQuotesRequest constructs an http.Request for the GetRFQBatchBestQuotes method
+func NewGetRFQBatchBestQuotesRequest(server string, rfqBatchId RfqBatchIdPath) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "rfq_batch_id", rfqBatchId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches/%s/best_quotes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRFQBatchQuotesRequest constructs an http.Request for the GetRFQBatchQuotes method
+func NewGetRFQBatchQuotesRequest(server string, rfqBatchId RfqBatchIdPath) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "rfq_batch_id", rfqBatchId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches/%s/quotes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateRFQBatchQuoteRequest calls the generic CreateRFQBatchQuote builder with application/json body
+func NewCreateRFQBatchQuoteRequest(server string, rfqBatchId RfqBatchIdPath, body CreateRFQBatchQuoteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRFQBatchQuoteRequestWithBody(server, rfqBatchId, "application/json", bodyReader)
+}
+
+// NewCreateRFQBatchQuoteRequestWithBody constructs an http.Request for the CreateRFQBatchQuote method, with any body, and a specified content type
+func NewCreateRFQBatchQuoteRequestWithBody(server string, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "rfq_batch_id", rfqBatchId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches/%s/quotes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteRFQBatchQuoteRequest constructs an http.Request for the DeleteRFQBatchQuote method
+func NewDeleteRFQBatchQuoteRequest(server string, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "rfq_batch_id", rfqBatchId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "batch_quote_id", batchQuoteId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches/%s/quotes/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewConfirmRFQBatchQuoteRequest calls the generic ConfirmRFQBatchQuote builder with application/json body
+func NewConfirmRFQBatchQuoteRequest(server string, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, body ConfirmRFQBatchQuoteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConfirmRFQBatchQuoteRequestWithBody(server, rfqBatchId, batchQuoteId, "application/json", bodyReader)
+}
+
+// NewConfirmRFQBatchQuoteRequestWithBody constructs an http.Request for the ConfirmRFQBatchQuote method, with any body, and a specified content type
+func NewConfirmRFQBatchQuoteRequestWithBody(server string, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "rfq_batch_id", rfqBatchId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "batch_quote_id", batchQuoteId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/rfq_batches/%s/quotes/%s/confirm", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -17472,6 +18747,132 @@ type ClientWithResponsesInterface interface {
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	ConfirmQuoteWithResponse(ctx context.Context, quoteId QuoteIdPath, body ConfirmQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmQuoteResponse, error)
 
+	// GetRFQBatchesWithResponse Get RFQ Batches
+	//
+	// List RFQ batches, most recently updated first, each with its child RFQs in request order. A page holds at most limit batches and stops before its child RFQs would exceed 100; a batch is never split across pages. Pass pagination cursors back unchanged; a malformed cursor returns HTTP 400. Use user_filter=self to list only your own batches.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /communications/rfq_batches (the `GetRFQBatches` operationId).
+	GetRFQBatchesWithResponse(ctx context.Context, params *GetRFQBatchesParams, reqEditors ...RequestEditorFn) (*GetRFQBatchesResponse2, error)
+
+	// CreateRFQBatchWithBodyWithResponse Create RFQ Batch
+	//
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /communications/rfq_batches (the `CreateRFQBatch` operationId).
+	CreateRFQBatchWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRFQBatchResponse2, error)
+
+	// CreateRFQBatchWithResponse Create RFQ Batch
+	//
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /communications/rfq_batches (the `CreateRFQBatch` operationId).
+	CreateRFQBatchWithResponse(ctx context.Context, body CreateRFQBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRFQBatchResponse2, error)
+
+	// DeleteRFQBatchWithResponse Delete RFQ Batch
+	//
+	// Close an RFQ batch and all of its child RFQs. Open batch quotes on it are cancelled. An accepted batch can no longer be closed: it executes or expires as a unit.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /communications/rfq_batches/{rfq_batch_id} (the `DeleteRFQBatch` operationId).
+	DeleteRFQBatchWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*DeleteRFQBatchResponse, error)
+
+	// GetRFQBatchWithResponse Get RFQ Batch
+	//
+	//  Endpoint for getting a single RFQ batch, with its child RFQs in request order.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /communications/rfq_batches/{rfq_batch_id} (the `GetRFQBatch` operationId).
+	GetRFQBatchWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*GetRFQBatchResponse2, error)
+
+	// AcceptRFQBatchWithBodyWithResponse Accept RFQ Batch
+	//
+	// Accept every child RFQ of your RFQ batch on one side, each from the maker quoting it best on that side. Either every child is accepted or none is, and your balance must cover all of them. min_bids protects your price: give every child the best bid you were shown. If a child's best bid is now worse, the accept fails with rfq_batch_quotes_changed and lists that child; a better bid fills at the better price. Each winning maker then confirms its children. They execute once every winner has confirmed, and a missed confirmation closes the whole batch. An accepted batch cannot be cancelled.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/accept (the `AcceptRFQBatch` operationId).
+	AcceptRFQBatchWithBodyWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptRFQBatchResponse2, error)
+
+	// AcceptRFQBatchWithResponse Accept RFQ Batch
+	//
+	// Accept every child RFQ of your RFQ batch on one side, each from the maker quoting it best on that side. Either every child is accepted or none is, and your balance must cover all of them. min_bids protects your price: give every child the best bid you were shown. If a child's best bid is now worse, the accept fails with rfq_batch_quotes_changed and lists that child; a better bid fills at the better price. Each winning maker then confirms its children. They execute once every winner has confirmed, and a missed confirmation closes the whole batch. An accepted batch cannot be cancelled.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/accept (the `AcceptRFQBatch` operationId).
+	AcceptRFQBatchWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, body AcceptRFQBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptRFQBatchResponse2, error)
+
+	// GetRFQBatchBestQuotesWithResponse Get RFQ Batch Best Quotes
+	//
+	// Get the best open bid on each side of every child of your RFQ batch, across makers. Accepting the batch fills at these prices. Makers are not identified. Only the batch creator can read the best quotes, and a batch that is no longer open has none.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /communications/rfq_batches/{rfq_batch_id}/best_quotes (the `GetRFQBatchBestQuotes` operationId).
+	GetRFQBatchBestQuotesWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*GetRFQBatchBestQuotesResponse2, error)
+
+	// GetRFQBatchQuotesWithResponse Get RFQ Batch Quotes
+	//
+	// List the batch quotes on an RFQ batch that are visible to you. A maker sees its own batch quote; once the batch is accepted, it lists only the children that maker won. Once the batch is accepted, the batch creator sees each winning maker's batch quote on the children it won. While the batch is open, the creator reads the best quotes across makers with Get RFQ Batch Best Quotes instead.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /communications/rfq_batches/{rfq_batch_id}/quotes (the `GetRFQBatchQuotes` operationId).
+	GetRFQBatchQuotesWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*GetRFQBatchQuotesResponse2, error)
+
+	// CreateRFQBatchQuoteWithBodyWithResponse Create RFQ Batch Quote
+	//
+	// Quote every child RFQ of an RFQ batch, each exactly once. Each child is accepted from the maker bidding best on the requester's side, with ties going to the earliest bid, so you may win some children and not others; you then confirm the children you won. A new batch quote replaces your previous one on the same batch, and a child resent at an unchanged price keeps its time priority. A batch quote can win children only within 30 seconds of when you last sent it, so resend it to stay eligible.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /communications/rfq_batches/{rfq_batch_id}/quotes (the `CreateRFQBatchQuote` operationId).
+	CreateRFQBatchQuoteWithBodyWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRFQBatchQuoteResponse2, error)
+
+	// CreateRFQBatchQuoteWithResponse Create RFQ Batch Quote
+	//
+	// Quote every child RFQ of an RFQ batch, each exactly once. Each child is accepted from the maker bidding best on the requester's side, with ties going to the earliest bid, so you may win some children and not others; you then confirm the children you won. A new batch quote replaces your previous one on the same batch, and a child resent at an unchanged price keeps its time priority. A batch quote can win children only within 30 seconds of when you last sent it, so resend it to stay eligible.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /communications/rfq_batches/{rfq_batch_id}/quotes (the `CreateRFQBatchQuote` operationId).
+	CreateRFQBatchQuoteWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, body CreateRFQBatchQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRFQBatchQuoteResponse2, error)
+
+	// DeleteRFQBatchQuoteWithResponse Delete RFQ Batch Quote
+	//
+	//  Endpoint for withdrawing one of your open batch quotes, which means it can no longer be accepted.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id} (the `DeleteRFQBatchQuote` operationId).
+	DeleteRFQBatchQuoteWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, reqEditors ...RequestEditorFn) (*DeleteRFQBatchQuoteResponse, error)
+
+	// ConfirmRFQBatchQuoteWithBodyWithResponse Confirm RFQ Batch Quote
+	//
+	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id}/confirm (the `ConfirmRFQBatchQuote` operationId).
+	ConfirmRFQBatchQuoteWithBodyWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmRFQBatchQuoteResponse, error)
+
+	// ConfirmRFQBatchQuoteWithResponse Confirm RFQ Batch Quote
+	//
+	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id}/confirm (the `ConfirmRFQBatchQuote` operationId).
+	ConfirmRFQBatchQuoteWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, body ConfirmRFQBatchQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmRFQBatchQuoteResponse, error)
+
 	// GetRFQsWithResponse Get RFQs
 	//
 	// List RFQs. Pass pagination cursors back unchanged. A malformed cursor or invalid creator_user_id UUID returns HTTP 400. Use user_filter=self to filter by the authenticated user.
@@ -19677,6 +21078,717 @@ func (r ConfirmQuoteResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ConfirmQuoteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetRFQBatchesResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetRFQBatchesResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetRFQBatchesResponse2) GetJSON200() *GetRFQBatchesResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetRFQBatchesResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetRFQBatchesResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetRFQBatchesResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetRFQBatchesResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRFQBatchesResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRFQBatchesResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetRFQBatchesResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateRFQBatchResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *CreateRFQBatchResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateRFQBatchResponse2) GetJSON201() *CreateRFQBatchResponse {
+	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateRFQBatchResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateRFQBatchResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateRFQBatchResponse2) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateRFQBatchResponse2) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateRFQBatchResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateRFQBatchResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRFQBatchResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRFQBatchResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateRFQBatchResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteRFQBatchResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteRFQBatchResponse) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteRFQBatchResponse) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteRFQBatchResponse) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteRFQBatchResponse) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteRFQBatchResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRFQBatchResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRFQBatchResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteRFQBatchResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetRFQBatchResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetRFQBatchResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetRFQBatchResponse2) GetJSON200() *GetRFQBatchResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetRFQBatchResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetRFQBatchResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetRFQBatchResponse2) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetRFQBatchResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetRFQBatchResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRFQBatchResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRFQBatchResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetRFQBatchResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type AcceptRFQBatchResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *AcceptRFQBatchResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r AcceptRFQBatchResponse2) GetJSON200() *AcceptRFQBatchResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r AcceptRFQBatchResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r AcceptRFQBatchResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r AcceptRFQBatchResponse2) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r AcceptRFQBatchResponse2) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r AcceptRFQBatchResponse2) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r AcceptRFQBatchResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r AcceptRFQBatchResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r AcceptRFQBatchResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AcceptRFQBatchResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r AcceptRFQBatchResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetRFQBatchBestQuotesResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetRFQBatchBestQuotesResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetRFQBatchBestQuotesResponse2) GetJSON200() *GetRFQBatchBestQuotesResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetRFQBatchBestQuotesResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetRFQBatchBestQuotesResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetRFQBatchBestQuotesResponse2) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetRFQBatchBestQuotesResponse2) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetRFQBatchBestQuotesResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetRFQBatchBestQuotesResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRFQBatchBestQuotesResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRFQBatchBestQuotesResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetRFQBatchBestQuotesResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetRFQBatchQuotesResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetRFQBatchQuotesResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetRFQBatchQuotesResponse2) GetJSON200() *GetRFQBatchQuotesResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetRFQBatchQuotesResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetRFQBatchQuotesResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetRFQBatchQuotesResponse2) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetRFQBatchQuotesResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetRFQBatchQuotesResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRFQBatchQuotesResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRFQBatchQuotesResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetRFQBatchQuotesResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateRFQBatchQuoteResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *CreateRFQBatchQuoteResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateRFQBatchQuoteResponse2) GetJSON201() *CreateRFQBatchQuoteResponse {
+	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateRFQBatchQuoteResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateRFQBatchQuoteResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateRFQBatchQuoteResponse2) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateRFQBatchQuoteResponse2) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateRFQBatchQuoteResponse2) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateRFQBatchQuoteResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateRFQBatchQuoteResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRFQBatchQuoteResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRFQBatchQuoteResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateRFQBatchQuoteResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteRFQBatchQuoteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteRFQBatchQuoteResponse) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteRFQBatchQuoteResponse) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteRFQBatchQuoteResponse) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteRFQBatchQuoteResponse) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteRFQBatchQuoteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRFQBatchQuoteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRFQBatchQuoteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteRFQBatchQuoteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ConfirmRFQBatchQuoteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ConfirmRFQBatchQuoteResponse) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ConfirmRFQBatchQuoteResponse) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ConfirmRFQBatchQuoteResponse) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r ConfirmRFQBatchQuoteResponse) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ConfirmRFQBatchQuoteResponse) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ConfirmRFQBatchQuoteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ConfirmRFQBatchQuoteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConfirmRFQBatchQuoteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ConfirmRFQBatchQuoteResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -25708,6 +27820,216 @@ func (c *ClientWithResponses) ConfirmQuoteWithResponse(ctx context.Context, quot
 	return ParseConfirmQuoteResponse(rsp)
 }
 
+// GetRFQBatchesWithResponse Get RFQ Batches
+//
+// List RFQ batches, most recently updated first, each with its child RFQs in request order. A page holds at most limit batches and stops before its child RFQs would exceed 100; a batch is never split across pages. Pass pagination cursors back unchanged; a malformed cursor returns HTTP 400. Use user_filter=self to list only your own batches.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /communications/rfq_batches (the `GetRFQBatches` operationId).
+func (c *ClientWithResponses) GetRFQBatchesWithResponse(ctx context.Context, params *GetRFQBatchesParams, reqEditors ...RequestEditorFn) (*GetRFQBatchesResponse2, error) {
+	rsp, err := c.GetRFQBatches(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRFQBatchesResponse2(rsp)
+}
+
+// CreateRFQBatchWithBodyWithResponse Create RFQ Batch
+//
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /communications/rfq_batches (the `CreateRFQBatch` operationId).
+func (c *ClientWithResponses) CreateRFQBatchWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRFQBatchResponse2, error) {
+	rsp, err := c.CreateRFQBatchWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRFQBatchResponse2(rsp)
+}
+
+// CreateRFQBatchWithResponse Create RFQ Batch
+//
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /communications/rfq_batches (the `CreateRFQBatch` operationId).
+func (c *ClientWithResponses) CreateRFQBatchWithResponse(ctx context.Context, body CreateRFQBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRFQBatchResponse2, error) {
+	rsp, err := c.CreateRFQBatch(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRFQBatchResponse2(rsp)
+}
+
+// DeleteRFQBatchWithResponse Delete RFQ Batch
+//
+// Close an RFQ batch and all of its child RFQs. Open batch quotes on it are cancelled. An accepted batch can no longer be closed: it executes or expires as a unit.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /communications/rfq_batches/{rfq_batch_id} (the `DeleteRFQBatch` operationId).
+func (c *ClientWithResponses) DeleteRFQBatchWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*DeleteRFQBatchResponse, error) {
+	rsp, err := c.DeleteRFQBatch(ctx, rfqBatchId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRFQBatchResponse(rsp)
+}
+
+// GetRFQBatchWithResponse Get RFQ Batch
+//
+//	Endpoint for getting a single RFQ batch, with its child RFQs in request order.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /communications/rfq_batches/{rfq_batch_id} (the `GetRFQBatch` operationId).
+func (c *ClientWithResponses) GetRFQBatchWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*GetRFQBatchResponse2, error) {
+	rsp, err := c.GetRFQBatch(ctx, rfqBatchId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRFQBatchResponse2(rsp)
+}
+
+// AcceptRFQBatchWithBodyWithResponse Accept RFQ Batch
+//
+// Accept every child RFQ of your RFQ batch on one side, each from the maker quoting it best on that side. Either every child is accepted or none is, and your balance must cover all of them. min_bids protects your price: give every child the best bid you were shown. If a child's best bid is now worse, the accept fails with rfq_batch_quotes_changed and lists that child; a better bid fills at the better price. Each winning maker then confirms its children. They execute once every winner has confirmed, and a missed confirmation closes the whole batch. An accepted batch cannot be cancelled.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/accept (the `AcceptRFQBatch` operationId).
+func (c *ClientWithResponses) AcceptRFQBatchWithBodyWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptRFQBatchResponse2, error) {
+	rsp, err := c.AcceptRFQBatchWithBody(ctx, rfqBatchId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcceptRFQBatchResponse2(rsp)
+}
+
+// AcceptRFQBatchWithResponse Accept RFQ Batch
+//
+// Accept every child RFQ of your RFQ batch on one side, each from the maker quoting it best on that side. Either every child is accepted or none is, and your balance must cover all of them. min_bids protects your price: give every child the best bid you were shown. If a child's best bid is now worse, the accept fails with rfq_batch_quotes_changed and lists that child; a better bid fills at the better price. Each winning maker then confirms its children. They execute once every winner has confirmed, and a missed confirmation closes the whole batch. An accepted batch cannot be cancelled.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/accept (the `AcceptRFQBatch` operationId).
+func (c *ClientWithResponses) AcceptRFQBatchWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, body AcceptRFQBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptRFQBatchResponse2, error) {
+	rsp, err := c.AcceptRFQBatch(ctx, rfqBatchId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcceptRFQBatchResponse2(rsp)
+}
+
+// GetRFQBatchBestQuotesWithResponse Get RFQ Batch Best Quotes
+//
+// Get the best open bid on each side of every child of your RFQ batch, across makers. Accepting the batch fills at these prices. Makers are not identified. Only the batch creator can read the best quotes, and a batch that is no longer open has none.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /communications/rfq_batches/{rfq_batch_id}/best_quotes (the `GetRFQBatchBestQuotes` operationId).
+func (c *ClientWithResponses) GetRFQBatchBestQuotesWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*GetRFQBatchBestQuotesResponse2, error) {
+	rsp, err := c.GetRFQBatchBestQuotes(ctx, rfqBatchId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRFQBatchBestQuotesResponse2(rsp)
+}
+
+// GetRFQBatchQuotesWithResponse Get RFQ Batch Quotes
+//
+// List the batch quotes on an RFQ batch that are visible to you. A maker sees its own batch quote; once the batch is accepted, it lists only the children that maker won. Once the batch is accepted, the batch creator sees each winning maker's batch quote on the children it won. While the batch is open, the creator reads the best quotes across makers with Get RFQ Batch Best Quotes instead.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /communications/rfq_batches/{rfq_batch_id}/quotes (the `GetRFQBatchQuotes` operationId).
+func (c *ClientWithResponses) GetRFQBatchQuotesWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, reqEditors ...RequestEditorFn) (*GetRFQBatchQuotesResponse2, error) {
+	rsp, err := c.GetRFQBatchQuotes(ctx, rfqBatchId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRFQBatchQuotesResponse2(rsp)
+}
+
+// CreateRFQBatchQuoteWithBodyWithResponse Create RFQ Batch Quote
+//
+// Quote every child RFQ of an RFQ batch, each exactly once. Each child is accepted from the maker bidding best on the requester's side, with ties going to the earliest bid, so you may win some children and not others; you then confirm the children you won. A new batch quote replaces your previous one on the same batch, and a child resent at an unchanged price keeps its time priority. A batch quote can win children only within 30 seconds of when you last sent it, so resend it to stay eligible.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /communications/rfq_batches/{rfq_batch_id}/quotes (the `CreateRFQBatchQuote` operationId).
+func (c *ClientWithResponses) CreateRFQBatchQuoteWithBodyWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRFQBatchQuoteResponse2, error) {
+	rsp, err := c.CreateRFQBatchQuoteWithBody(ctx, rfqBatchId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRFQBatchQuoteResponse2(rsp)
+}
+
+// CreateRFQBatchQuoteWithResponse Create RFQ Batch Quote
+//
+// Quote every child RFQ of an RFQ batch, each exactly once. Each child is accepted from the maker bidding best on the requester's side, with ties going to the earliest bid, so you may win some children and not others; you then confirm the children you won. A new batch quote replaces your previous one on the same batch, and a child resent at an unchanged price keeps its time priority. A batch quote can win children only within 30 seconds of when you last sent it, so resend it to stay eligible.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /communications/rfq_batches/{rfq_batch_id}/quotes (the `CreateRFQBatchQuote` operationId).
+func (c *ClientWithResponses) CreateRFQBatchQuoteWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, body CreateRFQBatchQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRFQBatchQuoteResponse2, error) {
+	rsp, err := c.CreateRFQBatchQuote(ctx, rfqBatchId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRFQBatchQuoteResponse2(rsp)
+}
+
+// DeleteRFQBatchQuoteWithResponse Delete RFQ Batch Quote
+//
+//	Endpoint for withdrawing one of your open batch quotes, which means it can no longer be accepted.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id} (the `DeleteRFQBatchQuote` operationId).
+func (c *ClientWithResponses) DeleteRFQBatchQuoteWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, reqEditors ...RequestEditorFn) (*DeleteRFQBatchQuoteResponse, error) {
+	rsp, err := c.DeleteRFQBatchQuote(ctx, rfqBatchId, batchQuoteId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRFQBatchQuoteResponse(rsp)
+}
+
+// ConfirmRFQBatchQuoteWithBodyWithResponse Confirm RFQ Batch Quote
+//
+// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id}/confirm (the `ConfirmRFQBatchQuote` operationId).
+func (c *ClientWithResponses) ConfirmRFQBatchQuoteWithBodyWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmRFQBatchQuoteResponse, error) {
+	rsp, err := c.ConfirmRFQBatchQuoteWithBody(ctx, rfqBatchId, batchQuoteId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmRFQBatchQuoteResponse(rsp)
+}
+
+// ConfirmRFQBatchQuoteWithResponse Confirm RFQ Batch Quote
+//
+// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /communications/rfq_batches/{rfq_batch_id}/quotes/{batch_quote_id}/confirm (the `ConfirmRFQBatchQuote` operationId).
+func (c *ClientWithResponses) ConfirmRFQBatchQuoteWithResponse(ctx context.Context, rfqBatchId RfqBatchIdPath, batchQuoteId BatchQuoteIdPath, body ConfirmRFQBatchQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmRFQBatchQuoteResponse, error) {
+	rsp, err := c.ConfirmRFQBatchQuote(ctx, rfqBatchId, batchQuoteId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmRFQBatchQuoteResponse(rsp)
+}
+
 // GetRFQsWithResponse Get RFQs
 //
 // List RFQs. Pass pagination cursors back unchanged. A malformed cursor or invalid creator_user_id UUID returns HTTP 400. Use user_filter=self to filter by the authenticated user.
@@ -28426,6 +30748,576 @@ func ParseConfirmQuoteResponse(rsp *http.Response) (*ConfirmQuoteResponse, error
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRFQBatchesResponse2 parses an HTTP response from a GetRFQBatchesWithResponse call
+func ParseGetRFQBatchesResponse2(rsp *http.Response) (*GetRFQBatchesResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRFQBatchesResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetRFQBatchesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateRFQBatchResponse2 parses an HTTP response from a CreateRFQBatchWithResponse call
+func ParseCreateRFQBatchResponse2(rsp *http.Response) (*CreateRFQBatchResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRFQBatchResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CreateRFQBatchResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRFQBatchResponse parses an HTTP response from a DeleteRFQBatchWithResponse call
+func ParseDeleteRFQBatchResponse(rsp *http.Response) (*DeleteRFQBatchResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRFQBatchResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRFQBatchResponse2 parses an HTTP response from a GetRFQBatchWithResponse call
+func ParseGetRFQBatchResponse2(rsp *http.Response) (*GetRFQBatchResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRFQBatchResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetRFQBatchResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAcceptRFQBatchResponse2 parses an HTTP response from a AcceptRFQBatchWithResponse call
+func ParseAcceptRFQBatchResponse2(rsp *http.Response) (*AcceptRFQBatchResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AcceptRFQBatchResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AcceptRFQBatchResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRFQBatchBestQuotesResponse2 parses an HTTP response from a GetRFQBatchBestQuotesWithResponse call
+func ParseGetRFQBatchBestQuotesResponse2(rsp *http.Response) (*GetRFQBatchBestQuotesResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRFQBatchBestQuotesResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetRFQBatchBestQuotesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRFQBatchQuotesResponse2 parses an HTTP response from a GetRFQBatchQuotesWithResponse call
+func ParseGetRFQBatchQuotesResponse2(rsp *http.Response) (*GetRFQBatchQuotesResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRFQBatchQuotesResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetRFQBatchQuotesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateRFQBatchQuoteResponse2 parses an HTTP response from a CreateRFQBatchQuoteWithResponse call
+func ParseCreateRFQBatchQuoteResponse2(rsp *http.Response) (*CreateRFQBatchQuoteResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRFQBatchQuoteResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CreateRFQBatchQuoteResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRFQBatchQuoteResponse parses an HTTP response from a DeleteRFQBatchQuoteWithResponse call
+func ParseDeleteRFQBatchQuoteResponse(rsp *http.Response) (*DeleteRFQBatchQuoteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRFQBatchQuoteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseConfirmRFQBatchQuoteResponse parses an HTTP response from a ConfirmRFQBatchQuoteWithResponse call
+func ParseConfirmRFQBatchQuoteResponse(rsp *http.Response) (*ConfirmRFQBatchQuoteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConfirmRFQBatchQuoteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalServerError

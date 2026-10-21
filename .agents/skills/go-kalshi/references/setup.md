@@ -4,7 +4,7 @@ This module is unofficial and not affiliated with Kalshi.
 
 ## Requirements
 
-- Go 1.26.9 or newer, per the module's `go.mod`.
+- Go 1.26.10 or newer, per the module's `go.mod`.
 - A Kalshi API key: the key ID, exported as `KALSHI_API_KEY_ID`, and the private key PEM Kalshi gives you, exported as `KALSHI_PRIVATE_KEY` or read from a file. RSA (PKCS#1 or PKCS#8) and Ed25519 keys work.
 
 ## Install

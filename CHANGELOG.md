@@ -2,6 +2,17 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.3.0, 2026-10-21
+
+- The REST client adds RFQ batch endpoints: `CreateRFQBatch`, `GetRFQBatches`, `GetRFQBatch`, `DeleteRFQBatch`, `AcceptRFQBatch`, `GetRFQBatchBestQuotes`, `GetRFQBatchQuotes`, `CreateRFQBatchQuote`, `DeleteRFQBatchQuote` and `ConfirmRFQBatchQuote`. Each has a `WithBody` variant where it takes a body and a `WithResponse` variant on `ClientWithResponses`, plus matching `New...Request` and `Parse...Response2` functions.
+- New REST types: `RFQBatch`, `RFQBatchStatus`, `RFQBatchQuote`, `RFQBatchQuoteStatus`, `RFQBatchQuoteEntry`, `RFQBatchBestQuote`, `RFQBatchBestQuotes`, `RFQBatchAcceptLimit`, `CreateRFQBatchRequest`, `CreateRFQBatchChild`, `CreateRFQBatchQuoteRequest`, `AcceptRFQBatchRequest`, `GetRFQBatchesParams`, `RfqBatchIdPath` and `BatchQuoteIdPath`.
+- Breaking: `ClientInterface` and `ClientWithResponsesInterface` gain the RFQ batch methods above. Code that implements either interface, for example a mock, must add them. `Client` and `ClientWithResponses` already have them.
+- `ws` adds seven RFQ batch channel messages: `MessageRfqBatchCreated`, `MessageRfqBatchDeleted`, `MessageRfqBatchExecuted`, `MessageRfqBatchBestQuotes`, `MessageBatchQuoteCreated`, `MessageBatchQuoteAccepted` and `MessageBatchQuoteExecuted`, with payload types such as `RfqBatchCreatedPayload` and `BatchQuoteAcceptedPayload`, and the `BatchCommunicationsAddressTemplate` constant.
+- Breaking: `ws.Handler` now requires `HandleRfqBatchCreated`, `HandleRfqBatchDeleted`, `HandleRfqBatchExecuted`, `HandleRfqBatchBestQuotes`, `HandleBatchQuoteCreated`, `HandleBatchQuoteAccepted` and `HandleBatchQuoteExecuted`. Types that implement `Handler` without embedding `UnimplementedHandler` must add them. `UnimplementedHandler` has no-op versions.
+- `ws.OrderbookSnapshotPayloadMsg` and `ws.OrderbookDeltaPayloadMsg` gain a `Clock` field. `ws.QuoteExecutedPayloadMsg` gains `RfqBatchID`.
+- The minimum Go version moves from 1.26.9 to 1.26.10 in `go.mod`, the dev image and the setup reference, to pick up the `crypto/x509` fix for GO-2026-6809.
+- The `orderbook_snapshot.json` test fixture now includes `clock`, which the updated spec requires.
+
 ## v0.2.1, 2026-10-20
 
 - Doc comments only, no behavior change: the `pyth_value` channel docs on `PythValueAddressTemplate`, `MessagePythValue` and `Handler.HandlePythValue` now say the channel also streams Treasury yields. The channel's table lists the new symbols `InterestRate.US2Y`, `InterestRate.US5Y`, `InterestRate.US10Y` and `InterestRate.US30Y`, which are included in `["all"]` subscriptions or can be requested individually.

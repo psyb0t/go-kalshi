@@ -53,6 +53,13 @@ const ControlFramesAddressTemplate = "/"
 // - Supports `update_subscription` with `add_markets` / `delete_markets` / `get_snapshot` actions
 // - `get_snapshot` returns an `orderbook_snapshot` for the requested `market_tickers` without modifying the subscription
 //
+// **Matching updates across connections:**
+// - `clock` is the exchange clock. It is the same on every connection, so it can match a market's updates across redundant connections; `seq` counts messages on one subscription only
+// - One exchange action can make several deltas, so several deltas can share a `clock`. Every connection sends them in the same order, before any delta for that market with a higher `clock`
+// - A snapshot includes every change with a `clock` at or below its own; the deltas that follow it on that connection have higher clocks
+// - While you are subscribed to a market, its clocks never go down outside exchange maintenance, but they skip values. They are not comparable across markets. Keep checking `seq` on each connection for missed messages
+// - A market's clock may decrease during exchange maintenance, so don't compare clocks from before a maintenance period with clocks after it
+//
 // **Use case:** Building and maintaining a real-time orderbook
 const OrderbookDeltaAddressTemplate = "orderbook_delta"
 
@@ -150,6 +157,26 @@ const MultivariateMarketLifecycleAddressTemplate = "multivariate_market_lifecycl
 //
 // **Use case:** Tracking RFQs you create and quotes on your RFQs, or quotes you create on others' RFQs. Use QuoteExecuted to correlate fill messages with quotes via client_order_id.
 const CommunicationsAddressTemplate = "communications"
+
+// BatchCommunicationsAddressTemplate is the address of the BatchCommunications channel.
+//
+// Real-time RFQ batch and batch quote notifications. Requires authentication.
+//
+// **Requirements:**
+// - Authentication required
+// - Market specification ignored
+// - Optional sharding for fanout control:
+//   - `shard_factor` (1-100) and `shard_key` (`0 <= key < shard_factor`)
+//   - Every event is partitioned by `rfq_batch_id`
+//
+// - RFQ batch events (RFQBatchCreated, RFQBatchDeleted) are sent for all users by default. Set `user_filter: "self"` to receive only RFQ batches you created. Omitted or empty `user_filter` keeps the default.
+// - A batch's child RFQs are announced only inside RFQBatchCreated. Each child trade still sends QuoteExecuted, with `rfq_batch_id` set, on the `communications` channel. The two channels are separate subscriptions, so a child's QuoteExecuted is not ordered with this channel's messages.
+// - An RFQ batch is filled child by child at the best quote across makers. Every maker's batch quote prices every child, and each child goes to the maker bidding best on the accepted side, so one batch can have several winning makers. A batch quote counts only for 30 seconds after it was last submitted; resending an unchanged bid within that time keeps its time priority.
+// - RFQBatchBestQuotes and RFQBatchExecuted are only sent to the RFQ batch creator. RFQBatchBestQuotes carries the best bids across makers without identifying them; the batch creator never receives a maker's individual batch quote.
+// - Batch quote events (BatchQuoteCreated, BatchQuoteAccepted, BatchQuoteExecuted) are only sent to the maker that created the batch quote. Each winning maker confirms the children it won, and nothing executes until every winning maker has confirmed.
+//
+// **Use case:** Tracking RFQ batches you create and the best quotes on them, or batch quotes you create on others' RFQ batches.
+const BatchCommunicationsAddressTemplate = "batch_communications"
 
 // OrderGroupUpdatesAddressTemplate is the address of the OrderGroupUpdates channel.
 //
@@ -2329,6 +2356,9 @@ type OrderbookSnapshotPayloadMsg struct {
 	//
 	// Not enforced by the generated code: format uuid.
 	MarketID MarketID `json:"market_id"`
+	// Exchange clock of the newest change this snapshot includes, or 0 if the market has no recorded change.
+	// The snapshot includes every change to this market with a clock at or below this one, and none above it.
+	Clock int64 `json:"clock"`
 	// Optional - This key will not exist if there are no Yes offers in the orderbook.
 	// Price levels represented as [price_in_dollars, contract_count_fp].
 	// Format: [price_in_dollars, contract_count_fp]
@@ -2347,7 +2377,7 @@ func (v *OrderbookSnapshotPayloadMsg) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	if err := asyncapirt.RequireKeys("OrderbookSnapshotPayloadMsg", members, "market_ticker", "market_id"); err != nil {
+	if err := asyncapirt.RequireKeys("OrderbookSnapshotPayloadMsg", members, "market_ticker", "market_id", "clock"); err != nil {
 		return err
 	}
 
@@ -2365,6 +2395,9 @@ func (v *OrderbookSnapshotPayloadMsg) UnmarshalJSON(data []byte) error {
 
 // Validate checks the constraints the schema declares for OrderbookSnapshotPayloadMsg.
 func (v OrderbookSnapshotPayloadMsg) Validate() error {
+	if err := asyncapirt.CheckMinimum("clock", float64(v.Clock), 0); err != nil {
+		return err
+	}
 	if v.YesDollarsFp != nil {
 		for i0, item0 := range v.YesDollarsFp {
 			if err := asyncapirt.CheckMinItems(fmt.Sprintf("%s[%d]", "yes_dollars_fp", i0), len(item0), 2); err != nil {
@@ -2469,6 +2502,9 @@ type OrderbookDeltaPayloadMsg struct {
 	//
 	// Not enforced by the generated code: format uuid.
 	MarketID MarketID `json:"market_id"`
+	// Exchange clock of the exchange action that made this change. Every connection sends the same clock for the same change.
+	// Several deltas can share a clock when one action makes several changes.
+	Clock int64 `json:"clock"`
 	// Price level in dollars
 	PriceDollars string `json:"price_dollars"`
 	// Fixed-point contract delta (2 decimals)
@@ -2497,7 +2533,7 @@ func (v *OrderbookDeltaPayloadMsg) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	if err := asyncapirt.RequireKeys("OrderbookDeltaPayloadMsg", members, "market_ticker", "market_id", "price_dollars", "delta_fp", "side"); err != nil {
+	if err := asyncapirt.RequireKeys("OrderbookDeltaPayloadMsg", members, "market_ticker", "market_id", "clock", "price_dollars", "delta_fp", "side"); err != nil {
 		return err
 	}
 
@@ -2515,6 +2551,9 @@ func (v *OrderbookDeltaPayloadMsg) UnmarshalJSON(data []byte) error {
 
 // Validate checks the constraints the schema declares for OrderbookDeltaPayloadMsg.
 func (v OrderbookDeltaPayloadMsg) Validate() error {
+	if err := asyncapirt.CheckMinimum("clock", float64(v.Clock), 1); err != nil {
+		return err
+	}
 	if err := v.Side.Validate(); err != nil {
 		return ctxerrors.Wrap(err, "side")
 	}
@@ -4731,6 +4770,8 @@ type QuoteExecutedPayloadMsg struct {
 	// Optional - Present only when your side of this quote used a subaccount.
 	// Contains your own subaccount number; the counterparty's subaccount is never shared.
 	Subaccount *int64 `json:"subaccount,omitempty"`
+	// Identifier of the RFQ batch, when the quote was accepted as part of a batch quote. Omitted otherwise.
+	RfqBatchID *string `json:"rfq_batch_id,omitempty"`
 }
 
 // UnmarshalJSON decodes QuoteExecutedPayloadMsg strictly. Required properties must be
@@ -4759,6 +4800,1148 @@ func (v *QuoteExecutedPayloadMsg) UnmarshalJSON(data []byte) error {
 
 // Validate checks the constraints the schema declares for QuoteExecutedPayloadMsg.
 func (v QuoteExecutedPayloadMsg) Validate() error {
+
+	return nil
+}
+
+type RfqBatchCreatedPayload struct {
+	Type string `json:"type"`
+	// Server-generated subscription identifier (sid) used to identify the channel
+	Sid SubscriptionID `json:"sid"`
+	// Sequential number that should be checked if you want to guarantee you received all the messages. Used for snapshot/delta consistency
+	Seq SequenceNumber            `json:"seq"`
+	Msg RfqBatchCreatedPayloadMsg `json:"msg"`
+	// Unix timestamp in milliseconds when Kalshi queued this message at the network layer.
+	SendingTsMs *SendingTimestampMs `json:"sending_ts_ms,omitempty"`
+}
+
+// UnmarshalJSON decodes RfqBatchCreatedPayload strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchCreatedPayload) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchCreatedPayload")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchCreatedPayload", members, "type", "sid", "seq", "msg"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchCreatedPayload
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchCreatedPayload", err)
+	}
+
+	*v = RfqBatchCreatedPayload(decoded)
+
+	if _, ok := members["type"]; ok {
+		if err := asyncapirt.CheckConst("RfqBatchCreatedPayload.type", v.Type, "rfq_batch_created"); err != nil {
+			return err
+		}
+	}
+
+	return v.Validate()
+}
+
+// MarshalJSON encodes RfqBatchCreatedPayload with its const properties filled in.
+func (v RfqBatchCreatedPayload) MarshalJSON() ([]byte, error) {
+	type plain RfqBatchCreatedPayload
+
+	encoded := plain(v)
+	encoded.Type = "rfq_batch_created"
+
+	data, err := json.Marshal(encoded)
+	if err != nil {
+		return nil, ctxerrors.Wrapf(commerr.ErrInvalidValue, "RfqBatchCreatedPayload: %v", err)
+	}
+
+	return data, nil
+}
+
+// Validate checks the constraints the schema declares for RfqBatchCreatedPayload.
+func (v RfqBatchCreatedPayload) Validate() error {
+	if err := asyncapirt.CheckMinimum("sid", float64(v.Sid), 1); err != nil {
+		return err
+	}
+	if err := asyncapirt.CheckMinimum("seq", float64(v.Seq), 1); err != nil {
+		return err
+	}
+	if err := v.Msg.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "msg")
+	}
+
+	return nil
+}
+
+type RfqBatchCreatedPayloadMsg struct {
+	// Unique identifier for the RFQ batch
+	ID string `json:"id"`
+	// Public communications ID of the batch creator (pseudonymous). When obscure_creator_id is enabled, other users receive the shared placeholder "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" (SHA-256 of empty input). The creator sees their normal ID.
+	CreatorID string `json:"creator_id"`
+	// Timestamp when the RFQ batch was created
+	CreatedTs time.Time `json:"created_ts"`
+	// Distinct legs across the batch's combos, each listed once
+	Legs []RfqBatchCreatedPayloadMsgLegsItem `json:"legs"`
+	// The child RFQs, in the order they were requested
+	Rfqs []RfqBatchCreatedPayloadMsgRfqsItem `json:"rfqs"`
+}
+
+// UnmarshalJSON decodes RfqBatchCreatedPayloadMsg strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchCreatedPayloadMsg) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchCreatedPayloadMsg")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchCreatedPayloadMsg", members, "id", "creator_id", "created_ts", "legs", "rfqs"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchCreatedPayloadMsg
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchCreatedPayloadMsg", err)
+	}
+
+	*v = RfqBatchCreatedPayloadMsg(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for RfqBatchCreatedPayloadMsg.
+func (v RfqBatchCreatedPayloadMsg) Validate() error {
+	for i0, item0 := range v.Legs {
+		if err := item0.Validate(); err != nil {
+			return ctxerrors.Wrap(err, fmt.Sprintf("%s[%d]", "legs", i0))
+		}
+	}
+	for i0, item0 := range v.Rfqs {
+		if err := item0.Validate(); err != nil {
+			return ctxerrors.Wrap(err, fmt.Sprintf("%s[%d]", "rfqs", i0))
+		}
+	}
+
+	return nil
+}
+
+type RfqBatchCreatedPayloadMsgLegsItem struct {
+	// Event ticker for the leg
+	EventTicker string `json:"event_ticker"`
+	// Market ticker for the leg
+	MarketTicker string `json:"market_ticker"`
+	// Side selected for the leg
+	Side RfqBatchCreatedPayloadMsgLegsItemSide `json:"side"`
+	// Yes settlement value in dollars for the leg. Omitted when unavailable.
+	YesSettlementValueDollars *string `json:"yes_settlement_value_dollars,omitempty"`
+}
+
+// UnmarshalJSON decodes RfqBatchCreatedPayloadMsgLegsItem strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchCreatedPayloadMsgLegsItem) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchCreatedPayloadMsgLegsItem")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchCreatedPayloadMsgLegsItem", members, "event_ticker", "market_ticker", "side"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchCreatedPayloadMsgLegsItem
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchCreatedPayloadMsgLegsItem", err)
+	}
+
+	*v = RfqBatchCreatedPayloadMsgLegsItem(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for RfqBatchCreatedPayloadMsgLegsItem.
+func (v RfqBatchCreatedPayloadMsgLegsItem) Validate() error {
+	if err := v.Side.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "side")
+	}
+
+	return nil
+}
+
+// Side selected for the leg
+type RfqBatchCreatedPayloadMsgLegsItemSide string
+
+// Values of RfqBatchCreatedPayloadMsgLegsItemSide.
+const (
+	RfqBatchCreatedPayloadMsgLegsItemSideYes RfqBatchCreatedPayloadMsgLegsItemSide = "yes"
+	RfqBatchCreatedPayloadMsgLegsItemSideNo  RfqBatchCreatedPayloadMsgLegsItemSide = "no"
+)
+
+// Validate reports whether v is one of the values the schema lists.
+func (v RfqBatchCreatedPayloadMsgLegsItemSide) Validate() error {
+	switch v {
+	case RfqBatchCreatedPayloadMsgLegsItemSideYes, RfqBatchCreatedPayloadMsgLegsItemSideNo:
+		return nil
+	}
+
+	return asyncapirt.Invalid("RfqBatchCreatedPayloadMsgLegsItemSide", fmt.Sprintf("unknown value %v", v))
+}
+
+type RfqBatchCreatedPayloadMsgRfqsItem struct {
+	// Unique identifier for the child RFQ
+	ID string `json:"id"`
+	// Combo market ticker of the child RFQ
+	MarketTicker string `json:"market_ticker"`
+	// Event ticker (optional)
+	EventTicker *string `json:"event_ticker,omitempty"`
+	// Fixed-point contracts requested (2 decimals) (optional)
+	ContractsFp *string `json:"contracts_fp,omitempty"`
+	// Target cost in dollars (optional)
+	TargetCostDollars *string `json:"target_cost_dollars,omitempty"`
+	// Multivariate event collection ticker (optional)
+	MveCollectionTicker *string `json:"mve_collection_ticker,omitempty"`
+	// Indexes into legs of this combo's legs
+	LegIndices []int64 `json:"leg_indices"`
+}
+
+// UnmarshalJSON decodes RfqBatchCreatedPayloadMsgRfqsItem strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchCreatedPayloadMsgRfqsItem) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchCreatedPayloadMsgRfqsItem")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchCreatedPayloadMsgRfqsItem", members, "id", "market_ticker", "leg_indices"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchCreatedPayloadMsgRfqsItem
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchCreatedPayloadMsgRfqsItem", err)
+	}
+
+	*v = RfqBatchCreatedPayloadMsgRfqsItem(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for RfqBatchCreatedPayloadMsgRfqsItem.
+func (v RfqBatchCreatedPayloadMsgRfqsItem) Validate() error {
+
+	return nil
+}
+
+type RfqBatchDeletedPayload struct {
+	Type string `json:"type"`
+	// Server-generated subscription identifier (sid) used to identify the channel
+	Sid SubscriptionID `json:"sid"`
+	// Sequential number that should be checked if you want to guarantee you received all the messages. Used for snapshot/delta consistency
+	Seq SequenceNumber            `json:"seq"`
+	Msg RfqBatchDeletedPayloadMsg `json:"msg"`
+	// Unix timestamp in milliseconds when Kalshi queued this message at the network layer.
+	SendingTsMs *SendingTimestampMs `json:"sending_ts_ms,omitempty"`
+}
+
+// UnmarshalJSON decodes RfqBatchDeletedPayload strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchDeletedPayload) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchDeletedPayload")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchDeletedPayload", members, "type", "sid", "seq", "msg"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchDeletedPayload
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchDeletedPayload", err)
+	}
+
+	*v = RfqBatchDeletedPayload(decoded)
+
+	if _, ok := members["type"]; ok {
+		if err := asyncapirt.CheckConst("RfqBatchDeletedPayload.type", v.Type, "rfq_batch_deleted"); err != nil {
+			return err
+		}
+	}
+
+	return v.Validate()
+}
+
+// MarshalJSON encodes RfqBatchDeletedPayload with its const properties filled in.
+func (v RfqBatchDeletedPayload) MarshalJSON() ([]byte, error) {
+	type plain RfqBatchDeletedPayload
+
+	encoded := plain(v)
+	encoded.Type = "rfq_batch_deleted"
+
+	data, err := json.Marshal(encoded)
+	if err != nil {
+		return nil, ctxerrors.Wrapf(commerr.ErrInvalidValue, "RfqBatchDeletedPayload: %v", err)
+	}
+
+	return data, nil
+}
+
+// Validate checks the constraints the schema declares for RfqBatchDeletedPayload.
+func (v RfqBatchDeletedPayload) Validate() error {
+	if err := asyncapirt.CheckMinimum("sid", float64(v.Sid), 1); err != nil {
+		return err
+	}
+	if err := asyncapirt.CheckMinimum("seq", float64(v.Seq), 1); err != nil {
+		return err
+	}
+	if err := v.Msg.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "msg")
+	}
+
+	return nil
+}
+
+type RfqBatchDeletedPayloadMsg struct {
+	// Unique identifier for the RFQ batch
+	ID string `json:"id"`
+	// Public communications ID of the batch creator, obscured as in rfq_batch_created
+	CreatorID string `json:"creator_id"`
+	// The child RFQs, which closed with the batch
+	RfqIds []string `json:"rfq_ids"`
+	// Timestamp when the RFQ batch closed
+	DeletedTs time.Time `json:"deleted_ts"`
+}
+
+// UnmarshalJSON decodes RfqBatchDeletedPayloadMsg strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchDeletedPayloadMsg) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchDeletedPayloadMsg")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchDeletedPayloadMsg", members, "id", "creator_id", "rfq_ids", "deleted_ts"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchDeletedPayloadMsg
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchDeletedPayloadMsg", err)
+	}
+
+	*v = RfqBatchDeletedPayloadMsg(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for RfqBatchDeletedPayloadMsg.
+func (v RfqBatchDeletedPayloadMsg) Validate() error {
+
+	return nil
+}
+
+type BatchQuoteCreatedPayload struct {
+	Type string `json:"type"`
+	// Server-generated subscription identifier (sid) used to identify the channel
+	Sid SubscriptionID `json:"sid"`
+	// Sequential number that should be checked if you want to guarantee you received all the messages. Used for snapshot/delta consistency
+	Seq SequenceNumber              `json:"seq"`
+	Msg BatchQuoteCreatedPayloadMsg `json:"msg"`
+	// Unix timestamp in milliseconds when Kalshi queued this message at the network layer.
+	SendingTsMs *SendingTimestampMs `json:"sending_ts_ms,omitempty"`
+}
+
+// UnmarshalJSON decodes BatchQuoteCreatedPayload strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *BatchQuoteCreatedPayload) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "BatchQuoteCreatedPayload")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("BatchQuoteCreatedPayload", members, "type", "sid", "seq", "msg"); err != nil {
+		return err
+	}
+
+	type plain BatchQuoteCreatedPayload
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("BatchQuoteCreatedPayload", err)
+	}
+
+	*v = BatchQuoteCreatedPayload(decoded)
+
+	if _, ok := members["type"]; ok {
+		if err := asyncapirt.CheckConst("BatchQuoteCreatedPayload.type", v.Type, "batch_quote_created"); err != nil {
+			return err
+		}
+	}
+
+	return v.Validate()
+}
+
+// MarshalJSON encodes BatchQuoteCreatedPayload with its const properties filled in.
+func (v BatchQuoteCreatedPayload) MarshalJSON() ([]byte, error) {
+	type plain BatchQuoteCreatedPayload
+
+	encoded := plain(v)
+	encoded.Type = "batch_quote_created"
+
+	data, err := json.Marshal(encoded)
+	if err != nil {
+		return nil, ctxerrors.Wrapf(commerr.ErrInvalidValue, "BatchQuoteCreatedPayload: %v", err)
+	}
+
+	return data, nil
+}
+
+// Validate checks the constraints the schema declares for BatchQuoteCreatedPayload.
+func (v BatchQuoteCreatedPayload) Validate() error {
+	if err := asyncapirt.CheckMinimum("sid", float64(v.Sid), 1); err != nil {
+		return err
+	}
+	if err := asyncapirt.CheckMinimum("seq", float64(v.Seq), 1); err != nil {
+		return err
+	}
+	if err := v.Msg.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "msg")
+	}
+
+	return nil
+}
+
+type BatchQuoteCreatedPayloadMsg struct {
+	// Unique identifier for the batch quote
+	BatchQuoteID string `json:"batch_quote_id"`
+	// Identifier of the RFQ batch this batch quote prices
+	RfqBatchID string `json:"rfq_batch_id"`
+	// Your public communications ID as the batch quote creator
+	QuoteCreatorID string `json:"quote_creator_id"`
+	// Timestamp when the batch quote was created
+	CreatedTs time.Time `json:"created_ts"`
+	// One quote per child RFQ
+	Quotes []BatchQuoteCreatedPayloadMsgQuotesItem `json:"quotes"`
+	// Optional - Present only when your batch quote used a subaccount.
+	// Contains your own subaccount number.
+	Subaccount *int64 `json:"subaccount,omitempty"`
+}
+
+// UnmarshalJSON decodes BatchQuoteCreatedPayloadMsg strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *BatchQuoteCreatedPayloadMsg) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "BatchQuoteCreatedPayloadMsg")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("BatchQuoteCreatedPayloadMsg", members, "batch_quote_id", "rfq_batch_id", "quote_creator_id", "created_ts", "quotes"); err != nil {
+		return err
+	}
+
+	type plain BatchQuoteCreatedPayloadMsg
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("BatchQuoteCreatedPayloadMsg", err)
+	}
+
+	*v = BatchQuoteCreatedPayloadMsg(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for BatchQuoteCreatedPayloadMsg.
+func (v BatchQuoteCreatedPayloadMsg) Validate() error {
+	for i0, item0 := range v.Quotes {
+		if err := item0.Validate(); err != nil {
+			return ctxerrors.Wrap(err, fmt.Sprintf("%s[%d]", "quotes", i0))
+		}
+	}
+
+	return nil
+}
+
+type BatchQuoteCreatedPayloadMsgQuotesItem struct {
+	// Identifier the child quote keeps if it wins the child
+	QuoteID string `json:"quote_id"`
+	// Identifier of the child RFQ
+	RfqID string `json:"rfq_id"`
+	// Combo market ticker of the child RFQ
+	MarketTicker string `json:"market_ticker"`
+	// Event ticker (optional)
+	EventTicker *string `json:"event_ticker,omitempty"`
+	// Yes side bid price in dollars
+	YesBidDollars string `json:"yes_bid_dollars"`
+	// No side bid price in dollars
+	NoBidDollars string `json:"no_bid_dollars"`
+	// Fixed-point yes contracts offered (2 decimals) (optional)
+	YesContractsOfferedFp *string `json:"yes_contracts_offered_fp,omitempty"`
+	// Fixed-point no contracts offered (2 decimals) (optional)
+	NoContractsOfferedFp *string `json:"no_contracts_offered_fp,omitempty"`
+	// Target cost from the child RFQ in dollars (optional)
+	RfqTargetCostDollars *string `json:"rfq_target_cost_dollars,omitempty"`
+}
+
+// UnmarshalJSON decodes BatchQuoteCreatedPayloadMsgQuotesItem strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *BatchQuoteCreatedPayloadMsgQuotesItem) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "BatchQuoteCreatedPayloadMsgQuotesItem")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("BatchQuoteCreatedPayloadMsgQuotesItem", members, "quote_id", "rfq_id", "market_ticker", "yes_bid_dollars", "no_bid_dollars"); err != nil {
+		return err
+	}
+
+	type plain BatchQuoteCreatedPayloadMsgQuotesItem
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("BatchQuoteCreatedPayloadMsgQuotesItem", err)
+	}
+
+	*v = BatchQuoteCreatedPayloadMsgQuotesItem(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for BatchQuoteCreatedPayloadMsgQuotesItem.
+func (v BatchQuoteCreatedPayloadMsgQuotesItem) Validate() error {
+
+	return nil
+}
+
+type RfqBatchBestQuotesPayload struct {
+	Type string `json:"type"`
+	// Server-generated subscription identifier (sid) used to identify the channel
+	Sid SubscriptionID `json:"sid"`
+	// Sequential number that should be checked if you want to guarantee you received all the messages. Used for snapshot/delta consistency
+	Seq SequenceNumber               `json:"seq"`
+	Msg RfqBatchBestQuotesPayloadMsg `json:"msg"`
+	// Unix timestamp in milliseconds when Kalshi queued this message at the network layer.
+	SendingTsMs *SendingTimestampMs `json:"sending_ts_ms,omitempty"`
+}
+
+// UnmarshalJSON decodes RfqBatchBestQuotesPayload strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchBestQuotesPayload) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchBestQuotesPayload")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchBestQuotesPayload", members, "type", "sid", "seq", "msg"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchBestQuotesPayload
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchBestQuotesPayload", err)
+	}
+
+	*v = RfqBatchBestQuotesPayload(decoded)
+
+	if _, ok := members["type"]; ok {
+		if err := asyncapirt.CheckConst("RfqBatchBestQuotesPayload.type", v.Type, "rfq_batch_best_quotes"); err != nil {
+			return err
+		}
+	}
+
+	return v.Validate()
+}
+
+// MarshalJSON encodes RfqBatchBestQuotesPayload with its const properties filled in.
+func (v RfqBatchBestQuotesPayload) MarshalJSON() ([]byte, error) {
+	type plain RfqBatchBestQuotesPayload
+
+	encoded := plain(v)
+	encoded.Type = "rfq_batch_best_quotes"
+
+	data, err := json.Marshal(encoded)
+	if err != nil {
+		return nil, ctxerrors.Wrapf(commerr.ErrInvalidValue, "RfqBatchBestQuotesPayload: %v", err)
+	}
+
+	return data, nil
+}
+
+// Validate checks the constraints the schema declares for RfqBatchBestQuotesPayload.
+func (v RfqBatchBestQuotesPayload) Validate() error {
+	if err := asyncapirt.CheckMinimum("sid", float64(v.Sid), 1); err != nil {
+		return err
+	}
+	if err := asyncapirt.CheckMinimum("seq", float64(v.Seq), 1); err != nil {
+		return err
+	}
+	if err := v.Msg.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "msg")
+	}
+
+	return nil
+}
+
+type RfqBatchBestQuotesPayloadMsg struct {
+	// Identifier of your RFQ batch
+	RfqBatchID string `json:"rfq_batch_id"`
+	// The client_batch_id you gave when creating the batch. Omitted when none was given.
+	ClientBatchID *string `json:"client_batch_id,omitempty"`
+	// Increases with every snapshot of this batch. Apply a snapshot only if its version is greater than the last one you applied.
+	Version int64 `json:"version"`
+	// Timestamp when a best bid last changed
+	UpdatedTs time.Time `json:"updated_ts"`
+	// Whether every child has a yes bid, so the batch can be accepted on the yes side
+	YesComplete bool `json:"yes_complete"`
+	// Whether every child has a no bid, so the batch can be accepted on the no side
+	NoComplete bool `json:"no_complete"`
+	// One entry per child RFQ, in the order the children were requested
+	Rfqs []RfqBatchBestQuotesPayloadMsgRfqsItem `json:"rfqs"`
+	// Optional - Present only when your RFQ batch used a subaccount.
+	// Contains your own subaccount number.
+	Subaccount *int64 `json:"subaccount,omitempty"`
+}
+
+// UnmarshalJSON decodes RfqBatchBestQuotesPayloadMsg strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchBestQuotesPayloadMsg) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchBestQuotesPayloadMsg")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchBestQuotesPayloadMsg", members, "rfq_batch_id", "version", "updated_ts", "yes_complete", "no_complete", "rfqs"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchBestQuotesPayloadMsg
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchBestQuotesPayloadMsg", err)
+	}
+
+	*v = RfqBatchBestQuotesPayloadMsg(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for RfqBatchBestQuotesPayloadMsg.
+func (v RfqBatchBestQuotesPayloadMsg) Validate() error {
+	if err := asyncapirt.CheckMinimum("version", float64(v.Version), 1); err != nil {
+		return err
+	}
+	for i0, item0 := range v.Rfqs {
+		if err := item0.Validate(); err != nil {
+			return ctxerrors.Wrap(err, fmt.Sprintf("%s[%d]", "rfqs", i0))
+		}
+	}
+
+	return nil
+}
+
+type RfqBatchBestQuotesPayloadMsgRfqsItem struct {
+	// Identifier of the child RFQ
+	RfqID string `json:"rfq_id"`
+	// Combo market ticker of the child RFQ
+	MarketTicker string `json:"market_ticker"`
+	// Event ticker (optional)
+	EventTicker *string `json:"event_ticker,omitempty"`
+	// Best yes bid across makers, in dollars. Omitted when no maker bids yes on this child.
+	YesBidDollars *string `json:"yes_bid_dollars,omitempty"`
+	// Best no bid across makers, in dollars. Omitted when no maker bids no on this child.
+	NoBidDollars *string `json:"no_bid_dollars,omitempty"`
+	// Fixed-point contracts requested by the child RFQ (2 decimals). Omitted when the child is sized by target cost.
+	ContractsFp *string `json:"contracts_fp,omitempty"`
+	// Fixed-point contracts the best yes bid offers (2 decimals). Omitted when no maker bids yes on this child.
+	YesContractsOfferedFp *string `json:"yes_contracts_offered_fp,omitempty"`
+	// Fixed-point contracts the best no bid offers (2 decimals). Omitted when no maker bids no on this child.
+	NoContractsOfferedFp *string `json:"no_contracts_offered_fp,omitempty"`
+	// Target cost from the child RFQ in dollars (optional)
+	RfqTargetCostDollars *string `json:"rfq_target_cost_dollars,omitempty"`
+}
+
+// UnmarshalJSON decodes RfqBatchBestQuotesPayloadMsgRfqsItem strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchBestQuotesPayloadMsgRfqsItem) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchBestQuotesPayloadMsgRfqsItem")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchBestQuotesPayloadMsgRfqsItem", members, "rfq_id", "market_ticker"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchBestQuotesPayloadMsgRfqsItem
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchBestQuotesPayloadMsgRfqsItem", err)
+	}
+
+	*v = RfqBatchBestQuotesPayloadMsgRfqsItem(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for RfqBatchBestQuotesPayloadMsgRfqsItem.
+func (v RfqBatchBestQuotesPayloadMsgRfqsItem) Validate() error {
+
+	return nil
+}
+
+type BatchQuoteAcceptedPayload struct {
+	Type string `json:"type"`
+	// Server-generated subscription identifier (sid) used to identify the channel
+	Sid SubscriptionID `json:"sid"`
+	// Sequential number that should be checked if you want to guarantee you received all the messages. Used for snapshot/delta consistency
+	Seq SequenceNumber               `json:"seq"`
+	Msg BatchQuoteAcceptedPayloadMsg `json:"msg"`
+	// Unix timestamp in milliseconds when Kalshi queued this message at the network layer.
+	SendingTsMs *SendingTimestampMs `json:"sending_ts_ms,omitempty"`
+}
+
+// UnmarshalJSON decodes BatchQuoteAcceptedPayload strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *BatchQuoteAcceptedPayload) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "BatchQuoteAcceptedPayload")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("BatchQuoteAcceptedPayload", members, "type", "sid", "seq", "msg"); err != nil {
+		return err
+	}
+
+	type plain BatchQuoteAcceptedPayload
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("BatchQuoteAcceptedPayload", err)
+	}
+
+	*v = BatchQuoteAcceptedPayload(decoded)
+
+	if _, ok := members["type"]; ok {
+		if err := asyncapirt.CheckConst("BatchQuoteAcceptedPayload.type", v.Type, "batch_quote_accepted"); err != nil {
+			return err
+		}
+	}
+
+	return v.Validate()
+}
+
+// MarshalJSON encodes BatchQuoteAcceptedPayload with its const properties filled in.
+func (v BatchQuoteAcceptedPayload) MarshalJSON() ([]byte, error) {
+	type plain BatchQuoteAcceptedPayload
+
+	encoded := plain(v)
+	encoded.Type = "batch_quote_accepted"
+
+	data, err := json.Marshal(encoded)
+	if err != nil {
+		return nil, ctxerrors.Wrapf(commerr.ErrInvalidValue, "BatchQuoteAcceptedPayload: %v", err)
+	}
+
+	return data, nil
+}
+
+// Validate checks the constraints the schema declares for BatchQuoteAcceptedPayload.
+func (v BatchQuoteAcceptedPayload) Validate() error {
+	if err := asyncapirt.CheckMinimum("sid", float64(v.Sid), 1); err != nil {
+		return err
+	}
+	if err := asyncapirt.CheckMinimum("seq", float64(v.Seq), 1); err != nil {
+		return err
+	}
+	if err := v.Msg.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "msg")
+	}
+
+	return nil
+}
+
+type BatchQuoteAcceptedPayloadMsg struct {
+	// Identifier of your batch quote. Confirm the children you won with it.
+	BatchQuoteID string `json:"batch_quote_id"`
+	// Identifier of the RFQ batch
+	RfqBatchID string `json:"rfq_batch_id"`
+	// Your public communications ID as the batch quote creator
+	QuoteCreatorID string `json:"quote_creator_id"`
+	// Public communications ID of the RFQ batch creator, obscured as in quote_accepted
+	RfqCreatorID string `json:"rfq_creator_id"`
+	// Which side the RFQ batch creator accepted on every child (yes/no)
+	AcceptedSide BatchQuoteAcceptedPayloadMsgAcceptedSide `json:"accepted_side"`
+	// Timestamp when the RFQ batch was accepted
+	AcceptedTs time.Time `json:"accepted_ts"`
+	// Only the children you won, each with your accepted quote. Other children went to other makers.
+	Quotes []BatchQuoteAcceptedPayloadMsgQuotesItem `json:"quotes"`
+	// Optional - Present only when your batch quote used a subaccount.
+	// Contains your own subaccount number; the counterparty's subaccount is never shared.
+	Subaccount *int64 `json:"subaccount,omitempty"`
+}
+
+// UnmarshalJSON decodes BatchQuoteAcceptedPayloadMsg strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *BatchQuoteAcceptedPayloadMsg) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "BatchQuoteAcceptedPayloadMsg")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("BatchQuoteAcceptedPayloadMsg", members, "batch_quote_id", "rfq_batch_id", "quote_creator_id", "rfq_creator_id", "accepted_side", "accepted_ts", "quotes"); err != nil {
+		return err
+	}
+
+	type plain BatchQuoteAcceptedPayloadMsg
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("BatchQuoteAcceptedPayloadMsg", err)
+	}
+
+	*v = BatchQuoteAcceptedPayloadMsg(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for BatchQuoteAcceptedPayloadMsg.
+func (v BatchQuoteAcceptedPayloadMsg) Validate() error {
+	if err := v.AcceptedSide.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "accepted_side")
+	}
+	for i0, item0 := range v.Quotes {
+		if err := item0.Validate(); err != nil {
+			return ctxerrors.Wrap(err, fmt.Sprintf("%s[%d]", "quotes", i0))
+		}
+	}
+
+	return nil
+}
+
+// Which side the RFQ batch creator accepted on every child (yes/no)
+type BatchQuoteAcceptedPayloadMsgAcceptedSide string
+
+// Values of BatchQuoteAcceptedPayloadMsgAcceptedSide.
+const (
+	BatchQuoteAcceptedPayloadMsgAcceptedSideYes BatchQuoteAcceptedPayloadMsgAcceptedSide = "yes"
+	BatchQuoteAcceptedPayloadMsgAcceptedSideNo  BatchQuoteAcceptedPayloadMsgAcceptedSide = "no"
+)
+
+// Validate reports whether v is one of the values the schema lists.
+func (v BatchQuoteAcceptedPayloadMsgAcceptedSide) Validate() error {
+	switch v {
+	case BatchQuoteAcceptedPayloadMsgAcceptedSideYes, BatchQuoteAcceptedPayloadMsgAcceptedSideNo:
+		return nil
+	}
+
+	return asyncapirt.Invalid("BatchQuoteAcceptedPayloadMsgAcceptedSide", fmt.Sprintf("unknown value %v", v))
+}
+
+type BatchQuoteAcceptedPayloadMsgQuotesItem struct {
+	// Identifier of the accepted child quote
+	QuoteID string `json:"quote_id"`
+	// Identifier of the child RFQ
+	RfqID string `json:"rfq_id"`
+	// Combo market ticker of the child RFQ
+	MarketTicker string `json:"market_ticker"`
+	// Event ticker (optional)
+	EventTicker *string `json:"event_ticker,omitempty"`
+	// Yes side bid price in dollars
+	YesBidDollars string `json:"yes_bid_dollars"`
+	// No side bid price in dollars
+	NoBidDollars string `json:"no_bid_dollars"`
+	// Fixed-point contracts requested by the child RFQ (2 decimals) (optional)
+	ContractsAcceptedFp *string `json:"contracts_accepted_fp,omitempty"`
+	// Fixed-point yes contracts offered (2 decimals) (optional)
+	YesContractsOfferedFp *string `json:"yes_contracts_offered_fp,omitempty"`
+	// Fixed-point no contracts offered (2 decimals) (optional)
+	NoContractsOfferedFp *string `json:"no_contracts_offered_fp,omitempty"`
+	// Target cost from the child RFQ in dollars (optional)
+	RfqTargetCostDollars *string `json:"rfq_target_cost_dollars,omitempty"`
+}
+
+// UnmarshalJSON decodes BatchQuoteAcceptedPayloadMsgQuotesItem strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *BatchQuoteAcceptedPayloadMsgQuotesItem) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "BatchQuoteAcceptedPayloadMsgQuotesItem")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("BatchQuoteAcceptedPayloadMsgQuotesItem", members, "quote_id", "rfq_id", "market_ticker", "yes_bid_dollars", "no_bid_dollars"); err != nil {
+		return err
+	}
+
+	type plain BatchQuoteAcceptedPayloadMsgQuotesItem
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("BatchQuoteAcceptedPayloadMsgQuotesItem", err)
+	}
+
+	*v = BatchQuoteAcceptedPayloadMsgQuotesItem(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for BatchQuoteAcceptedPayloadMsgQuotesItem.
+func (v BatchQuoteAcceptedPayloadMsgQuotesItem) Validate() error {
+
+	return nil
+}
+
+type RfqBatchExecutedPayload struct {
+	Type string `json:"type"`
+	// Server-generated subscription identifier (sid) used to identify the channel
+	Sid SubscriptionID `json:"sid"`
+	// Sequential number that should be checked if you want to guarantee you received all the messages. Used for snapshot/delta consistency
+	Seq SequenceNumber             `json:"seq"`
+	Msg RfqBatchExecutedPayloadMsg `json:"msg"`
+	// Unix timestamp in milliseconds when Kalshi queued this message at the network layer.
+	SendingTsMs *SendingTimestampMs `json:"sending_ts_ms,omitempty"`
+}
+
+// UnmarshalJSON decodes RfqBatchExecutedPayload strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchExecutedPayload) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchExecutedPayload")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchExecutedPayload", members, "type", "sid", "seq", "msg"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchExecutedPayload
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchExecutedPayload", err)
+	}
+
+	*v = RfqBatchExecutedPayload(decoded)
+
+	if _, ok := members["type"]; ok {
+		if err := asyncapirt.CheckConst("RfqBatchExecutedPayload.type", v.Type, "rfq_batch_executed"); err != nil {
+			return err
+		}
+	}
+
+	return v.Validate()
+}
+
+// MarshalJSON encodes RfqBatchExecutedPayload with its const properties filled in.
+func (v RfqBatchExecutedPayload) MarshalJSON() ([]byte, error) {
+	type plain RfqBatchExecutedPayload
+
+	encoded := plain(v)
+	encoded.Type = "rfq_batch_executed"
+
+	data, err := json.Marshal(encoded)
+	if err != nil {
+		return nil, ctxerrors.Wrapf(commerr.ErrInvalidValue, "RfqBatchExecutedPayload: %v", err)
+	}
+
+	return data, nil
+}
+
+// Validate checks the constraints the schema declares for RfqBatchExecutedPayload.
+func (v RfqBatchExecutedPayload) Validate() error {
+	if err := asyncapirt.CheckMinimum("sid", float64(v.Sid), 1); err != nil {
+		return err
+	}
+	if err := asyncapirt.CheckMinimum("seq", float64(v.Seq), 1); err != nil {
+		return err
+	}
+	if err := v.Msg.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "msg")
+	}
+
+	return nil
+}
+
+type RfqBatchExecutedPayloadMsg struct {
+	// Identifier of your RFQ batch
+	RfqBatchID string `json:"rfq_batch_id"`
+	// The client_batch_id you gave when creating the batch. Omitted when none was given.
+	ClientBatchID *string `json:"client_batch_id,omitempty"`
+	// Your public communications ID as the RFQ batch creator
+	RfqCreatorID string `json:"rfq_creator_id"`
+	// Child RFQs whose trades executed
+	ExecutedRfqIds []string `json:"executed_rfq_ids"`
+	// Child RFQs whose trades failed to execute
+	FailedRfqIds []string `json:"failed_rfq_ids"`
+	// Timestamp when the last child finished
+	ExecutedTs time.Time `json:"executed_ts"`
+	// How the batch ended. `executed` when every child executed, `partially executed` when some failed, `execution failed` when none executed.
+	CloseReason string `json:"close_reason"`
+	// Optional - Present only when your RFQ batch used a subaccount.
+	// Contains your own subaccount number.
+	Subaccount *int64 `json:"subaccount,omitempty"`
+}
+
+// UnmarshalJSON decodes RfqBatchExecutedPayloadMsg strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *RfqBatchExecutedPayloadMsg) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "RfqBatchExecutedPayloadMsg")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("RfqBatchExecutedPayloadMsg", members, "rfq_batch_id", "rfq_creator_id", "executed_rfq_ids", "failed_rfq_ids", "executed_ts", "close_reason"); err != nil {
+		return err
+	}
+
+	type plain RfqBatchExecutedPayloadMsg
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("RfqBatchExecutedPayloadMsg", err)
+	}
+
+	*v = RfqBatchExecutedPayloadMsg(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for RfqBatchExecutedPayloadMsg.
+func (v RfqBatchExecutedPayloadMsg) Validate() error {
+
+	return nil
+}
+
+type BatchQuoteExecutedPayload struct {
+	Type string `json:"type"`
+	// Server-generated subscription identifier (sid) used to identify the channel
+	Sid SubscriptionID `json:"sid"`
+	// Sequential number that should be checked if you want to guarantee you received all the messages. Used for snapshot/delta consistency
+	Seq SequenceNumber               `json:"seq"`
+	Msg BatchQuoteExecutedPayloadMsg `json:"msg"`
+	// Unix timestamp in milliseconds when Kalshi queued this message at the network layer.
+	SendingTsMs *SendingTimestampMs `json:"sending_ts_ms,omitempty"`
+}
+
+// UnmarshalJSON decodes BatchQuoteExecutedPayload strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *BatchQuoteExecutedPayload) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "BatchQuoteExecutedPayload")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("BatchQuoteExecutedPayload", members, "type", "sid", "seq", "msg"); err != nil {
+		return err
+	}
+
+	type plain BatchQuoteExecutedPayload
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("BatchQuoteExecutedPayload", err)
+	}
+
+	*v = BatchQuoteExecutedPayload(decoded)
+
+	if _, ok := members["type"]; ok {
+		if err := asyncapirt.CheckConst("BatchQuoteExecutedPayload.type", v.Type, "batch_quote_executed"); err != nil {
+			return err
+		}
+	}
+
+	return v.Validate()
+}
+
+// MarshalJSON encodes BatchQuoteExecutedPayload with its const properties filled in.
+func (v BatchQuoteExecutedPayload) MarshalJSON() ([]byte, error) {
+	type plain BatchQuoteExecutedPayload
+
+	encoded := plain(v)
+	encoded.Type = "batch_quote_executed"
+
+	data, err := json.Marshal(encoded)
+	if err != nil {
+		return nil, ctxerrors.Wrapf(commerr.ErrInvalidValue, "BatchQuoteExecutedPayload: %v", err)
+	}
+
+	return data, nil
+}
+
+// Validate checks the constraints the schema declares for BatchQuoteExecutedPayload.
+func (v BatchQuoteExecutedPayload) Validate() error {
+	if err := asyncapirt.CheckMinimum("sid", float64(v.Sid), 1); err != nil {
+		return err
+	}
+	if err := asyncapirt.CheckMinimum("seq", float64(v.Seq), 1); err != nil {
+		return err
+	}
+	if err := v.Msg.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "msg")
+	}
+
+	return nil
+}
+
+type BatchQuoteExecutedPayloadMsg struct {
+	// Identifier of your batch quote
+	BatchQuoteID string `json:"batch_quote_id"`
+	// Identifier of the RFQ batch
+	RfqBatchID string `json:"rfq_batch_id"`
+	// Public communications ID of the RFQ batch creator. When the creator obscured their ID, it is revealed only if at least one of your children executed.
+	RfqCreatorID string `json:"rfq_creator_id"`
+	// Your children whose trades executed
+	ExecutedRfqIds []string `json:"executed_rfq_ids"`
+	// Your children whose trades failed to execute
+	FailedRfqIds []string `json:"failed_rfq_ids"`
+	// Timestamp when the last child of the batch finished
+	ExecutedTs time.Time `json:"executed_ts"`
+	// How your children ended. `executed` when every one executed, `partially executed` when some failed, `execution failed` when none executed.
+	CloseReason string `json:"close_reason"`
+	// Optional - Present only when your batch quote used a subaccount.
+	// Contains your own subaccount number; the counterparty's subaccount is never shared.
+	Subaccount *int64 `json:"subaccount,omitempty"`
+}
+
+// UnmarshalJSON decodes BatchQuoteExecutedPayloadMsg strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *BatchQuoteExecutedPayloadMsg) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "BatchQuoteExecutedPayloadMsg")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("BatchQuoteExecutedPayloadMsg", members, "batch_quote_id", "rfq_batch_id", "rfq_creator_id", "executed_rfq_ids", "failed_rfq_ids", "executed_ts", "close_reason"); err != nil {
+		return err
+	}
+
+	type plain BatchQuoteExecutedPayloadMsg
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("BatchQuoteExecutedPayloadMsg", err)
+	}
+
+	*v = BatchQuoteExecutedPayloadMsg(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for BatchQuoteExecutedPayloadMsg.
+func (v BatchQuoteExecutedPayloadMsg) Validate() error {
 
 	return nil
 }
@@ -6039,6 +7222,34 @@ const (
 	// Payload: QuoteExecutedPayload.
 	// Content type: application/json.
 	MessageQuoteExecuted = "quote_executed"
+	// Notification when an RFQ batch is created
+	// Payload: RfqBatchCreatedPayload.
+	// Content type: application/json.
+	MessageRfqBatchCreated = "rfq_batch_created"
+	// Notification when an RFQ batch closes
+	// Payload: RfqBatchDeletedPayload.
+	// Content type: application/json.
+	MessageRfqBatchDeleted = "rfq_batch_deleted"
+	// Notification when you create a batch quote on an RFQ batch
+	// Payload: BatchQuoteCreatedPayload.
+	// Content type: application/json.
+	MessageBatchQuoteCreated = "batch_quote_created"
+	// The best quotes across makers on your RFQ batch
+	// Payload: RfqBatchBestQuotesPayload.
+	// Content type: application/json.
+	MessageRfqBatchBestQuotes = "rfq_batch_best_quotes"
+	// Notification when your batch quote wins children of an accepted RFQ batch
+	// Payload: BatchQuoteAcceptedPayload.
+	// Content type: application/json.
+	MessageBatchQuoteAccepted = "batch_quote_accepted"
+	// Notification when every child of your accepted RFQ batch has executed or failed
+	// Payload: RfqBatchExecutedPayload.
+	// Content type: application/json.
+	MessageRfqBatchExecuted = "rfq_batch_executed"
+	// Notification when every child your batch quote won has executed or failed
+	// Payload: BatchQuoteExecutedPayload.
+	// Content type: application/json.
+	MessageBatchQuoteExecuted = "batch_quote_executed"
 	// Order group lifecycle and limit updates for authenticated user
 	// Payload: OrderGroupUpdatesPayload.
 	// Content type: application/json.
@@ -6430,6 +7641,104 @@ var receivedMessages = []asyncapirt.Candidate{
 		},
 	},
 	{
+		Name: MessageRfqBatchCreated,
+		Matchers: []asyncapirt.Matcher{
+			{Pointer: "/type", Value: "\"rfq_batch_created\""},
+		},
+		Decode: func(data []byte) (any, error) {
+			var payload RfqBatchCreatedPayload
+			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
+				return nil, err
+			}
+
+			return payload, nil
+		},
+	},
+	{
+		Name: MessageRfqBatchDeleted,
+		Matchers: []asyncapirt.Matcher{
+			{Pointer: "/type", Value: "\"rfq_batch_deleted\""},
+		},
+		Decode: func(data []byte) (any, error) {
+			var payload RfqBatchDeletedPayload
+			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
+				return nil, err
+			}
+
+			return payload, nil
+		},
+	},
+	{
+		Name: MessageBatchQuoteCreated,
+		Matchers: []asyncapirt.Matcher{
+			{Pointer: "/type", Value: "\"batch_quote_created\""},
+		},
+		Decode: func(data []byte) (any, error) {
+			var payload BatchQuoteCreatedPayload
+			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
+				return nil, err
+			}
+
+			return payload, nil
+		},
+	},
+	{
+		Name: MessageRfqBatchBestQuotes,
+		Matchers: []asyncapirt.Matcher{
+			{Pointer: "/type", Value: "\"rfq_batch_best_quotes\""},
+		},
+		Decode: func(data []byte) (any, error) {
+			var payload RfqBatchBestQuotesPayload
+			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
+				return nil, err
+			}
+
+			return payload, nil
+		},
+	},
+	{
+		Name: MessageBatchQuoteAccepted,
+		Matchers: []asyncapirt.Matcher{
+			{Pointer: "/type", Value: "\"batch_quote_accepted\""},
+		},
+		Decode: func(data []byte) (any, error) {
+			var payload BatchQuoteAcceptedPayload
+			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
+				return nil, err
+			}
+
+			return payload, nil
+		},
+	},
+	{
+		Name: MessageRfqBatchExecuted,
+		Matchers: []asyncapirt.Matcher{
+			{Pointer: "/type", Value: "\"rfq_batch_executed\""},
+		},
+		Decode: func(data []byte) (any, error) {
+			var payload RfqBatchExecutedPayload
+			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
+				return nil, err
+			}
+
+			return payload, nil
+		},
+	},
+	{
+		Name: MessageBatchQuoteExecuted,
+		Matchers: []asyncapirt.Matcher{
+			{Pointer: "/type", Value: "\"batch_quote_executed\""},
+		},
+		Decode: func(data []byte) (any, error) {
+			var payload BatchQuoteExecutedPayload
+			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
+				return nil, err
+			}
+
+			return payload, nil
+		},
+	},
+	{
 		Name: MessageOrderGroupUpdates,
 		Matchers: []asyncapirt.Matcher{
 			{Pointer: "/type", Value: "\"order_group_updates\""},
@@ -6658,6 +7967,34 @@ type Handler interface {
 	// Payload: QuoteExecutedPayload.
 	// Content type: application/json.
 	HandleQuoteExecuted(ctx context.Context, payload QuoteExecutedPayload) error
+	// Notification when an RFQ batch is created
+	// Payload: RfqBatchCreatedPayload.
+	// Content type: application/json.
+	HandleRfqBatchCreated(ctx context.Context, payload RfqBatchCreatedPayload) error
+	// Notification when an RFQ batch closes
+	// Payload: RfqBatchDeletedPayload.
+	// Content type: application/json.
+	HandleRfqBatchDeleted(ctx context.Context, payload RfqBatchDeletedPayload) error
+	// Notification when you create a batch quote on an RFQ batch
+	// Payload: BatchQuoteCreatedPayload.
+	// Content type: application/json.
+	HandleBatchQuoteCreated(ctx context.Context, payload BatchQuoteCreatedPayload) error
+	// The best quotes across makers on your RFQ batch
+	// Payload: RfqBatchBestQuotesPayload.
+	// Content type: application/json.
+	HandleRfqBatchBestQuotes(ctx context.Context, payload RfqBatchBestQuotesPayload) error
+	// Notification when your batch quote wins children of an accepted RFQ batch
+	// Payload: BatchQuoteAcceptedPayload.
+	// Content type: application/json.
+	HandleBatchQuoteAccepted(ctx context.Context, payload BatchQuoteAcceptedPayload) error
+	// Notification when every child of your accepted RFQ batch has executed or failed
+	// Payload: RfqBatchExecutedPayload.
+	// Content type: application/json.
+	HandleRfqBatchExecuted(ctx context.Context, payload RfqBatchExecutedPayload) error
+	// Notification when every child your batch quote won has executed or failed
+	// Payload: BatchQuoteExecutedPayload.
+	// Content type: application/json.
+	HandleBatchQuoteExecuted(ctx context.Context, payload BatchQuoteExecutedPayload) error
 	// Order group lifecycle and limit updates for authenticated user
 	// Payload: OrderGroupUpdatesPayload.
 	// Content type: application/json.
@@ -6821,6 +8158,41 @@ func (UnimplementedHandler) HandleQuoteAccepted(context.Context, QuoteAcceptedPa
 
 // HandleQuoteExecuted ignores the message.
 func (UnimplementedHandler) HandleQuoteExecuted(context.Context, QuoteExecutedPayload) error {
+	return nil
+}
+
+// HandleRfqBatchCreated ignores the message.
+func (UnimplementedHandler) HandleRfqBatchCreated(context.Context, RfqBatchCreatedPayload) error {
+	return nil
+}
+
+// HandleRfqBatchDeleted ignores the message.
+func (UnimplementedHandler) HandleRfqBatchDeleted(context.Context, RfqBatchDeletedPayload) error {
+	return nil
+}
+
+// HandleBatchQuoteCreated ignores the message.
+func (UnimplementedHandler) HandleBatchQuoteCreated(context.Context, BatchQuoteCreatedPayload) error {
+	return nil
+}
+
+// HandleRfqBatchBestQuotes ignores the message.
+func (UnimplementedHandler) HandleRfqBatchBestQuotes(context.Context, RfqBatchBestQuotesPayload) error {
+	return nil
+}
+
+// HandleBatchQuoteAccepted ignores the message.
+func (UnimplementedHandler) HandleBatchQuoteAccepted(context.Context, BatchQuoteAcceptedPayload) error {
+	return nil
+}
+
+// HandleRfqBatchExecuted ignores the message.
+func (UnimplementedHandler) HandleRfqBatchExecuted(context.Context, RfqBatchExecutedPayload) error {
+	return nil
+}
+
+// HandleBatchQuoteExecuted ignores the message.
+func (UnimplementedHandler) HandleBatchQuoteExecuted(context.Context, BatchQuoteExecutedPayload) error {
 	return nil
 }
 
@@ -7150,6 +8522,83 @@ func Dispatch(ctx context.Context, handler Handler, message ReceivedMessage) err
 		}
 
 		if err := handler.HandleQuoteExecuted(ctx, payload); err != nil {
+			return ctxerrors.Wrapf(err, "handle %s", message.Name)
+		}
+
+		return nil
+	case MessageRfqBatchCreated:
+		payload, ok := message.Payload.(RfqBatchCreatedPayload)
+		if !ok {
+			return ctxerrors.Wrapf(commerr.ErrInvalidValue, "%s payload is %T", message.Name, message.Payload)
+		}
+
+		if err := handler.HandleRfqBatchCreated(ctx, payload); err != nil {
+			return ctxerrors.Wrapf(err, "handle %s", message.Name)
+		}
+
+		return nil
+	case MessageRfqBatchDeleted:
+		payload, ok := message.Payload.(RfqBatchDeletedPayload)
+		if !ok {
+			return ctxerrors.Wrapf(commerr.ErrInvalidValue, "%s payload is %T", message.Name, message.Payload)
+		}
+
+		if err := handler.HandleRfqBatchDeleted(ctx, payload); err != nil {
+			return ctxerrors.Wrapf(err, "handle %s", message.Name)
+		}
+
+		return nil
+	case MessageBatchQuoteCreated:
+		payload, ok := message.Payload.(BatchQuoteCreatedPayload)
+		if !ok {
+			return ctxerrors.Wrapf(commerr.ErrInvalidValue, "%s payload is %T", message.Name, message.Payload)
+		}
+
+		if err := handler.HandleBatchQuoteCreated(ctx, payload); err != nil {
+			return ctxerrors.Wrapf(err, "handle %s", message.Name)
+		}
+
+		return nil
+	case MessageRfqBatchBestQuotes:
+		payload, ok := message.Payload.(RfqBatchBestQuotesPayload)
+		if !ok {
+			return ctxerrors.Wrapf(commerr.ErrInvalidValue, "%s payload is %T", message.Name, message.Payload)
+		}
+
+		if err := handler.HandleRfqBatchBestQuotes(ctx, payload); err != nil {
+			return ctxerrors.Wrapf(err, "handle %s", message.Name)
+		}
+
+		return nil
+	case MessageBatchQuoteAccepted:
+		payload, ok := message.Payload.(BatchQuoteAcceptedPayload)
+		if !ok {
+			return ctxerrors.Wrapf(commerr.ErrInvalidValue, "%s payload is %T", message.Name, message.Payload)
+		}
+
+		if err := handler.HandleBatchQuoteAccepted(ctx, payload); err != nil {
+			return ctxerrors.Wrapf(err, "handle %s", message.Name)
+		}
+
+		return nil
+	case MessageRfqBatchExecuted:
+		payload, ok := message.Payload.(RfqBatchExecutedPayload)
+		if !ok {
+			return ctxerrors.Wrapf(commerr.ErrInvalidValue, "%s payload is %T", message.Name, message.Payload)
+		}
+
+		if err := handler.HandleRfqBatchExecuted(ctx, payload); err != nil {
+			return ctxerrors.Wrapf(err, "handle %s", message.Name)
+		}
+
+		return nil
+	case MessageBatchQuoteExecuted:
+		payload, ok := message.Payload.(BatchQuoteExecutedPayload)
+		if !ok {
+			return ctxerrors.Wrapf(commerr.ErrInvalidValue, "%s payload is %T", message.Name, message.Payload)
+		}
+
+		if err := handler.HandleBatchQuoteExecuted(ctx, payload); err != nil {
 			return ctxerrors.Wrapf(err, "handle %s", message.Name)
 		}
 
