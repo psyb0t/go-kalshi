@@ -2,6 +2,15 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.3.1, 2026-10-23
+
+- Doc comments only, no behavior change and no exported API change.
+- RFQ batch docs: `CreateRFQBatchChild.RestRemainder` now says it must be false because a batch executes as one fill-or-kill. The `SubtraderId` comment notes FCM members cannot create RFQ batches yet.
+- RFQ batch docs: the `CloseReason` and `RFQBatchQuoteStatus` comments now say `partially_executed` happens only in the rare case that filling one child cancelled a maker order another child needed. The `ws` batch execution payload comments and the RFQ batch channel notes say the children execute together, every child trades or none does.
+- `GetBalance` and its variants now document that an API key restricted to a subaccount gets only that subaccount's balances across exchange indices.
+- The `EventTicker` parameter comment now says the maximum is 100 instead of 10, and that events with no markets return no orders.
+- Reworded the `CreateRFQBatch` and `ConfirmRFQBatchQuote` method comments, and the `ws` notification comments for RFQ batch execution.
+
 ## v0.3.0, 2026-10-21
 
 - The REST client adds RFQ batch endpoints: `CreateRFQBatch`, `GetRFQBatches`, `GetRFQBatch`, `DeleteRFQBatch`, `AcceptRFQBatch`, `GetRFQBatchBestQuotes`, `GetRFQBatchQuotes`, `CreateRFQBatchQuote`, `DeleteRFQBatchQuote` and `ConfirmRFQBatchQuote`. Each has a `WithBody` variant where it takes a body and a `WithResponse` variant on `ClientWithResponses`, plus matching `New...Request` and `Parse...Response2` functions.

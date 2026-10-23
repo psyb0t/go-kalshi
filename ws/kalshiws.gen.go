@@ -171,7 +171,7 @@ const CommunicationsAddressTemplate = "communications"
 //
 // - RFQ batch events (RFQBatchCreated, RFQBatchDeleted) are sent for all users by default. Set `user_filter: "self"` to receive only RFQ batches you created. Omitted or empty `user_filter` keeps the default.
 // - A batch's child RFQs are announced only inside RFQBatchCreated. Each child trade still sends QuoteExecuted, with `rfq_batch_id` set, on the `communications` channel. The two channels are separate subscriptions, so a child's QuoteExecuted is not ordered with this channel's messages.
-// - An RFQ batch is filled child by child at the best quote across makers. Every maker's batch quote prices every child, and each child goes to the maker bidding best on the accepted side, so one batch can have several winning makers. A batch quote counts only for 30 seconds after it was last submitted; resending an unchanged bid within that time keeps its time priority.
+// - Each child of an RFQ batch fills at its best quote across makers, and the children execute together: every child trades, or none does. Every maker's batch quote prices every child, and each child goes to the maker bidding best on the accepted side, so one batch can have several winning makers. A batch quote counts only for 30 seconds after it was last submitted; resending an unchanged bid within that time keeps its time priority.
 // - RFQBatchBestQuotes and RFQBatchExecuted are only sent to the RFQ batch creator. RFQBatchBestQuotes carries the best bids across makers without identifying them; the batch creator never receives a maker's individual batch quote.
 // - Batch quote events (BatchQuoteCreated, BatchQuoteAccepted, BatchQuoteExecuted) are only sent to the maker that created the batch quote. Each winning maker confirms the children it won, and nothing executes until every winning maker has confirmed.
 //
@@ -5788,7 +5788,7 @@ type RfqBatchExecutedPayloadMsg struct {
 	FailedRfqIds []string `json:"failed_rfq_ids"`
 	// Timestamp when the last child finished
 	ExecutedTs time.Time `json:"executed_ts"`
-	// How the batch ended. `executed` when every child executed, `partially executed` when some failed, `execution failed` when none executed.
+	// How the batch ended. `executed` when every child executed, `execution failed` when none did, and `partially executed` in the rare case that filling one child cancelled a maker order another child needed.
 	CloseReason string `json:"close_reason"`
 	// Optional - Present only when your RFQ batch used a subaccount.
 	// Contains your own subaccount number.
@@ -5909,7 +5909,7 @@ type BatchQuoteExecutedPayloadMsg struct {
 	FailedRfqIds []string `json:"failed_rfq_ids"`
 	// Timestamp when the last child of the batch finished
 	ExecutedTs time.Time `json:"executed_ts"`
-	// How your children ended. `executed` when every one executed, `partially executed` when some failed, `execution failed` when none executed.
+	// How your children ended. `executed` when every one executed, `execution failed` when none did, and `partially executed` in the rare case that filling one child of the batch cancelled a maker order another child needed.
 	CloseReason string `json:"close_reason"`
 	// Optional - Present only when your batch quote used a subaccount.
 	// Contains your own subaccount number; the counterparty's subaccount is never shared.
@@ -7242,11 +7242,11 @@ const (
 	// Payload: BatchQuoteAcceptedPayload.
 	// Content type: application/json.
 	MessageBatchQuoteAccepted = "batch_quote_accepted"
-	// Notification when every child of your accepted RFQ batch has executed or failed
+	// Notification when your accepted RFQ batch has executed or failed
 	// Payload: RfqBatchExecutedPayload.
 	// Content type: application/json.
 	MessageRfqBatchExecuted = "rfq_batch_executed"
-	// Notification when every child your batch quote won has executed or failed
+	// Notification when the RFQ batch your batch quote won children of has executed or failed
 	// Payload: BatchQuoteExecutedPayload.
 	// Content type: application/json.
 	MessageBatchQuoteExecuted = "batch_quote_executed"
@@ -7987,11 +7987,11 @@ type Handler interface {
 	// Payload: BatchQuoteAcceptedPayload.
 	// Content type: application/json.
 	HandleBatchQuoteAccepted(ctx context.Context, payload BatchQuoteAcceptedPayload) error
-	// Notification when every child of your accepted RFQ batch has executed or failed
+	// Notification when your accepted RFQ batch has executed or failed
 	// Payload: RfqBatchExecutedPayload.
 	// Content type: application/json.
 	HandleRfqBatchExecuted(ctx context.Context, payload RfqBatchExecutedPayload) error
-	// Notification when every child your batch quote won has executed or failed
+	// Notification when the RFQ batch your batch quote won children of has executed or failed
 	// Payload: BatchQuoteExecutedPayload.
 	// Content type: application/json.
 	HandleBatchQuoteExecuted(ctx context.Context, payload BatchQuoteExecutedPayload) error

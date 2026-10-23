@@ -2035,13 +2035,13 @@ type CreateRFQBatchRequest struct {
 	// ReplaceExisting Close your oldest open RFQ batches as needed so this one can be created. Single RFQs are never replaced.
 	ReplaceExisting bool `json:"replace_existing,omitempty"`
 
-	// RestRemainder Whether to rest the remainder of each child RFQ after execution
+	// RestRemainder Must be false. A batch executes as one fill-or-kill, so no child rests a remainder.
 	RestRemainder bool `json:"rest_remainder,omitempty"`
 
 	// Subaccount The subaccount number to create the RFQ batch for (direct members only; 0 for primary, 1-63 for subaccounts)
 	Subaccount *int `json:"subaccount,omitempty"`
 
-	// SubtraderId The subtrader to create the RFQ batch for (FCM members only)
+	// SubtraderId The subtrader to create the RFQ batch for (FCM members only; FCM members cannot create RFQ batches yet)
 	SubtraderId string `json:"subtrader_id,omitempty"`
 
 	// TargetCostDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
@@ -4214,7 +4214,7 @@ type RFQBatch struct {
 	// ClientBatchId The client_batch_id given at creation (visible to the batch creator)
 	ClientBatchId string `json:"client_batch_id,omitempty"`
 
-	// CloseReason Why the RFQ batch closed, for example executed, partially executed, or cancelled (visible to the batch creator)
+	// CloseReason Why the RFQ batch closed, for example executed, execution failed, or cancelled. A batch closes partially executed only in the rare case that filling one child cancelled a maker order another child needed (visible to the batch creator)
 	CloseReason string `json:"close_reason,omitempty"`
 
 	// ClosedTs Timestamp when the RFQ batch closed
@@ -4356,7 +4356,7 @@ type RFQBatchQuote struct {
 	// RfqCreatorUserId User ID of the RFQ batch creator (private field)
 	RfqCreatorUserId string `json:"rfq_creator_user_id,omitempty"`
 
-	// Status Status of a batch quote. A partially_executed batch quote executed some children and failed others.
+	// Status Status of a batch quote. A partially_executed batch quote executed some children and failed others, which happens only in the rare case that filling one child of the batch cancelled a maker order another child needed.
 	Status RFQBatchQuoteStatus `json:"status"`
 
 	// UpdatedTs Timestamp when the batch quote was last updated
@@ -4382,7 +4382,7 @@ type RFQBatchQuoteEntry struct {
 	YesBid FixedPointDollars `json:"yes_bid"`
 }
 
-// RFQBatchQuoteStatus Status of a batch quote. A partially_executed batch quote executed some children and failed others.
+// RFQBatchQuoteStatus Status of a batch quote. A partially_executed batch quote executed some children and failed others, which happens only in the rare case that filling one child of the batch cancelled a maker order another child needed.
 type RFQBatchQuoteStatus string
 
 // RFQBatchStatus Status of an RFQ batch. An open batch takes batch quotes; an accepted batch is waiting for its winning makers to confirm or is executing; a closed batch is finished.
@@ -5824,7 +5824,7 @@ type GetOrdersParams struct {
 	// Ticker Filter by market ticker
 	Ticker TickerQuery `form:"ticker,omitempty" json:"ticker,omitempty"`
 
-	// EventTicker Event tickers to filter by, as a comma-separated list (maximum 10).
+	// EventTicker Event tickers to filter by, as a comma-separated list (maximum 100). Events with no markets return no orders.
 	EventTicker MultipleEventTickerQuery `form:"event_ticker,omitempty" json:"event_ticker,omitempty"`
 
 	// MinTs Filter items after this Unix timestamp
@@ -6432,7 +6432,7 @@ type ClientInterface interface {
 
 	// CreateRFQBatchWithBody Create RFQ Batch
 	//
-	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6441,7 +6441,7 @@ type ClientInterface interface {
 
 	// CreateRFQBatch Create RFQ Batch
 	//
-	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6521,7 +6521,7 @@ type ClientInterface interface {
 
 	// ConfirmRFQBatchQuoteWithBody Confirm RFQ Batch Quote
 	//
-	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and the children then execute together. If any winner misses the confirmation deadline, the whole batch closes without trading.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6530,7 +6530,7 @@ type ClientInterface interface {
 
 	// ConfirmRFQBatchQuote Confirm RFQ Batch Quote
 	//
-	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and the children then execute together. If any winner misses the confirmation deadline, the whole batch closes without trading.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -7481,7 +7481,7 @@ type ClientInterface interface {
 
 	// GetSubaccountBalances Get All Subaccount Balances
 	//
-	// Gets balances for all subaccounts including the primary account.
+	// Gets balances for all subaccounts including the primary account. For an API key restricted to a subaccount, returns only that subaccount's balances across exchange indices.
 	//
 	// Corresponds with GET /portfolio/subaccounts/balances (the `GetSubaccountBalances` operationId).
 	GetSubaccountBalances(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -8129,7 +8129,7 @@ func (c *Client) GetRFQBatches(ctx context.Context, params *GetRFQBatchesParams,
 
 // CreateRFQBatchWithBody Create RFQ Batch
 //
-// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 //
 // Takes any type of body and a specified content type.
 //
@@ -8148,7 +8148,7 @@ func (c *Client) CreateRFQBatchWithBody(ctx context.Context, contentType string,
 
 // CreateRFQBatch Create RFQ Batch
 //
-// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -8328,7 +8328,7 @@ func (c *Client) DeleteRFQBatchQuote(ctx context.Context, rfqBatchId RfqBatchIdP
 
 // ConfirmRFQBatchQuoteWithBody Confirm RFQ Batch Quote
 //
-// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and the children then execute together. If any winner misses the confirmation deadline, the whole batch closes without trading.
 //
 // Takes any type of body and a specified content type.
 //
@@ -8347,7 +8347,7 @@ func (c *Client) ConfirmRFQBatchQuoteWithBody(ctx context.Context, rfqBatchId Rf
 
 // ConfirmRFQBatchQuote Confirm RFQ Batch Quote
 //
-// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and the children then execute together. If any winner misses the confirmation deadline, the whole batch closes without trading.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10310,7 +10310,7 @@ func (c *Client) CreateSubaccount(ctx context.Context, body CreateSubaccountJSON
 
 // GetSubaccountBalances Get All Subaccount Balances
 //
-// Gets balances for all subaccounts including the primary account.
+// Gets balances for all subaccounts including the primary account. For an API key restricted to a subaccount, returns only that subaccount's balances across exchange indices.
 //
 // Corresponds with GET /portfolio/subaccounts/balances (the `GetSubaccountBalances` operationId).
 func (c *Client) GetSubaccountBalances(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -18758,7 +18758,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateRFQBatchWithBodyWithResponse Create RFQ Batch
 	//
-	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18767,7 +18767,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateRFQBatchWithResponse Create RFQ Batch
 	//
-	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18857,7 +18857,7 @@ type ClientWithResponsesInterface interface {
 
 	// ConfirmRFQBatchQuoteWithBodyWithResponse Confirm RFQ Batch Quote
 	//
-	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and the children then execute together. If any winner misses the confirmation deadline, the whole batch closes without trading.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18866,7 +18866,7 @@ type ClientWithResponsesInterface interface {
 
 	// ConfirmRFQBatchQuoteWithResponse Confirm RFQ Batch Quote
 	//
-	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+	// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and the children then execute together. If any winner misses the confirmation deadline, the whole batch closes without trading.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -19941,7 +19941,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetSubaccountBalancesWithResponse Get All Subaccount Balances
 	//
-	// Gets balances for all subaccounts including the primary account.
+	// Gets balances for all subaccounts including the primary account. For an API key restricted to a subaccount, returns only that subaccount's balances across exchange indices.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -27837,7 +27837,7 @@ func (c *ClientWithResponses) GetRFQBatchesWithResponse(ctx context.Context, par
 
 // CreateRFQBatchWithBodyWithResponse Create RFQ Batch
 //
-// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -27852,7 +27852,7 @@ func (c *ClientWithResponses) CreateRFQBatchWithBodyWithResponse(ctx context.Con
 
 // CreateRFQBatchWithResponse Create RFQ Batch
 //
-// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting fills every child or none, and each child then executes as its own trade. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way.
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -28002,7 +28002,7 @@ func (c *ClientWithResponses) DeleteRFQBatchQuoteWithResponse(ctx context.Contex
 
 // ConfirmRFQBatchQuoteWithBodyWithResponse Confirm RFQ Batch Quote
 //
-// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and the children then execute together. If any winner misses the confirmation deadline, the whole batch closes without trading.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -28017,7 +28017,7 @@ func (c *ClientWithResponses) ConfirmRFQBatchQuoteWithBodyWithResponse(ctx conte
 
 // ConfirmRFQBatchQuoteWithResponse Confirm RFQ Batch Quote
 //
-// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and each child executes as its own trade. If any winner misses the confirmation deadline, the whole batch closes without trading.
+// Confirm the children your batch quote won, all at once. Nothing executes until every winning maker of the batch has confirmed; the last confirmation starts the execution timer for every child, and the children then execute together. If any winner misses the confirmation deadline, the whole batch closes without trading.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29700,7 +29700,7 @@ func (c *ClientWithResponses) CreateSubaccountWithResponse(ctx context.Context, 
 
 // GetSubaccountBalancesWithResponse Get All Subaccount Balances
 //
-// Gets balances for all subaccounts including the primary account.
+// Gets balances for all subaccounts including the primary account. For an API key restricted to a subaccount, returns only that subaccount's balances across exchange indices.
 //
 // Returns a wrapper object for the known response body format(s).
 //
