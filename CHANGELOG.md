@@ -2,6 +2,13 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.3.2, 2026-10-25
+
+- `CreateRFQBatchChild` has two new optional fields: `ContractsFp` (`*FixedPointCount`) and `TargetCostDollars` (`FixedPointDollars`). Each child of an RFQ batch can now carry its own size. Every child must still be sized the same way, by contracts or by target cost.
+- `CreateRFQBatchRequest.TargetCostDollars` now acts as a default for children that set no size of their own. The `TargetCostExcludesFees` comment now says it is valid when the children are sized by target cost.
+- `CreateRFQBatch` and `CreateRFQBatchWithBody` docs now say nothing trades unless every child can fill in full, and that the batch closes partially executed in the rare case that filling one child cancels a maker order another child needed.
+- The transfer method docs now say subaccount-restricted API keys can only transfer between `event_contract` exchange indices, with `source_subaccount` and `destination_subaccount` both set to the key's subaccount.
+
 ## v0.3.1, 2026-10-23
 
 - Doc comments only, no behavior change and no exported API change.

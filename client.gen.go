@@ -1983,13 +1983,23 @@ type CreateQuoteResponse struct {
 	Id string `json:"id"`
 }
 
-// CreateRFQBatchChild One combo to request quotes on. Set exactly one of market_ticker and selected_markets.
+// CreateRFQBatchChild One combo to request quotes on. Set exactly one of market_ticker and selected_markets, and optionally the child's own size.
 type CreateRFQBatchChild struct {
+	// ContractsFp Fixed-point contract count string (2 decimals, e.g., "10.00"; referred to as "fp" in field names). Requests accept 0-2 decimal places (e.g., "10", "10.0", "10.00"); responses always emit 2 decimals. Fractional contract values (e.g., "2.50") are supported; the minimum granularity is 0.01 contracts.
+	//
+	// Example: 10.00
+	ContractsFp *FixedPointCount `json:"contracts_fp,omitempty"`
+
 	// MarketTicker Ticker of an existing combo market
 	MarketTicker string `json:"market_ticker,omitempty"`
 
 	// SelectedMarkets Legs of the combo, at most 6, looked up or created in the request's mve_collection_ticker as POST /multivariate_event_collections/{collection_ticker} does.
 	SelectedMarkets []TickerPair `json:"selected_markets,omitempty" validate:"omitempty,max=6,dive"`
+
+	// TargetCostDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	TargetCostDollars FixedPointDollars `json:"target_cost_dollars,omitempty"`
 }
 
 // CreateRFQBatchQuoteRequest defines model for CreateRFQBatchQuoteRequest.
@@ -2049,7 +2059,7 @@ type CreateRFQBatchRequest struct {
 	// Example: 0.5600
 	TargetCostDollars FixedPointDollars `json:"target_cost_dollars,omitempty"`
 
-	// TargetCostExcludesFees Same as on Create RFQ, applied to every child. Only valid together with target_cost_dollars.
+	// TargetCostExcludesFees Same as on Create RFQ, applied to every child. Only valid when the children are sized by target cost.
 	TargetCostExcludesFees bool `json:"target_cost_excludes_fees,omitempty"`
 }
 
@@ -6432,7 +6442,7 @@ type ClientInterface interface {
 
 	// CreateRFQBatchWithBody Create RFQ Batch
 	//
-	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: nothing trades unless every child can fill in full. In the rare case that filling one child cancels a maker order another child needed, the batch closes partially executed. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Size each child with its own contracts_fp or target_cost_dollars, or set one on the batch for every child that has none; every child must be sized the same way, by contracts or by target cost. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6441,7 +6451,7 @@ type ClientInterface interface {
 
 	// CreateRFQBatch Create RFQ Batch
 	//
-	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: nothing trades unless every child can fill in full. In the rare case that filling one child cancels a maker order another child needed, the batch closes partially executed. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Size each child with its own contracts_fp or target_cost_dollars, or set one on the batch for every child that has none; every child must be sized the same way, by contracts or by target cost. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -7286,6 +7296,8 @@ type ClientInterface interface {
 	//
 	// Transfers funds within the same account.
 	//
+	// Subaccount-restricted API keys can only transfer between `event_contract` exchange indices, with `source_subaccount` and `destination_subaccount` both set to the key's subaccount.
+	//
 	// When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 	//
 	// Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
@@ -7298,6 +7310,8 @@ type ClientInterface interface {
 	// IntraExchangeInstanceTransfer Intra Account Transfer
 	//
 	// Transfers funds within the same account.
+	//
+	// Subaccount-restricted API keys can only transfer between `event_contract` exchange indices, with `source_subaccount` and `destination_subaccount` both set to the key's subaccount.
 	//
 	// When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 	//
@@ -8129,7 +8143,7 @@ func (c *Client) GetRFQBatches(ctx context.Context, params *GetRFQBatchesParams,
 
 // CreateRFQBatchWithBody Create RFQ Batch
 //
-// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: nothing trades unless every child can fill in full. In the rare case that filling one child cancels a maker order another child needed, the batch closes partially executed. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Size each child with its own contracts_fp or target_cost_dollars, or set one on the batch for every child that has none; every child must be sized the same way, by contracts or by target cost. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 //
 // Takes any type of body and a specified content type.
 //
@@ -8148,7 +8162,7 @@ func (c *Client) CreateRFQBatchWithBody(ctx context.Context, contentType string,
 
 // CreateRFQBatch Create RFQ Batch
 //
-// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: nothing trades unless every child can fill in full. In the rare case that filling one child cancels a maker order another child needed, the batch closes partially executed. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Size each child with its own contracts_fp or target_cost_dollars, or set one on the batch for every child that has none; every child must be sized the same way, by contracts or by target cost. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -9885,6 +9899,8 @@ func (c *Client) GetFills(ctx context.Context, params *GetFillsParams, reqEditor
 //
 // Transfers funds within the same account.
 //
+// Subaccount-restricted API keys can only transfer between `event_contract` exchange indices, with `source_subaccount` and `destination_subaccount` both set to the key's subaccount.
+//
 // When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 //
 // Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
@@ -9907,6 +9923,8 @@ func (c *Client) IntraExchangeInstanceTransferWithBody(ctx context.Context, cont
 // IntraExchangeInstanceTransfer Intra Account Transfer
 //
 // Transfers funds within the same account.
+//
+// Subaccount-restricted API keys can only transfer between `event_contract` exchange indices, with `source_subaccount` and `destination_subaccount` both set to the key's subaccount.
 //
 // When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 //
@@ -18758,7 +18776,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateRFQBatchWithBodyWithResponse Create RFQ Batch
 	//
-	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: nothing trades unless every child can fill in full. In the rare case that filling one child cancels a maker order another child needed, the batch closes partially executed. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Size each child with its own contracts_fp or target_cost_dollars, or set one on the batch for every child that has none; every child must be sized the same way, by contracts or by target cost. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18767,7 +18785,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateRFQBatchWithResponse Create RFQ Batch
 	//
-	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
+	// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: nothing trades unless every child can fill in full. In the rare case that filling one child cancels a maker order another child needed, the batch closes partially executed. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Size each child with its own contracts_fp or target_cost_dollars, or set one on the batch for every child that has none; every child must be sized the same way, by contracts or by target cost. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -19724,6 +19742,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Transfers funds within the same account.
 	//
+	// Subaccount-restricted API keys can only transfer between `event_contract` exchange indices, with `source_subaccount` and `destination_subaccount` both set to the key's subaccount.
+	//
 	// When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 	//
 	// Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
@@ -19736,6 +19756,8 @@ type ClientWithResponsesInterface interface {
 	// IntraExchangeInstanceTransferWithResponse Intra Account Transfer
 	//
 	// Transfers funds within the same account.
+	//
+	// Subaccount-restricted API keys can only transfer between `event_contract` exchange indices, with `source_subaccount` and `destination_subaccount` both set to the key's subaccount.
 	//
 	// When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 	//
@@ -27837,7 +27859,7 @@ func (c *ClientWithResponses) GetRFQBatchesWithResponse(ctx context.Context, par
 
 // CreateRFQBatchWithBodyWithResponse Create RFQ Batch
 //
-// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: nothing trades unless every child can fill in full. In the rare case that filling one child cancels a maker order another child needed, the batch closes partially executed. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Size each child with its own contracts_fp or target_cost_dollars, or set one on the batch for every child that has none; every child must be sized the same way, by contracts or by target cost. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -27852,7 +27874,7 @@ func (c *ClientWithResponses) CreateRFQBatchWithBodyWithResponse(ctx context.Con
 
 // CreateRFQBatchWithResponse Create RFQ Batch
 //
-// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: every child trades, or none does. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Every child is sized the same way. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
+// Request quotes on several combos at once, for example every parlay of a round robin. Each child is an ordinary RFQ on one combo market. Makers quote the whole batch, but each child is accepted from whichever maker quotes it best on your side, so the batch may fill from several makers. Accepting takes every child or none, and the children then execute together as one fill-or-kill: nothing trades unless every child can fill in full. In the rare case that filling one child cancels a maker order another child needed, the batch closes partially executed. Name each child's combo by its market ticker, or by its legs to look up or create the combo in mve_collection_ticker. Size each child with its own contracts_fp or target_cost_dollars, or set one on the batch for every child that has none; every child must be sized the same way, by contracts or by target cost. rest_remainder must be false, and FCM members cannot create RFQ batches yet (403 rfq_batch_unavailable).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29345,6 +29367,8 @@ func (c *ClientWithResponses) GetFillsWithResponse(ctx context.Context, params *
 //
 // Transfers funds within the same account.
 //
+// Subaccount-restricted API keys can only transfer between `event_contract` exchange indices, with `source_subaccount` and `destination_subaccount` both set to the key's subaccount.
+//
 // When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 //
 // Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
@@ -29363,6 +29387,8 @@ func (c *ClientWithResponses) IntraExchangeInstanceTransferWithBodyWithResponse(
 // IntraExchangeInstanceTransferWithResponse Intra Account Transfer
 //
 // Transfers funds within the same account.
+//
+// Subaccount-restricted API keys can only transfer between `event_contract` exchange indices, with `source_subaccount` and `destination_subaccount` both set to the key's subaccount.
 //
 // When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 //
