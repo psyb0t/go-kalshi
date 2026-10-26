@@ -154,29 +154,14 @@ const MultivariateMarketLifecycleAddressTemplate = "multivariate_market_lifecycl
 //
 // - RFQ events (RFQCreated, RFQDeleted) are sent for all users by default. Set `user_filter: "self"` to receive only RFQs you created. Omitted or empty `user_filter` keeps the default.
 // - Quote events (QuoteCreated, QuoteAccepted, QuoteExecuted) are only sent if you created the quote OR you created the RFQ
-//
-// **Use case:** Tracking RFQs you create and quotes on your RFQs, or quotes you create on others' RFQs. Use QuoteExecuted to correlate fill messages with quotes via client_order_id.
-const CommunicationsAddressTemplate = "communications"
-
-// BatchCommunicationsAddressTemplate is the address of the BatchCommunications channel.
-//
-// Real-time RFQ batch and batch quote notifications. Requires authentication.
-//
-// **Requirements:**
-// - Authentication required
-// - Market specification ignored
-// - Optional sharding for fanout control:
-//   - `shard_factor` (1-100) and `shard_key` (`0 <= key < shard_factor`)
-//   - Every event is partitioned by `rfq_batch_id`
-//
-// - RFQ batch events (RFQBatchCreated, RFQBatchDeleted) are sent for all users by default. Set `user_filter: "self"` to receive only RFQ batches you created. Omitted or empty `user_filter` keeps the default.
-// - A batch's child RFQs are announced only inside RFQBatchCreated. Each child trade still sends QuoteExecuted, with `rfq_batch_id` set, on the `communications` channel. The two channels are separate subscriptions, so a child's QuoteExecuted is not ordered with this channel's messages.
-// - Each child of an RFQ batch fills at its best quote across makers, and the children execute together: every child trades, or none does. Every maker's batch quote prices every child, and each child goes to the maker bidding best on the accepted side, so one batch can have several winning makers. A batch quote counts only for 30 seconds after it was last submitted; resending an unchanged bid within that time keeps its time priority.
+// - RFQ batch events (RFQBatchCreated, RFQBatchDeleted) follow the RFQ event rules: sent for all users by default, or with `user_filter: "self"` only for RFQ batches you created. Each child RFQ of a batch also arrives as an RFQCreated with `rfq_batch_id` set, right after its batch's RFQBatchCreated, and an RFQDeleted with `rfq_batch_id` set when it closes; filter on `rfq_batch_id` to skip them. Each child trade sends QuoteExecuted, with `rfq_batch_id` set. With sharding, every batch event is partitioned by `rfq_batch_id` instead of the market ticker, while a child's RFQ and quote events are partitioned by its market ticker, so they can arrive on another shard than its batch's events.
+// - A child RFQ of a batch can be quoted like a single RFQ. Such a quote competes with batch quotes for that child, with the differences listed on `rfq_batch_id` in RFQCreated. Its QuoteCreated and QuoteAccepted go only to the maker, never to the batch creator, with `rfq_creator_id` set to the shared placeholder.
+// - Each child of an RFQ batch fills at its best quote across makers, and the children execute together as one fill-or-kill: nothing trades unless every child can fill in full. In the rare case that filling one child cancels a maker order another child needed, the batch closes partially executed. Every maker's batch quote prices every child, and each child goes to the maker bidding best on the accepted side, so one batch can have several winning makers. A batch quote counts only for 30 seconds after it was last submitted; resending an unchanged bid within that time keeps its time priority.
 // - RFQBatchBestQuotes and RFQBatchExecuted are only sent to the RFQ batch creator. RFQBatchBestQuotes carries the best bids across makers without identifying them; the batch creator never receives a maker's individual batch quote.
 // - Batch quote events (BatchQuoteCreated, BatchQuoteAccepted, BatchQuoteExecuted) are only sent to the maker that created the batch quote. Each winning maker confirms the children it won, and nothing executes until every winning maker has confirmed.
 //
-// **Use case:** Tracking RFQ batches you create and the best quotes on them, or batch quotes you create on others' RFQ batches.
-const BatchCommunicationsAddressTemplate = "batch_communications"
+// **Use case:** Tracking RFQs and RFQ batches you create and the quotes on them, or quotes and batch quotes you create on others'. Use QuoteExecuted to correlate fill messages with quotes via client_order_id.
+const CommunicationsAddressTemplate = "communications"
 
 // OrderGroupUpdatesAddressTemplate is the address of the OrderGroupUpdates channel.
 //
@@ -609,7 +594,7 @@ type SubscribeCommandPayloadParams struct {
 	//
 	// Default: false
 	UseYesPrice *bool `json:"use_yes_price,omitempty"`
-	// Communications channel only. Set to "self" to receive RFQ created/deleted events only for RFQs you created. Omitted or empty receives RFQs from all users. Quote notifications are unchanged.
+	// Communications channel only. Set to "self" to receive RFQ and RFQ batch created/deleted events only for those you created. Omitted or empty receives them from all users. Quote and batch quote notifications are unchanged.
 	//
 	// Default: ""
 	UserFilter *SubscribeCommandPayloadParamsUserFilter `json:"user_filter,omitempty"`
@@ -728,7 +713,7 @@ func (v SubscribeCommandPayloadParamsChannelsItem) Validate() error {
 type MarketTicker = string
 type MarketID = string
 
-// Communications channel only. Set to "self" to receive RFQ created/deleted events only for RFQs you created. Omitted or empty receives RFQs from all users. Quote notifications are unchanged.
+// Communications channel only. Set to "self" to receive RFQ and RFQ batch created/deleted events only for those you created. Omitted or empty receives them from all users. Quote and batch quote notifications are unchanged.
 //
 // Default: ""
 type SubscribeCommandPayloadParamsUserFilter string
@@ -4168,6 +4153,8 @@ type RfqCreatedPayloadMsg struct {
 	MveCollectionTicker *string `json:"mve_collection_ticker,omitempty"`
 	// Selected legs for an MVE RFQ. Omitted when the array is empty.
 	MveSelectedLegs []RfqCreatedPayloadMsgMveSelectedLegsItem `json:"mve_selected_legs,omitempty"`
+	// Identifier of the RFQ batch this RFQ is a child of. Omitted for an RFQ outside a batch. A child can be quoted like a single RFQ, with these differences: a quote counts only for 30 seconds after it was sent, and resending an unchanged bid keeps its time priority; nothing executes until every winning maker of the batch has confirmed, so a confirmed quote can still close without a fill; an accepted quote can't be cancelled, and not confirming it lapses with the same penalty as cancelling; and `rfq_creator_id` on its quote messages is the shared placeholder.
+	RfqBatchID *string `json:"rfq_batch_id,omitempty"`
 }
 
 // UnmarshalJSON decodes RfqCreatedPayloadMsg strictly. Required properties must be
@@ -4359,6 +4346,8 @@ type RfqDeletedPayloadMsg struct {
 	TargetCostDollars *string `json:"target_cost_dollars,omitempty"`
 	// Timestamp when the RFQ was deleted
 	DeletedTs time.Time `json:"deleted_ts"`
+	// Identifier of the RFQ batch this RFQ is a child of, which closed with it. Omitted for an RFQ outside a batch.
+	RfqBatchID *string `json:"rfq_batch_id,omitempty"`
 }
 
 // UnmarshalJSON decodes RfqDeletedPayloadMsg strictly. Required properties must be
@@ -4469,7 +4458,7 @@ type QuoteCreatedPayloadMsg struct {
 	RfqID string `json:"rfq_id"`
 	// Public communications ID of the quote creator (anonymized)
 	QuoteCreatorID string `json:"quote_creator_id"`
-	// Public communications ID of the RFQ creator (pseudonymous). When obscure_creator_id is enabled, other users receive the shared placeholder "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" (SHA-256 of empty input). The creator sees their normal ID.
+	// Public communications ID of the RFQ creator (pseudonymous). When obscure_creator_id is enabled, other users receive the shared placeholder "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" (SHA-256 of empty input). The creator sees their normal ID. On a quote on a child RFQ of an RFQ batch, always the placeholder.
 	RfqCreatorID string `json:"rfq_creator_id"`
 	// Market ticker for the quote
 	MarketTicker string `json:"market_ticker"`
@@ -4600,7 +4589,7 @@ type QuoteAcceptedPayloadMsg struct {
 	RfqID string `json:"rfq_id"`
 	// Public communications ID of the quote creator (anonymized)
 	QuoteCreatorID string `json:"quote_creator_id"`
-	// Public communications ID of the RFQ creator (pseudonymous). When obscure_creator_id is enabled, other users receive the shared placeholder "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" (SHA-256 of empty input). The creator sees their normal ID.
+	// Public communications ID of the RFQ creator (pseudonymous). When obscure_creator_id is enabled, other users receive the shared placeholder "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" (SHA-256 of empty input). The creator sees their normal ID. On a quote on a child RFQ of an RFQ batch, always the placeholder.
 	RfqCreatorID string `json:"rfq_creator_id"`
 	// Market ticker for the quote
 	MarketTicker string `json:"market_ticker"`
@@ -4770,7 +4759,7 @@ type QuoteExecutedPayloadMsg struct {
 	// Optional - Present only when your side of this quote used a subaccount.
 	// Contains your own subaccount number; the counterparty's subaccount is never shared.
 	Subaccount *int64 `json:"subaccount,omitempty"`
-	// Identifier of the RFQ batch, when the quote was accepted as part of a batch quote. Omitted otherwise.
+	// Identifier of the RFQ batch, when the quote is on a child RFQ of an RFQ batch. Omitted otherwise.
 	RfqBatchID *string `json:"rfq_batch_id,omitempty"`
 }
 

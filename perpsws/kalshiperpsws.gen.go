@@ -62,6 +62,15 @@ const OrderbookDeltaAddressTemplate = "orderbook_delta"
 // - supports `update_subscription` with `add_markets` and `delete_markets`
 const CorporateActionsAddressTemplate = "corporate_actions"
 
+// MarketLifecycleV2AddressTemplate is the address of the MarketLifecycleV2 channel.
+//
+// Market deactivation and activation notifications.
+//
+// Requirements:
+// - no additional channel-level auth beyond the authenticated WebSocket connection
+// - receives every margin market; `market_ticker` filters are not supported
+const MarketLifecycleV2AddressTemplate = "market_lifecycle_v2"
+
 // TickerAddressTemplate is the address of the Ticker channel.
 //
 // Margin market updates are delivered on a single channel. `ticker` messages include
@@ -250,12 +259,13 @@ const (
 	SubscribeCommandPayloadParamsChannelsItemUserOrders        SubscribeCommandPayloadParamsChannelsItem = "user_orders"
 	SubscribeCommandPayloadParamsChannelsItemOrderGroupUpdates SubscribeCommandPayloadParamsChannelsItem = "order_group_updates"
 	SubscribeCommandPayloadParamsChannelsItemCorporateActions  SubscribeCommandPayloadParamsChannelsItem = "corporate_actions"
+	SubscribeCommandPayloadParamsChannelsItemMarketLifecycleV2 SubscribeCommandPayloadParamsChannelsItem = "market_lifecycle_v2"
 )
 
 // Validate reports whether v is one of the values the schema lists.
 func (v SubscribeCommandPayloadParamsChannelsItem) Validate() error {
 	switch v {
-	case SubscribeCommandPayloadParamsChannelsItemOrderbookDelta, SubscribeCommandPayloadParamsChannelsItemTicker, SubscribeCommandPayloadParamsChannelsItemTrade, SubscribeCommandPayloadParamsChannelsItemFill, SubscribeCommandPayloadParamsChannelsItemUserOrders, SubscribeCommandPayloadParamsChannelsItemOrderGroupUpdates, SubscribeCommandPayloadParamsChannelsItemCorporateActions:
+	case SubscribeCommandPayloadParamsChannelsItemOrderbookDelta, SubscribeCommandPayloadParamsChannelsItemTicker, SubscribeCommandPayloadParamsChannelsItemTrade, SubscribeCommandPayloadParamsChannelsItemFill, SubscribeCommandPayloadParamsChannelsItemUserOrders, SubscribeCommandPayloadParamsChannelsItemOrderGroupUpdates, SubscribeCommandPayloadParamsChannelsItemCorporateActions, SubscribeCommandPayloadParamsChannelsItemMarketLifecycleV2:
 		return nil
 	}
 
@@ -1802,6 +1812,136 @@ func (v MarginCorporateActionTickerChangeTerms) Validate() error {
 	return nil
 }
 
+type MarginMarketLifecycleV2Payload struct {
+	Type string `json:"type"`
+	// Server-generated subscription identifier (sid) used to identify the channel
+	Sid SubscriptionID `json:"sid"`
+	// Sequential number that should be checked if you want to guarantee you received all the messages. Used for snapshot/delta consistency
+	Seq SequenceNumber                    `json:"seq"`
+	Msg MarginMarketLifecycleV2PayloadMsg `json:"msg"`
+	// Unix timestamp in milliseconds when Kalshi queued this message at the network layer.
+	SendingTsMs *SendingTimestampMs `json:"sending_ts_ms,omitempty"`
+}
+
+// UnmarshalJSON decodes MarginMarketLifecycleV2Payload strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *MarginMarketLifecycleV2Payload) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "MarginMarketLifecycleV2Payload")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("MarginMarketLifecycleV2Payload", members, "type", "sid", "seq", "msg"); err != nil {
+		return err
+	}
+
+	type plain MarginMarketLifecycleV2Payload
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("MarginMarketLifecycleV2Payload", err)
+	}
+
+	*v = MarginMarketLifecycleV2Payload(decoded)
+
+	if _, ok := members["type"]; ok {
+		if err := asyncapirt.CheckConst("MarginMarketLifecycleV2Payload.type", v.Type, "market_lifecycle_v2"); err != nil {
+			return err
+		}
+	}
+
+	return v.Validate()
+}
+
+// MarshalJSON encodes MarginMarketLifecycleV2Payload with its const properties filled in.
+func (v MarginMarketLifecycleV2Payload) MarshalJSON() ([]byte, error) {
+	type plain MarginMarketLifecycleV2Payload
+
+	encoded := plain(v)
+	encoded.Type = "market_lifecycle_v2"
+
+	data, err := json.Marshal(encoded)
+	if err != nil {
+		return nil, ctxerrors.Wrapf(commerr.ErrInvalidValue, "MarginMarketLifecycleV2Payload: %v", err)
+	}
+
+	return data, nil
+}
+
+// Validate checks the constraints the schema declares for MarginMarketLifecycleV2Payload.
+func (v MarginMarketLifecycleV2Payload) Validate() error {
+	if err := asyncapirt.CheckMinimum("sid", float64(v.Sid), 1); err != nil {
+		return err
+	}
+	if err := asyncapirt.CheckMinimum("seq", float64(v.Seq), 1); err != nil {
+		return err
+	}
+	if err := v.Msg.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "msg")
+	}
+
+	return nil
+}
+
+type MarginMarketLifecycleV2PayloadMsg struct {
+	// Unique market identifier
+	MarketTicker MarketTicker                               `json:"market_ticker"`
+	EventType    MarginMarketLifecycleV2PayloadMsgEventType `json:"event_type"`
+	// Whether trading on the market is paused.
+	IsDeactivated bool `json:"is_deactivated"`
+}
+
+// UnmarshalJSON decodes MarginMarketLifecycleV2PayloadMsg strictly. Required properties must be
+// present and the decoded value must pass Validate.
+func (v *MarginMarketLifecycleV2PayloadMsg) UnmarshalJSON(data []byte) error {
+	members, err := asyncapirt.DecodeObject(data, "MarginMarketLifecycleV2PayloadMsg")
+	if err != nil {
+		return err
+	}
+
+	if err := asyncapirt.RequireKeys("MarginMarketLifecycleV2PayloadMsg", members, "market_ticker", "event_type", "is_deactivated"); err != nil {
+		return err
+	}
+
+	type plain MarginMarketLifecycleV2PayloadMsg
+
+	var decoded plain
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return asyncapirt.DecodeError("MarginMarketLifecycleV2PayloadMsg", err)
+	}
+
+	*v = MarginMarketLifecycleV2PayloadMsg(decoded)
+
+	return v.Validate()
+}
+
+// Validate checks the constraints the schema declares for MarginMarketLifecycleV2PayloadMsg.
+func (v MarginMarketLifecycleV2PayloadMsg) Validate() error {
+	if err := v.EventType.Validate(); err != nil {
+		return ctxerrors.Wrap(err, "event_type")
+	}
+
+	return nil
+}
+
+type MarginMarketLifecycleV2PayloadMsgEventType string
+
+// Values of MarginMarketLifecycleV2PayloadMsgEventType.
+const (
+	MarginMarketLifecycleV2PayloadMsgEventTypeActivated   MarginMarketLifecycleV2PayloadMsgEventType = "activated"
+	MarginMarketLifecycleV2PayloadMsgEventTypeDeactivated MarginMarketLifecycleV2PayloadMsgEventType = "deactivated"
+)
+
+// Validate reports whether v is one of the values the schema lists.
+func (v MarginMarketLifecycleV2PayloadMsgEventType) Validate() error {
+	switch v {
+	case MarginMarketLifecycleV2PayloadMsgEventTypeActivated, MarginMarketLifecycleV2PayloadMsgEventTypeDeactivated:
+		return nil
+	}
+
+	return asyncapirt.Invalid("MarginMarketLifecycleV2PayloadMsgEventType", fmt.Sprintf("unknown value %v", v))
+}
+
 type MarginTickerPayload struct {
 	Type string `json:"type"`
 	// Server-generated subscription identifier (sid) used to identify the channel
@@ -2717,6 +2857,10 @@ const (
 	// Payload: MarginCorporateActionsDeltaPayload.
 	// Content type: application/json.
 	MessageCorporateActionsDelta = "corporate_actions_delta"
+	// Market deactivated or activated
+	// Payload: MarginMarketLifecycleV2Payload.
+	// Content type: application/json.
+	MessageMarketLifecycleV2 = "market_lifecycle_v2"
 	// Margin market ticker information
 	// Payload: MarginTickerPayload.
 	// Content type: application/json.
@@ -2754,6 +2898,20 @@ var receivedMessages = []asyncapirt.Candidate{
 		},
 		Decode: func(data []byte) (any, error) {
 			var payload MarginCorporateActionsDeltaPayload
+			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
+				return nil, err
+			}
+
+			return payload, nil
+		},
+	},
+	{
+		Name: MessageMarketLifecycleV2,
+		Matchers: []asyncapirt.Matcher{
+			{Pointer: "/type", Value: "\"market_lifecycle_v2\""},
+		},
+		Decode: func(data []byte) (any, error) {
+			var payload MarginMarketLifecycleV2Payload
 			if err := asyncapirt.UnmarshalStrict(data, &payload); err != nil {
 				return nil, err
 			}
@@ -2972,6 +3130,10 @@ type Handler interface {
 	// Payload: MarginCorporateActionsDeltaPayload.
 	// Content type: application/json.
 	HandleCorporateActionsDelta(ctx context.Context, payload MarginCorporateActionsDeltaPayload) error
+	// Market deactivated or activated
+	// Payload: MarginMarketLifecycleV2Payload.
+	// Content type: application/json.
+	HandleMarketLifecycleV2(ctx context.Context, payload MarginMarketLifecycleV2Payload) error
 	// Kalshi sends Ping (0x9) with body 'heartbeat' to elicit Pong from client
 	// Payload: string.
 	// Content type: application/octet-stream.
@@ -3039,6 +3201,11 @@ type UnimplementedHandler struct{}
 
 // HandleCorporateActionsDelta ignores the message.
 func (UnimplementedHandler) HandleCorporateActionsDelta(context.Context, MarginCorporateActionsDeltaPayload) error {
+	return nil
+}
+
+// HandleMarketLifecycleV2 ignores the message.
+func (UnimplementedHandler) HandleMarketLifecycleV2(context.Context, MarginMarketLifecycleV2Payload) error {
 	return nil
 }
 
@@ -3134,6 +3301,17 @@ func Dispatch(ctx context.Context, handler Handler, message ReceivedMessage) err
 		}
 
 		if err := handler.HandleCorporateActionsDelta(ctx, payload); err != nil {
+			return ctxerrors.Wrapf(err, "handle %s", message.Name)
+		}
+
+		return nil
+	case MessageMarketLifecycleV2:
+		payload, ok := message.Payload.(MarginMarketLifecycleV2Payload)
+		if !ok {
+			return ctxerrors.Wrapf(commerr.ErrInvalidValue, "%s payload is %T", message.Name, message.Payload)
+		}
+
+		if err := handler.HandleMarketLifecycleV2(ctx, payload); err != nil {
 			return ctxerrors.Wrapf(err, "handle %s", message.Name)
 		}
 

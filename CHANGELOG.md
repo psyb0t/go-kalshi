@@ -2,6 +2,16 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.4.0, 2026-10-26
+
+- Breaking: `ws.BatchCommunicationsAddressTemplate` is removed. The spec no longer has a separate `batch_communications` channel. RFQ batch events now come on the `communications` channel, so code that subscribes with this constant must use `CommunicationsAddressTemplate`.
+- Breaking: `perpsws.Handler` now requires a `HandleMarketLifecycleV2` method. Types that implement `Handler` without embedding `UnimplementedHandler` must add it. `UnimplementedHandler` has a no-op version.
+- `perpsws` adds a market lifecycle V2 channel: `MarketLifecycleV2AddressTemplate`, `SubscribeCommandPayloadParamsChannelsItemMarketLifecycleV2`, `MessageMarketLifecycleV2`, and the payload types `MarginMarketLifecycleV2Payload`, `MarginMarketLifecycleV2PayloadMsg` and `MarginMarketLifecycleV2PayloadMsgEventType` (values `MarginMarketLifecycleV2PayloadMsgEventTypeActivated` and `MarginMarketLifecycleV2PayloadMsgEventTypeDeactivated`).
+- `RFQ` gains an optional `RfqBatchId` field. It holds the batch an RFQ is a child of. A child can be quoted like a single RFQ, and its best quote counts toward the batch's.
+- `ws.RfqCreatedPayloadMsg` and `ws.RfqDeletedPayloadMsg` gain an optional `RfqBatchID` field.
+- Doc comments: the `ws` `UserFilter` comment now says `self` also filters RFQ batch events. The `QuoteExecuted` batch ID comment and the creator ID comments describe quotes on child RFQs. The `CreateRFQBatch` and `CreateRFQBatchWithBody` docs say makers see each child as an ordinary RFQ.
+- The REST spec moves to version 3.35.0.
+
 ## v0.3.2, 2026-10-25
 
 - `CreateRFQBatchChild` has two new optional fields: `ContractsFp` (`*FixedPointCount`) and `TargetCostDollars` (`FixedPointDollars`). Each child of an RFQ batch can now carry its own size. Every child must still be sized the same way, by contracts or by target cost.
