@@ -2,6 +2,12 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.5.0, 2026-10-27
+
+- The REST client adds the credit history endpoint `GET /portfolio/credit_history`: `GetCreditHistory` and `GetCreditHistoryWithResponse`, plus `NewGetCreditHistoryRequest` and `ParseGetCreditHistoryResponse2`. It returns the member's credits, newest first. `min_ts` is inclusive and `max_ts` is exclusive, and both filter on credit creation time.
+- New REST types: `CreditHistory` (fields `AmountDollars`, `CreatedTime`, `CreditId`, `Reason`, `Status`, `Type`), `CreditHistoryStatus` (values `CreditHistoryStatusApplied`, `CreditHistoryStatusFailed`, `CreditHistoryStatusPending` and `CreditHistoryStatusUnknown`), `GetCreditHistoryParams`, `GetCreditHistoryResponse` and `GetCreditHistoryResponse2`.
+- Breaking: `ClientInterface` gains `GetCreditHistory` and `ClientWithResponsesInterface` gains `GetCreditHistoryWithResponse`. Code that implements either interface, for example a mock, must add them. `Client` and `ClientWithResponses` already have them.
+
 ## v0.4.1, 2026-10-27
 
 - The development image is based on Debian (`golang:1.26.10-trixie`) instead of Alpine. Alpine keeps only the latest build of each package, so the exact pins broke the image build whenever a package was updated. System packages now come from the snapshot.debian.org date the base image was built from, which keeps them fixed for a given base image digest. jq 1.8.2, shellcheck 0.11.0 and shfmt 3.13.1 keep their versions, and Semgrep runs in its own virtual environment.

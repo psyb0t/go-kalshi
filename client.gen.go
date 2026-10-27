@@ -183,6 +183,30 @@ func (e CreateOrderV2RequestTimeInForce) Valid() bool {
 	}
 }
 
+// Defines values for CreditHistoryStatus.
+const (
+	CreditHistoryStatusApplied CreditHistoryStatus = "applied"
+	CreditHistoryStatusFailed  CreditHistoryStatus = "failed"
+	CreditHistoryStatusPending CreditHistoryStatus = "pending"
+	CreditHistoryStatusUnknown CreditHistoryStatus = "unknown"
+)
+
+// Valid indicates whether the value is a known member of the CreditHistoryStatus enum.
+func (e CreditHistoryStatus) Valid() bool {
+	switch e {
+	case CreditHistoryStatusApplied:
+		return true
+	case CreditHistoryStatusFailed:
+		return true
+	case CreditHistoryStatusPending:
+		return true
+	case CreditHistoryStatusUnknown:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DepositStatus.
 const (
 	DepositStatusDepositStatusApplied  DepositStatus = "applied"
@@ -2127,6 +2151,32 @@ type CreateSubaccountResponse struct {
 	SubaccountNumber int `json:"subaccount_number"`
 }
 
+// CreditHistory defines model for CreditHistory.
+type CreditHistory struct {
+	// AmountDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	AmountDollars FixedPointDollars `json:"amount_dollars"`
+
+	// CreatedTime Time the credit was created.
+	CreatedTime time.Time `json:"created_time"`
+
+	// CreditId Unique credit identifier.
+	CreditId string `json:"credit_id"`
+
+	// Reason Credit description, which may include a market or event ticker.
+	Reason string `json:"reason"`
+
+	// Status Credit processing status.
+	Status CreditHistoryStatus `json:"status"`
+
+	// Type Credit category.
+	Type string `json:"type"`
+}
+
+// CreditHistoryStatus Credit processing status.
+type CreditHistoryStatus string
+
 // DailySchedule defines model for DailySchedule.
 type DailySchedule struct {
 	// CloseTime Closing time in ET (Eastern Time) format HH:MM.
@@ -2689,6 +2739,14 @@ type GetBlockTradeProposalsResponse struct {
 type GetCommunicationsIDResponse struct {
 	// CommunicationsId A public communications ID which is used to identify the user
 	CommunicationsId string `json:"communications_id"`
+}
+
+// GetCreditHistoryResponse defines model for GetCreditHistoryResponse.
+type GetCreditHistoryResponse struct {
+	Credits []CreditHistory `json:"credits"`
+
+	// Cursor Pagination cursor; empty when there are no more results.
+	Cursor string `json:"cursor"`
 }
 
 // GetDepositsResponse defines model for GetDepositsResponse.
@@ -5709,6 +5767,21 @@ type GetBalanceParams struct {
 	ExchangeIndex *ExchangeIndex `form:"exchange_index,omitempty" json:"exchange_index,omitempty"`
 }
 
+// GetCreditHistoryParams defines parameters for GetCreditHistory.
+type GetCreditHistoryParams struct {
+	// Limit Number of results per page. Defaults to 100.
+	Limit *LimitQuery `form:"limit,omitempty" json:"limit,omitempty" validate:"omitempty,min=1,max=1000"`
+
+	// Cursor Pagination cursor. Use the cursor value returned from the previous response to get the next page of results. Leave empty for the first page.
+	Cursor CursorQuery `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// MinTs Filter items after this Unix timestamp
+	MinTs *MinTsQuery `form:"min_ts,omitempty" json:"min_ts,omitempty"`
+
+	// MaxTs Filter items before this Unix timestamp
+	MaxTs *MaxTsQuery `form:"max_ts,omitempty" json:"max_ts,omitempty"`
+}
+
 // GetDepositsParams defines parameters for GetDeposits.
 type GetDepositsParams struct {
 	// Limit Number of results per page. Defaults to 100. Maximum value is 500.
@@ -7174,6 +7247,14 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /portfolio/balance (the `GetBalance` operationId).
 	GetBalance(ctx context.Context, params *GetBalanceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCreditHistory Get Credit History
+	//
+	// Returns the authenticated member's credit history, newest first.
+	// Filters apply to credit creation time: `min_ts` is inclusive and `max_ts` is exclusive.
+	//
+	// Corresponds with GET /portfolio/credit_history (the `GetCreditHistory` operationId).
+	GetCreditHistory(ctx context.Context, params *GetCreditHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDeposits Get Deposits
 	//
@@ -9628,6 +9709,24 @@ func (c *Client) CreateMarketInMultivariateEventCollection(ctx context.Context, 
 // Corresponds with GET /portfolio/balance (the `GetBalance` operationId).
 func (c *Client) GetBalance(ctx context.Context, params *GetBalanceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBalanceRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetCreditHistory Get Credit History
+//
+// Returns the authenticated member's credit history, newest first.
+// Filters apply to credit creation time: `min_ts` is inclusive and `max_ts` is exclusive.
+//
+// Corresponds with GET /portfolio/credit_history (the `GetCreditHistory` operationId).
+func (c *Client) GetCreditHistory(ctx context.Context, params *GetCreditHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCreditHistoryRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -15719,6 +15818,92 @@ func NewGetBalanceRequest(server string, params *GetBalanceParams) (*http.Reques
 	return req, nil
 }
 
+// NewGetCreditHistoryRequest constructs an http.Request for the GetCreditHistory method
+func NewGetCreditHistoryRequest(server string, params *GetCreditHistoryParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/portfolio/credit_history")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.MinTs != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "min_ts", *params.MinTs, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.MaxTs != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "max_ts", *params.MaxTs, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetDepositsRequest constructs an http.Request for the GetDeposits method
 func NewGetDepositsRequest(server string, params *GetDepositsParams) (*http.Request, error) {
 	var err error
@@ -19612,6 +19797,16 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /portfolio/balance (the `GetBalance` operationId).
 	GetBalanceWithResponse(ctx context.Context, params *GetBalanceParams, reqEditors ...RequestEditorFn) (*GetBalanceResponse2, error)
+
+	// GetCreditHistoryWithResponse Get Credit History
+	//
+	// Returns the authenticated member's credit history, newest first.
+	// Filters apply to credit creation time: `min_ts` is inclusive and `max_ts` is exclusive.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /portfolio/credit_history (the `GetCreditHistory` operationId).
+	GetCreditHistoryWithResponse(ctx context.Context, params *GetCreditHistoryParams, reqEditors ...RequestEditorFn) (*GetCreditHistoryResponse2, error)
 
 	// GetDepositsWithResponse Get Deposits
 	//
@@ -24803,6 +24998,75 @@ func (r GetBalanceResponse2) ContentType() string {
 	return ""
 }
 
+type GetCreditHistoryResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetCreditHistoryResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetCreditHistoryResponse2) GetJSON200() *GetCreditHistoryResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetCreditHistoryResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetCreditHistoryResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetCreditHistoryResponse2) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetCreditHistoryResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetCreditHistoryResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCreditHistoryResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCreditHistoryResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetCreditHistoryResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetDepositsResponse2 struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -29152,6 +29416,22 @@ func (c *ClientWithResponses) GetBalanceWithResponse(ctx context.Context, params
 		return nil, err
 	}
 	return ParseGetBalanceResponse2(rsp)
+}
+
+// GetCreditHistoryWithResponse Get Credit History
+//
+// Returns the authenticated member's credit history, newest first.
+// Filters apply to credit creation time: `min_ts` is inclusive and `max_ts` is exclusive.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /portfolio/credit_history (the `GetCreditHistory` operationId).
+func (c *ClientWithResponses) GetCreditHistoryWithResponse(ctx context.Context, params *GetCreditHistoryParams, reqEditors ...RequestEditorFn) (*GetCreditHistoryResponse2, error) {
+	rsp, err := c.GetCreditHistory(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCreditHistoryResponse2(rsp)
 }
 
 // GetDepositsWithResponse Get Deposits
@@ -33721,6 +34001,60 @@ func ParseGetBalanceResponse2(rsp *http.Response) (*GetBalanceResponse2, error) 
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCreditHistoryResponse2 parses an HTTP response from a GetCreditHistoryWithResponse call
+func ParseGetCreditHistoryResponse2(rsp *http.Response) (*GetCreditHistoryResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCreditHistoryResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetCreditHistoryResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalServerError
