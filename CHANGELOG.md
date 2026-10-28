@@ -2,6 +2,10 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.5.2, 2026-10-28
+
+- Doc comment only, no behavior change: the `ID` field comment on `perpsws.MarginCorporateAction` now says "Corporate action id" instead of "Corporate action notice id".
+
 ## v0.5.1, 2026-10-28
 
 - Updated Semgrep in the development image to 1.182.1 and refreshed its locked dependencies. certifi 2026.10.23 drops the emSign root CAs whose intermediate keys were compromised (GHSA-6q48-6c7w-9gw2).

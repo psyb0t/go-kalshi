@@ -1610,7 +1610,7 @@ func (v MarginCorporateActionsDeltaPayloadMsg) Validate() error {
 
 // A corporate action the exchange applied to a margin market. Exactly one terms object matches type: split for stock_split, final_settlement for final_settlement, or ticker_change for ticker_change.
 type MarginCorporateAction struct {
-	// Corporate action notice id, matching `id` in `GET /trade-api/v2/margin/corporate_actions`.
+	// Corporate action id, matching `id` in `GET /trade-api/v2/margin/corporate_actions`.
 	ID string `json:"id"`
 	// Stable market UUID.
 	MarketID string `json:"market_id"`
