@@ -2,6 +2,15 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.6.0, 2026-10-29
+
+- The REST client adds position exit trigger (take-profit and stop-loss bracket) endpoints: `GetEventContractExitTriggers` (`GET /portfolio/positions/{ticker}/exit_trigger`), `SetEventContractExitTrigger` (`PUT`) and `DeleteEventContractExitTrigger` (`DELETE`). `SetEventContractExitTrigger` also has a `WithBody` variant.
+- The REST client adds `CreateOrderWithExitTrigger` and `CreateOrderWithExitTriggerWithBody` (`POST /portfolio/events/orders/with_exit_trigger`). Each of the five methods has a `WithResponse` variant on `ClientWithResponses`, plus matching `New...Request` and `Parse...Response` functions.
+- New REST types: `EventContractExitTrigger`, `AttachedEventContractExitTrigger`, `EventContractExitSlippage`, `SetEventContractExitTriggerRequest`, `GetEventContractExitTriggersParams`, `SetEventContractExitTriggerParams`, `DeleteEventContractExitTriggerParams`, and the enums `EventContractExitTriggerKind`, `EventContractExitTriggerSide`, `EventContractExitTriggerStatus`, `EventContractExitTriggerTriggeredLeg` and `EventContractExitSlippageUnit` (`bps` or `cents`).
+- Breaking: `ClientInterface` gains the six exit trigger methods above and `ClientWithResponsesInterface` gains the six matching `WithResponse` methods. Code that implements either interface, for example a mock, must add them. `Client` and `ClientWithResponses` already have them.
+- `ws` and `perpsws` add an optional `UpdateIntervalMs` field to `SubscribeCommandPayloadParams`, with the type `SubscribeCommandPayloadParamsUpdateIntervalMs` and values `0` (real time, the default), `100` and `1000` for conflated updates. Set it on the first `subscribe`. A repeated `subscribe` with a different interval returns error code 11.
+- `ws` and `perpsws` add the error code `ErrorResponsePayloadMsgCode29`.
+
 ## v0.5.2, 2026-10-28
 
 - Doc comment only, no behavior change: the `ID` field comment on `perpsws.MarginCorporateAction` now says "Corporate action id" instead of "Corporate action notice id".

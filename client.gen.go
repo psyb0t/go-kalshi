@@ -258,6 +258,105 @@ func (e DepositType) Valid() bool {
 	}
 }
 
+// Defines values for EventContractExitSlippageUnit.
+const (
+	EventContractExitSlippageUnitEventContractExitSlippageUnitBps   EventContractExitSlippageUnit = "bps"
+	EventContractExitSlippageUnitEventContractExitSlippageUnitCents EventContractExitSlippageUnit = "cents"
+)
+
+// Valid indicates whether the value is a known member of the EventContractExitSlippageUnit enum.
+func (e EventContractExitSlippageUnit) Valid() bool {
+	switch e {
+	case EventContractExitSlippageUnitEventContractExitSlippageUnitBps:
+		return true
+	case EventContractExitSlippageUnitEventContractExitSlippageUnitCents:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EventContractExitTriggerKind.
+const (
+	EventContractExitTriggerKindEventContractExitTriggerKindBracket EventContractExitTriggerKind = "bracket"
+)
+
+// Valid indicates whether the value is a known member of the EventContractExitTriggerKind enum.
+func (e EventContractExitTriggerKind) Valid() bool {
+	switch e {
+	case EventContractExitTriggerKindEventContractExitTriggerKindBracket:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EventContractExitTriggerSide.
+const (
+	EventContractExitTriggerSideEventContractExitTriggerSideNo  EventContractExitTriggerSide = "no"
+	EventContractExitTriggerSideEventContractExitTriggerSideYes EventContractExitTriggerSide = "yes"
+)
+
+// Valid indicates whether the value is a known member of the EventContractExitTriggerSide enum.
+func (e EventContractExitTriggerSide) Valid() bool {
+	switch e {
+	case EventContractExitTriggerSideEventContractExitTriggerSideNo:
+		return true
+	case EventContractExitTriggerSideEventContractExitTriggerSideYes:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EventContractExitTriggerStatus.
+const (
+	EventContractExitTriggerStatusEventContractExitTriggerStatusActive         EventContractExitTriggerStatus = "active"
+	EventContractExitTriggerStatusEventContractExitTriggerStatusCanceled       EventContractExitTriggerStatus = "canceled"
+	EventContractExitTriggerStatusEventContractExitTriggerStatusFailed         EventContractExitTriggerStatus = "failed"
+	EventContractExitTriggerStatusEventContractExitTriggerStatusFilled         EventContractExitTriggerStatus = "filled"
+	EventContractExitTriggerStatusEventContractExitTriggerStatusPendingOnEntry EventContractExitTriggerStatus = "pending_on_entry"
+	EventContractExitTriggerStatusEventContractExitTriggerStatusUnknown        EventContractExitTriggerStatus = "unknown"
+)
+
+// Valid indicates whether the value is a known member of the EventContractExitTriggerStatus enum.
+func (e EventContractExitTriggerStatus) Valid() bool {
+	switch e {
+	case EventContractExitTriggerStatusEventContractExitTriggerStatusActive:
+		return true
+	case EventContractExitTriggerStatusEventContractExitTriggerStatusCanceled:
+		return true
+	case EventContractExitTriggerStatusEventContractExitTriggerStatusFailed:
+		return true
+	case EventContractExitTriggerStatusEventContractExitTriggerStatusFilled:
+		return true
+	case EventContractExitTriggerStatusEventContractExitTriggerStatusPendingOnEntry:
+		return true
+	case EventContractExitTriggerStatusEventContractExitTriggerStatusUnknown:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EventContractExitTriggerTriggeredLeg.
+const (
+	EventContractExitTriggerTriggeredLegEventContractExitTriggerTriggeredLegStopLoss   EventContractExitTriggerTriggeredLeg = "stop_loss"
+	EventContractExitTriggerTriggeredLegEventContractExitTriggerTriggeredLegTakeProfit EventContractExitTriggerTriggeredLeg = "take_profit"
+)
+
+// Valid indicates whether the value is a known member of the EventContractExitTriggerTriggeredLeg enum.
+func (e EventContractExitTriggerTriggeredLeg) Valid() bool {
+	switch e {
+	case EventContractExitTriggerTriggeredLegEventContractExitTriggerTriggeredLegStopLoss:
+		return true
+	case EventContractExitTriggerTriggeredLegEventContractExitTriggerTriggeredLegTakeProfit:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ExchangeInstance.
 const (
 	ExchangeInstanceEventContract ExchangeInstance = "event_contract"
@@ -810,6 +909,21 @@ func (e SelfTradePreventionType) Valid() bool {
 	}
 }
 
+// Defines values for SetEventContractExitTriggerRequestKind.
+const (
+	SetEventContractExitTriggerRequestKindSetEventContractExitTriggerRequestKindBracket SetEventContractExitTriggerRequestKind = "bracket"
+)
+
+// Valid indicates whether the value is a known member of the SetEventContractExitTriggerRequestKind enum.
+func (e SetEventContractExitTriggerRequestKind) Valid() bool {
+	switch e {
+	case SetEventContractExitTriggerRequestKindSetEventContractExitTriggerRequestKindBracket:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SettlementMarketResult.
 const (
 	SettlementMarketResultNo     SettlementMarketResult = "no"
@@ -1275,6 +1389,36 @@ func (e GetPositionsParamsSettlementStatus) Valid() bool {
 	}
 }
 
+// Defines values for DeleteEventContractExitTriggerParamsKind.
+const (
+	DeleteEventContractExitTriggerParamsKindDeleteEventContractExitTriggerParamsKindBracket DeleteEventContractExitTriggerParamsKind = "bracket"
+)
+
+// Valid indicates whether the value is a known member of the DeleteEventContractExitTriggerParamsKind enum.
+func (e DeleteEventContractExitTriggerParamsKind) Valid() bool {
+	switch e {
+	case DeleteEventContractExitTriggerParamsKindDeleteEventContractExitTriggerParamsKindBracket:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetEventContractExitTriggersParamsKind.
+const (
+	GetEventContractExitTriggersParamsKindGetEventContractExitTriggersParamsKindBracket GetEventContractExitTriggersParamsKind = "bracket"
+)
+
+// Valid indicates whether the value is a known member of the GetEventContractExitTriggersParamsKind enum.
+func (e GetEventContractExitTriggersParamsKind) Valid() bool {
+	switch e {
+	case GetEventContractExitTriggersParamsKindGetEventContractExitTriggersParamsKindBracket:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetMarketCandlesticksByEventParamsPeriodInterval.
 const (
 	GetMarketCandlesticksByEventParamsPeriodIntervalN1    GetMarketCandlesticksByEventParamsPeriodInterval = 1
@@ -1553,6 +1697,22 @@ type AssociatedEvent struct {
 
 	// Ticker The event ticker.
 	Ticker string `json:"ticker"`
+}
+
+// AttachedEventContractExitTrigger Prices are YES prices, like the order's `price`, so for an ask the stop loss is above the entry price and the take profit is below it.
+type AttachedEventContractExitTrigger struct {
+	// Slippage Execution allowance below the trigger price, shared by TP and SL. Use bps (0-9999) or whole cents (0-99). Zero allows no slippage. Omit on creation to save the backend default, or on edits to keep the existing setting.
+	Slippage *EventContractExitSlippage `json:"slippage,omitempty"`
+
+	// StopLossPrice Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	StopLossPrice *FixedPointDollars `json:"stop_loss_price,omitempty"`
+
+	// TakeProfitPrice Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	TakeProfitPrice *FixedPointDollars `json:"take_profit_price,omitempty"`
 }
 
 // BatchCancelOrdersV2Request Example: {"orders":[{"exchange_index":0,"order_id":"3b23c1c7-f4ef-4f0d-8b9a-9e53c61f1a0d","subaccount":0},{"exchange_index":0,"order_id":"a6d6010d-6d5f-40a1-a7e7-5501386bb621","subaccount":0}]}
@@ -1976,6 +2136,53 @@ type CreateOrderV2Response struct {
 	TsMs int64 `json:"ts_ms"`
 }
 
+// CreateOrderWithExitTriggerRequest defines model for CreateOrderWithExitTriggerRequest.
+type CreateOrderWithExitTriggerRequest struct {
+	// CancelOrderOnPause If this flag is set to true, the order will be canceled if the order is open and trading on the exchange is paused for any reason.
+	CancelOrderOnPause *bool  `json:"cancel_order_on_pause,omitempty"`
+	ClientOrderId      string `json:"client_order_id,omitempty"`
+
+	// Count Fixed-point contract count string (2 decimals, e.g., "10.00"; referred to as "fp" in field names). Requests accept 0-2 decimal places (e.g., "10", "10.0", "10.00"); responses always emit 2 decimals. Fractional contract values (e.g., "2.50") are supported; the minimum granularity is 0.01 contracts.
+	//
+	// Example: 10.00
+	Count FixedPointCount `json:"count"`
+
+	// ExchangeIndex Exchange shard index. If omitted, auto-routes when ticker is provided; otherwise defaults to 0. Use -1 to require auto-routing by ticker.
+	ExchangeIndex *ExchangeIndex `json:"exchange_index,omitempty"`
+
+	// ExitTrigger Prices are YES prices, like the order's `price`, so for an ask the stop loss is above the entry price and the take profit is below it.
+	ExitTrigger AttachedEventContractExitTrigger `json:"exit_trigger"`
+
+	// ExpirationTime Optional Unix timestamp in seconds for when the order expires. To place
+	// an expiring order, set `time_in_force` to `good_till_canceled` and
+	// provide this `expiration_time`. `GTT` is an internal execution type and
+	// is not a valid API value for `time_in_force`. The
+	// `immediate_or_cancel` time-in-force value cannot be combined with
+	// `expiration_time`.
+	ExpirationTime *int64 `json:"expiration_time,omitempty"`
+
+	// OrderGroupId The order group this order is part of
+	OrderGroupId string `json:"order_group_id,omitempty"`
+	PostOnly     *bool  `json:"post_only,omitempty"`
+
+	// Price Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	Price FixedPointDollars `json:"price"`
+
+	// ReduceOnly Specifies whether the order place count should be capped by the member's current position. Orders with reduce_only set to true will be rejected unless time_in_force is immediate_or_cancel.
+	ReduceOnly              *bool                   `json:"reduce_only,omitempty"`
+	SelfTradePreventionType SelfTradePreventionType `json:"self_trade_prevention_type" validate:"required,oneof=taker_at_cross maker"`
+
+	// Side Side of the book for an order or trade. For event markets, this refers to the YES leg only: `bid` means buy YES, `ask` means sell YES. (Selling YES is economically equivalent to buying NO at `1 - price`, but this endpoint quotes everything from the YES side.)
+	Side BookSide `json:"side" validate:"required,oneof=bid ask"`
+
+	// Subaccount The subaccount number to use for this order. 0 is the primary subaccount. Subaccount-restricted API keys must omit this field or pass their locked subaccount.
+	Subaccount  *int                            `json:"subaccount,omitempty"`
+	Ticker      string                          `json:"ticker" validate:"required,min=1"`
+	TimeInForce CreateOrderV2RequestTimeInForce `json:"time_in_force"`
+}
+
 // CreateQuoteRequest defines model for CreateQuoteRequest.
 type CreateQuoteRequest struct {
 	// NoBid Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
@@ -2275,6 +2482,55 @@ type ErrorResponse struct {
 	// Message Human-readable error message
 	Message *string `json:"message,omitempty"`
 }
+
+// EventContractExitSlippage Execution allowance below the trigger price, shared by TP and SL. Use bps (0-9999) or whole cents (0-99). Zero allows no slippage. Omit on creation to save the backend default, or on edits to keep the existing setting.
+type EventContractExitSlippage struct {
+	Unit  EventContractExitSlippageUnit `json:"unit"`
+	Value *int32                        `json:"value"`
+}
+
+// EventContractExitSlippageUnit defines model for EventContractExitSlippage.Unit.
+type EventContractExitSlippageUnit string
+
+// EventContractExitTrigger `side` is the outcome the position holds. Prices are YES prices, like order prices.
+type EventContractExitTrigger struct {
+	CreatedTime time.Time                    `json:"created_time"`
+	Id          string                       `json:"id"`
+	Kind        EventContractExitTriggerKind `json:"kind"`
+	Side        EventContractExitTriggerSide `json:"side"`
+
+	// Slippage Execution allowance below the trigger price, shared by TP and SL. Use bps (0-9999) or whole cents (0-99). Zero allows no slippage. Omit on creation to save the backend default, or on edits to keep the existing setting.
+	Slippage     *EventContractExitSlippage     `json:"slippage,omitempty"`
+	Status       EventContractExitTriggerStatus `json:"status"`
+	StatusReason *string                        `json:"status_reason,omitempty"`
+
+	// StopLossPrice Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	StopLossPrice    *FixedPointDollars `json:"stop_loss_price,omitempty"`
+	SubaccountNumber int                `json:"subaccount_number"`
+
+	// TakeProfitPrice Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	TakeProfitPrice  *FixedPointDollars                    `json:"take_profit_price,omitempty"`
+	Ticker           string                                `json:"ticker"`
+	TriggeredLeg     *EventContractExitTriggerTriggeredLeg `json:"triggered_leg,omitempty"`
+	TriggeredOrderId *string                               `json:"triggered_order_id,omitempty"`
+	UpdatedTime      time.Time                             `json:"updated_time"`
+}
+
+// EventContractExitTriggerKind defines model for EventContractExitTrigger.Kind.
+type EventContractExitTriggerKind string
+
+// EventContractExitTriggerSide defines model for EventContractExitTrigger.Side.
+type EventContractExitTriggerSide string
+
+// EventContractExitTriggerStatus defines model for EventContractExitTrigger.Status.
+type EventContractExitTriggerStatus string
+
+// EventContractExitTriggerTriggeredLeg defines model for EventContractExitTrigger.TriggeredLeg.
+type EventContractExitTriggerTriggeredLeg string
 
 // EventData defines model for EventData.
 type EventData struct {
@@ -4551,6 +4807,27 @@ type SeriesFeeChange struct {
 	SeriesTicker string `json:"series_ticker"`
 }
 
+// SetEventContractExitTriggerRequest Replaces both legs, so a leg you omit is cleared. At least one leg is required. Prices are YES prices, like order prices, so on a NO position the stop loss is above the YES price and the take profit is below it.
+type SetEventContractExitTriggerRequest struct {
+	Kind *SetEventContractExitTriggerRequestKind `json:"kind,omitempty"`
+
+	// Slippage Execution allowance below the trigger price, shared by TP and SL. Use bps (0-9999) or whole cents (0-99). Zero allows no slippage. Omit on creation to save the backend default, or on edits to keep the existing setting.
+	Slippage *EventContractExitSlippage `json:"slippage,omitempty"`
+
+	// StopLossPrice Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	StopLossPrice *FixedPointDollars `json:"stop_loss_price,omitempty"`
+
+	// TakeProfitPrice Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
+	//
+	// Example: 0.5600
+	TakeProfitPrice *FixedPointDollars `json:"take_profit_price,omitempty"`
+}
+
+// SetEventContractExitTriggerRequestKind defines model for SetEventContractExitTriggerRequest.Kind.
+type SetEventContractExitTriggerRequestKind string
+
 // SetTargetBalanceAllocationRequest defines model for SetTargetBalanceAllocationRequest.
 type SetTargetBalanceAllocationRequest struct {
 	Allocations []TargetBalanceAllocationInput `json:"allocations" validate:"max=101,dive"`
@@ -5977,6 +6254,34 @@ type GetPositionsParams struct {
 // GetPositionsParamsSettlementStatus defines parameters for GetPositions.
 type GetPositionsParamsSettlementStatus string
 
+// DeleteEventContractExitTriggerParams defines parameters for DeleteEventContractExitTrigger.
+type DeleteEventContractExitTriggerParams struct {
+	Kind *DeleteEventContractExitTriggerParamsKind `form:"kind,omitempty" json:"kind,omitempty"`
+
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
+	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
+}
+
+// DeleteEventContractExitTriggerParamsKind defines parameters for DeleteEventContractExitTrigger.
+type DeleteEventContractExitTriggerParamsKind string
+
+// GetEventContractExitTriggersParams defines parameters for GetEventContractExitTriggers.
+type GetEventContractExitTriggersParams struct {
+	Kind *GetEventContractExitTriggersParamsKind `form:"kind,omitempty" json:"kind,omitempty"`
+
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
+	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
+}
+
+// GetEventContractExitTriggersParamsKind defines parameters for GetEventContractExitTriggers.
+type GetEventContractExitTriggersParamsKind string
+
+// SetEventContractExitTriggerParams defines parameters for SetEventContractExitTrigger.
+type SetEventContractExitTriggerParams struct {
+	// Subaccount Subaccount number (0 for primary, 1-63 for subaccounts). Defaults to 0. Subaccount-restricted API keys default to their locked subaccount and must omit this parameter or pass their locked subaccount.
+	Subaccount *SubaccountQueryDefaultPrimary `form:"subaccount,omitempty" json:"subaccount,omitempty"`
+}
+
 // GetSettlementsParams defines parameters for GetSettlements.
 type GetSettlementsParams struct {
 	// Limit Number of results per page. Defaults to 100.
@@ -6187,6 +6492,9 @@ type BatchCancelOrdersV2JSONRequestBody = BatchCancelOrdersV2Request
 // BatchCreateOrdersV2JSONRequestBody defines body for BatchCreateOrdersV2 for application/json ContentType.
 type BatchCreateOrdersV2JSONRequestBody = BatchCreateOrdersV2Request
 
+// CreateOrderWithExitTriggerJSONRequestBody defines body for CreateOrderWithExitTrigger for application/json ContentType.
+type CreateOrderWithExitTriggerJSONRequestBody = CreateOrderWithExitTriggerRequest
+
 // AmendOrderV2JSONRequestBody defines body for AmendOrderV2 for application/json ContentType.
 type AmendOrderV2JSONRequestBody = AmendOrderV2Request
 
@@ -6207,6 +6515,9 @@ type ResetOrderGroupJSONRequestBody = EmptyResponse
 
 // TriggerOrderGroupJSONRequestBody defines body for TriggerOrderGroup for application/json ContentType.
 type TriggerOrderGroupJSONRequestBody = EmptyResponse
+
+// SetEventContractExitTriggerJSONRequestBody defines body for SetEventContractExitTrigger for application/json ContentType.
+type SetEventContractExitTriggerJSONRequestBody = SetEventContractExitTriggerRequest
 
 // CreateSubaccountJSONRequestBody defines body for CreateSubaccount for application/json ContentType.
 type CreateSubaccountJSONRequestBody = CreateSubaccountRequest
@@ -7324,6 +7635,24 @@ type ClientInterface interface {
 	// Corresponds with POST /portfolio/events/orders/batched (the `BatchCreateOrdersV2` operationId).
 	BatchCreateOrdersV2(ctx context.Context, body BatchCreateOrdersV2JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateOrderWithExitTriggerWithBody Create Order With TP/SL
+	//
+	// Creates an entry order with attached take-profit or stop-loss protection.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /portfolio/events/orders/with_exit_trigger (the `CreateOrderWithExitTrigger` operationId).
+	CreateOrderWithExitTriggerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrderWithExitTrigger Create Order With TP/SL
+	//
+	// Creates an entry order with attached take-profit or stop-loss protection.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /portfolio/events/orders/with_exit_trigger (the `CreateOrderWithExitTrigger` operationId).
+	CreateOrderWithExitTrigger(ctx context.Context, body CreateOrderWithExitTriggerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CancelOrderV2 Cancel Order (V2)
 	//
 	// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object.
@@ -7551,6 +7880,38 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /portfolio/positions (the `GetPositions` operationId).
 	GetPositions(ctx context.Context, params *GetPositionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteEventContractExitTrigger Cancel Position Exit Trigger
+	//
+	// Endpoint for cancelling the take-profit / stop-loss bracket on a position. Succeeds even when nothing is live.
+	//
+	// Corresponds with DELETE /portfolio/positions/{ticker}/exit_trigger (the `DeleteEventContractExitTrigger` operationId).
+	DeleteEventContractExitTrigger(ctx context.Context, ticker string, params *DeleteEventContractExitTriggerParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetEventContractExitTriggers Get Position Exit Triggers
+	//
+	// Endpoint for retrieving the take-profit / stop-loss bracket on a position. `exit_triggers` lists live brackets, and `exit_trigger` is the most recently updated bracket, including a terminal one.
+	//
+	// Corresponds with GET /portfolio/positions/{ticker}/exit_trigger (the `GetEventContractExitTriggers` operationId).
+	GetEventContractExitTriggers(ctx context.Context, ticker string, params *GetEventContractExitTriggersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetEventContractExitTriggerWithBody Set Position Exit Trigger
+	//
+	// Endpoint for setting a take-profit / stop-loss bracket on a position. Requires an open position and fires a sell capped at the position. Both legs are set from the request, so a leg you omit is cleared; use DELETE to cancel the bracket.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /portfolio/positions/{ticker}/exit_trigger (the `SetEventContractExitTrigger` operationId).
+	SetEventContractExitTriggerWithBody(ctx context.Context, ticker string, params *SetEventContractExitTriggerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetEventContractExitTrigger Set Position Exit Trigger
+	//
+	// Endpoint for setting a take-profit / stop-loss bracket on a position. Requires an open position and fires a sell capped at the position. Both legs are set from the request, so a leg you omit is cleared; use DELETE to cancel the bracket.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /portfolio/positions/{ticker}/exit_trigger (the `SetEventContractExitTrigger` operationId).
+	SetEventContractExitTrigger(ctx context.Context, ticker string, params *SetEventContractExitTriggerParams, body SetEventContractExitTriggerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSettlements Get Settlements
 	//
@@ -9885,6 +10246,44 @@ func (c *Client) BatchCreateOrdersV2(ctx context.Context, body BatchCreateOrders
 	return c.Client.Do(req)
 }
 
+// CreateOrderWithExitTriggerWithBody Create Order With TP/SL
+//
+// Creates an entry order with attached take-profit or stop-loss protection.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /portfolio/events/orders/with_exit_trigger (the `CreateOrderWithExitTrigger` operationId).
+func (c *Client) CreateOrderWithExitTriggerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrderWithExitTriggerRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateOrderWithExitTrigger Create Order With TP/SL
+//
+// Creates an entry order with attached take-profit or stop-loss protection.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /portfolio/events/orders/with_exit_trigger (the `CreateOrderWithExitTrigger` operationId).
+func (c *Client) CreateOrderWithExitTrigger(ctx context.Context, body CreateOrderWithExitTriggerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrderWithExitTriggerRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // CancelOrderV2 Cancel Order (V2)
 //
 // Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object.
@@ -10363,6 +10762,78 @@ func (c *Client) GetOrderQueuePosition(ctx context.Context, orderId OrderIdPath,
 // Corresponds with GET /portfolio/positions (the `GetPositions` operationId).
 func (c *Client) GetPositions(ctx context.Context, params *GetPositionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetPositionsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteEventContractExitTrigger Cancel Position Exit Trigger
+//
+// Endpoint for cancelling the take-profit / stop-loss bracket on a position. Succeeds even when nothing is live.
+//
+// Corresponds with DELETE /portfolio/positions/{ticker}/exit_trigger (the `DeleteEventContractExitTrigger` operationId).
+func (c *Client) DeleteEventContractExitTrigger(ctx context.Context, ticker string, params *DeleteEventContractExitTriggerParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteEventContractExitTriggerRequest(c.Server, ticker, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetEventContractExitTriggers Get Position Exit Triggers
+//
+// Endpoint for retrieving the take-profit / stop-loss bracket on a position. `exit_triggers` lists live brackets, and `exit_trigger` is the most recently updated bracket, including a terminal one.
+//
+// Corresponds with GET /portfolio/positions/{ticker}/exit_trigger (the `GetEventContractExitTriggers` operationId).
+func (c *Client) GetEventContractExitTriggers(ctx context.Context, ticker string, params *GetEventContractExitTriggersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEventContractExitTriggersRequest(c.Server, ticker, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetEventContractExitTriggerWithBody Set Position Exit Trigger
+//
+// Endpoint for setting a take-profit / stop-loss bracket on a position. Requires an open position and fires a sell capped at the position. Both legs are set from the request, so a leg you omit is cleared; use DELETE to cancel the bracket.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /portfolio/positions/{ticker}/exit_trigger (the `SetEventContractExitTrigger` operationId).
+func (c *Client) SetEventContractExitTriggerWithBody(ctx context.Context, ticker string, params *SetEventContractExitTriggerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetEventContractExitTriggerRequestWithBody(c.Server, ticker, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetEventContractExitTrigger Set Position Exit Trigger
+//
+// Endpoint for setting a take-profit / stop-loss bracket on a position. Requires an open position and fires a sell capped at the position. Both legs are set from the request, so a leg you omit is cleared; use DELETE to cancel the bracket.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /portfolio/positions/{ticker}/exit_trigger (the `SetEventContractExitTrigger` operationId).
+func (c *Client) SetEventContractExitTrigger(ctx context.Context, ticker string, params *SetEventContractExitTriggerParams, body SetEventContractExitTriggerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetEventContractExitTriggerRequest(c.Server, ticker, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -16140,6 +16611,46 @@ func NewBatchCreateOrdersV2RequestWithBody(server string, contentType string, bo
 	return req, nil
 }
 
+// NewCreateOrderWithExitTriggerRequest calls the generic CreateOrderWithExitTrigger builder with application/json body
+func NewCreateOrderWithExitTriggerRequest(server string, body CreateOrderWithExitTriggerJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrderWithExitTriggerRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateOrderWithExitTriggerRequestWithBody constructs an http.Request for the CreateOrderWithExitTrigger method, with any body, and a specified content type
+func NewCreateOrderWithExitTriggerRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/portfolio/events/orders/with_exit_trigger")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCancelOrderV2Request constructs an http.Request for the CancelOrderV2 method
 func NewCancelOrderV2Request(server string, orderId OrderIdPath, params *CancelOrderV2Params) (*http.Request, error) {
 	var err error
@@ -17507,6 +18018,226 @@ func NewGetPositionsRequest(server string, params *GetPositionsParams) (*http.Re
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewDeleteEventContractExitTriggerRequest constructs an http.Request for the DeleteEventContractExitTrigger method
+func NewDeleteEventContractExitTriggerRequest(server string, ticker string, params *DeleteEventContractExitTriggerParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "ticker", ticker, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/portfolio/positions/%s/exit_trigger", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Kind != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "kind", *params.Kind, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Subaccount != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "subaccount", *params.Subaccount, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetEventContractExitTriggersRequest constructs an http.Request for the GetEventContractExitTriggers method
+func NewGetEventContractExitTriggersRequest(server string, ticker string, params *GetEventContractExitTriggersParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "ticker", ticker, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/portfolio/positions/%s/exit_trigger", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Kind != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "kind", *params.Kind, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Subaccount != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "subaccount", *params.Subaccount, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSetEventContractExitTriggerRequest calls the generic SetEventContractExitTrigger builder with application/json body
+func NewSetEventContractExitTriggerRequest(server string, ticker string, params *SetEventContractExitTriggerParams, body SetEventContractExitTriggerJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSetEventContractExitTriggerRequestWithBody(server, ticker, params, "application/json", bodyReader)
+}
+
+// NewSetEventContractExitTriggerRequestWithBody constructs an http.Request for the SetEventContractExitTrigger method, with any body, and a specified content type
+func NewSetEventContractExitTriggerRequestWithBody(server string, ticker string, params *SetEventContractExitTriggerParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "ticker", ticker, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/portfolio/positions/%s/exit_trigger", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Subaccount != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "subaccount", *params.Subaccount, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -19880,6 +20611,24 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /portfolio/events/orders/batched (the `BatchCreateOrdersV2` operationId).
 	BatchCreateOrdersV2WithResponse(ctx context.Context, body BatchCreateOrdersV2JSONRequestBody, reqEditors ...RequestEditorFn) (*BatchCreateOrdersV2Response2, error)
 
+	// CreateOrderWithExitTriggerWithBodyWithResponse Create Order With TP/SL
+	//
+	// Creates an entry order with attached take-profit or stop-loss protection.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /portfolio/events/orders/with_exit_trigger (the `CreateOrderWithExitTrigger` operationId).
+	CreateOrderWithExitTriggerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrderWithExitTriggerResponse, error)
+
+	// CreateOrderWithExitTriggerWithResponse Create Order With TP/SL
+	//
+	// Creates an entry order with attached take-profit or stop-loss protection.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /portfolio/events/orders/with_exit_trigger (the `CreateOrderWithExitTrigger` operationId).
+	CreateOrderWithExitTriggerWithResponse(ctx context.Context, body CreateOrderWithExitTriggerJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrderWithExitTriggerResponse, error)
+
 	// CancelOrderV2WithResponse Cancel Order (V2)
 	//
 	// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object.
@@ -20131,6 +20880,42 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /portfolio/positions (the `GetPositions` operationId).
 	GetPositionsWithResponse(ctx context.Context, params *GetPositionsParams, reqEditors ...RequestEditorFn) (*GetPositionsResponse2, error)
+
+	// DeleteEventContractExitTriggerWithResponse Cancel Position Exit Trigger
+	//
+	// Endpoint for cancelling the take-profit / stop-loss bracket on a position. Succeeds even when nothing is live.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /portfolio/positions/{ticker}/exit_trigger (the `DeleteEventContractExitTrigger` operationId).
+	DeleteEventContractExitTriggerWithResponse(ctx context.Context, ticker string, params *DeleteEventContractExitTriggerParams, reqEditors ...RequestEditorFn) (*DeleteEventContractExitTriggerResponse, error)
+
+	// GetEventContractExitTriggersWithResponse Get Position Exit Triggers
+	//
+	// Endpoint for retrieving the take-profit / stop-loss bracket on a position. `exit_triggers` lists live brackets, and `exit_trigger` is the most recently updated bracket, including a terminal one.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /portfolio/positions/{ticker}/exit_trigger (the `GetEventContractExitTriggers` operationId).
+	GetEventContractExitTriggersWithResponse(ctx context.Context, ticker string, params *GetEventContractExitTriggersParams, reqEditors ...RequestEditorFn) (*GetEventContractExitTriggersResponse, error)
+
+	// SetEventContractExitTriggerWithBodyWithResponse Set Position Exit Trigger
+	//
+	// Endpoint for setting a take-profit / stop-loss bracket on a position. Requires an open position and fires a sell capped at the position. Both legs are set from the request, so a leg you omit is cleared; use DELETE to cancel the bracket.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /portfolio/positions/{ticker}/exit_trigger (the `SetEventContractExitTrigger` operationId).
+	SetEventContractExitTriggerWithBodyWithResponse(ctx context.Context, ticker string, params *SetEventContractExitTriggerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetEventContractExitTriggerResponse, error)
+
+	// SetEventContractExitTriggerWithResponse Set Position Exit Trigger
+	//
+	// Endpoint for setting a take-profit / stop-loss bracket on a position. Requires an open position and fires a sell capped at the position. Both legs are set from the request, so a leg you omit is cleared; use DELETE to cancel the bracket.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /portfolio/positions/{ticker}/exit_trigger (the `SetEventContractExitTrigger` operationId).
+	SetEventContractExitTriggerWithResponse(ctx context.Context, ticker string, params *SetEventContractExitTriggerParams, body SetEventContractExitTriggerJSONRequestBody, reqEditors ...RequestEditorFn) (*SetEventContractExitTriggerResponse, error)
 
 	// GetSettlementsWithResponse Get Settlements
 	//
@@ -25412,6 +26197,96 @@ func (r BatchCreateOrdersV2Response2) ContentType() string {
 	return ""
 }
 
+type CreateOrderWithExitTriggerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *CreateOrderV2Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ServiceUnavailableError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateOrderWithExitTriggerResponse) GetJSON201() *CreateOrderV2Response {
+	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateOrderWithExitTriggerResponse) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateOrderWithExitTriggerResponse) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateOrderWithExitTriggerResponse) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateOrderWithExitTriggerResponse) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r CreateOrderWithExitTriggerResponse) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateOrderWithExitTriggerResponse) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r CreateOrderWithExitTriggerResponse) GetJSON503() *ServiceUnavailableError {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateOrderWithExitTriggerResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrderWithExitTriggerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrderWithExitTriggerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateOrderWithExitTriggerResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type CancelOrderV2Response2 struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -26612,6 +27487,254 @@ func (r GetPositionsResponse2) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetPositionsResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteEventContractExitTriggerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteEventContractExitTriggerResponse) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteEventContractExitTriggerResponse) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteEventContractExitTriggerResponse) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteEventContractExitTriggerResponse) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r DeleteEventContractExitTriggerResponse) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteEventContractExitTriggerResponse) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteEventContractExitTriggerResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteEventContractExitTriggerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteEventContractExitTriggerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteEventContractExitTriggerResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetEventContractExitTriggersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		ExitTrigger  *EventContractExitTrigger  `json:"exit_trigger"`
+		ExitTriggers []EventContractExitTrigger `json:"exit_triggers"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetEventContractExitTriggersResponse) GetJSON200() *struct {
+	ExitTrigger  *EventContractExitTrigger  `json:"exit_trigger"`
+	ExitTriggers []EventContractExitTrigger `json:"exit_triggers"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetEventContractExitTriggersResponse) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetEventContractExitTriggersResponse) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetEventContractExitTriggersResponse) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetEventContractExitTriggersResponse) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r GetEventContractExitTriggersResponse) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetEventContractExitTriggersResponse) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetEventContractExitTriggersResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetEventContractExitTriggersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetEventContractExitTriggersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetEventContractExitTriggersResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SetEventContractExitTriggerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *EventContractExitTrigger
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SetEventContractExitTriggerResponse) GetJSON200() *EventContractExitTrigger {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SetEventContractExitTriggerResponse) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SetEventContractExitTriggerResponse) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SetEventContractExitTriggerResponse) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SetEventContractExitTriggerResponse) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r SetEventContractExitTriggerResponse) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SetEventContractExitTriggerResponse) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r SetEventContractExitTriggerResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SetEventContractExitTriggerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SetEventContractExitTriggerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SetEventContractExitTriggerResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -29554,6 +30677,36 @@ func (c *ClientWithResponses) BatchCreateOrdersV2WithResponse(ctx context.Contex
 	return ParseBatchCreateOrdersV2Response2(rsp)
 }
 
+// CreateOrderWithExitTriggerWithBodyWithResponse Create Order With TP/SL
+//
+// Creates an entry order with attached take-profit or stop-loss protection.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /portfolio/events/orders/with_exit_trigger (the `CreateOrderWithExitTrigger` operationId).
+func (c *ClientWithResponses) CreateOrderWithExitTriggerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrderWithExitTriggerResponse, error) {
+	rsp, err := c.CreateOrderWithExitTriggerWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrderWithExitTriggerResponse(rsp)
+}
+
+// CreateOrderWithExitTriggerWithResponse Create Order With TP/SL
+//
+// Creates an entry order with attached take-profit or stop-loss protection.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /portfolio/events/orders/with_exit_trigger (the `CreateOrderWithExitTrigger` operationId).
+func (c *ClientWithResponses) CreateOrderWithExitTriggerWithResponse(ctx context.Context, body CreateOrderWithExitTriggerJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrderWithExitTriggerResponse, error) {
+	rsp, err := c.CreateOrderWithExitTrigger(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrderWithExitTriggerResponse(rsp)
+}
+
 // CancelOrderV2WithResponse Cancel Order (V2)
 //
 // Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object.
@@ -29960,6 +31113,66 @@ func (c *ClientWithResponses) GetPositionsWithResponse(ctx context.Context, para
 		return nil, err
 	}
 	return ParseGetPositionsResponse2(rsp)
+}
+
+// DeleteEventContractExitTriggerWithResponse Cancel Position Exit Trigger
+//
+// Endpoint for cancelling the take-profit / stop-loss bracket on a position. Succeeds even when nothing is live.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /portfolio/positions/{ticker}/exit_trigger (the `DeleteEventContractExitTrigger` operationId).
+func (c *ClientWithResponses) DeleteEventContractExitTriggerWithResponse(ctx context.Context, ticker string, params *DeleteEventContractExitTriggerParams, reqEditors ...RequestEditorFn) (*DeleteEventContractExitTriggerResponse, error) {
+	rsp, err := c.DeleteEventContractExitTrigger(ctx, ticker, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteEventContractExitTriggerResponse(rsp)
+}
+
+// GetEventContractExitTriggersWithResponse Get Position Exit Triggers
+//
+// Endpoint for retrieving the take-profit / stop-loss bracket on a position. `exit_triggers` lists live brackets, and `exit_trigger` is the most recently updated bracket, including a terminal one.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /portfolio/positions/{ticker}/exit_trigger (the `GetEventContractExitTriggers` operationId).
+func (c *ClientWithResponses) GetEventContractExitTriggersWithResponse(ctx context.Context, ticker string, params *GetEventContractExitTriggersParams, reqEditors ...RequestEditorFn) (*GetEventContractExitTriggersResponse, error) {
+	rsp, err := c.GetEventContractExitTriggers(ctx, ticker, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetEventContractExitTriggersResponse(rsp)
+}
+
+// SetEventContractExitTriggerWithBodyWithResponse Set Position Exit Trigger
+//
+// Endpoint for setting a take-profit / stop-loss bracket on a position. Requires an open position and fires a sell capped at the position. Both legs are set from the request, so a leg you omit is cleared; use DELETE to cancel the bracket.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /portfolio/positions/{ticker}/exit_trigger (the `SetEventContractExitTrigger` operationId).
+func (c *ClientWithResponses) SetEventContractExitTriggerWithBodyWithResponse(ctx context.Context, ticker string, params *SetEventContractExitTriggerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetEventContractExitTriggerResponse, error) {
+	rsp, err := c.SetEventContractExitTriggerWithBody(ctx, ticker, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetEventContractExitTriggerResponse(rsp)
+}
+
+// SetEventContractExitTriggerWithResponse Set Position Exit Trigger
+//
+// Endpoint for setting a take-profit / stop-loss bracket on a position. Requires an open position and fires a sell capped at the position. Both legs are set from the request, so a leg you omit is cleared; use DELETE to cancel the bracket.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /portfolio/positions/{ticker}/exit_trigger (the `SetEventContractExitTrigger` operationId).
+func (c *ClientWithResponses) SetEventContractExitTriggerWithResponse(ctx context.Context, ticker string, params *SetEventContractExitTriggerParams, body SetEventContractExitTriggerJSONRequestBody, reqEditors ...RequestEditorFn) (*SetEventContractExitTriggerResponse, error) {
+	rsp, err := c.SetEventContractExitTrigger(ctx, ticker, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetEventContractExitTriggerResponse(rsp)
 }
 
 // GetSettlementsWithResponse Get Settlements
@@ -34341,6 +35554,81 @@ func ParseBatchCreateOrdersV2Response2(rsp *http.Response) (*BatchCreateOrdersV2
 	return response, nil
 }
 
+// ParseCreateOrderWithExitTriggerResponse parses an HTTP response from a CreateOrderWithExitTriggerWithResponse call
+func ParseCreateOrderWithExitTriggerResponse(rsp *http.Response) (*CreateOrderWithExitTriggerResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrderWithExitTriggerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CreateOrderV2Response
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ServiceUnavailableError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCancelOrderV2Response2 parses an HTTP response from a CancelOrderV2WithResponse call
 func ParseCancelOrderV2Response2(rsp *http.Response) (*CancelOrderV2Response2, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -35258,6 +36546,209 @@ func ParseGetPositionsResponse2(rsp *http.Response) (*GetPositionsResponse2, err
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteEventContractExitTriggerResponse parses an HTTP response from a DeleteEventContractExitTriggerWithResponse call
+func ParseDeleteEventContractExitTriggerResponse(rsp *http.Response) (*DeleteEventContractExitTriggerResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteEventContractExitTriggerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetEventContractExitTriggersResponse parses an HTTP response from a GetEventContractExitTriggersWithResponse call
+func ParseGetEventContractExitTriggersResponse(rsp *http.Response) (*GetEventContractExitTriggersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetEventContractExitTriggersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			ExitTrigger  *EventContractExitTrigger  `json:"exit_trigger"`
+			ExitTriggers []EventContractExitTrigger `json:"exit_triggers"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSetEventContractExitTriggerResponse parses an HTTP response from a SetEventContractExitTriggerWithResponse call
+func ParseSetEventContractExitTriggerResponse(rsp *http.Response) (*SetEventContractExitTriggerResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SetEventContractExitTriggerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventContractExitTrigger
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalServerError

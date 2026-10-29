@@ -40,10 +40,25 @@ const ControlFramesAddressTemplate = "/"
 // Real-time margin orderbook price-level changes.
 //
 // Requirements:
-// - authenticated connection
-// - market specification required via `market_ticker` or `market_tickers`
-// - sends `orderbook_snapshot` first, then incremental `orderbook_delta` updates
-// - supports `get_snapshot` on `update_subscription` to request a fresh snapshot without changing the subscription
+//   - authenticated connection
+//   - market specification required via `market_ticker` or `market_tickers`
+//   - sends `orderbook_snapshot` first, then incremental `orderbook_delta` updates
+//   - supports `get_snapshot` on `update_subscription` to request a fresh snapshot without changing the subscribed markets. Apply every returned snapshot as a replacement for that market's local book
+//   - each connection has one `orderbook_delta` subscription. A repeated `subscribe` adds new markets to its existing `sid` and sends no snapshot for markets already subscribed
+//   - a repeated `subscribe` must use the existing `update_interval_ms` (omitting it means `0`); a different valid interval returns error code 11 without adding markets. Use `update_subscription` with `add_markets` to add markets without respecifying the interval. To change it, `unsubscribe`, wait for `unsubscribed`, then `subscribe` again
+//   - optional conflated updates: set `update_interval_ms` to `100` or `1000` on the initial `subscribe` to receive one net
+//     `orderbook_delta` per changed price level per window. A window starts with its first held change; processing and transport can delay delivery. Updates to your own orders
+//     within any subaccount restriction and snapshots bypass the interval. A snapshot replaces any unsent held changes for its market, and `seq` stays contiguous.
+//     Omit it or set it to `0` for real-time updates, the default
+//   - levels whose held changes cancel out are skipped. `ts_ms` is the timestamp of the latest change included in each delta;
+//     it can decrease between deltas and is not a completeness watermark. Follow the subscription's `seq` for delivery order
+//   - changes to other participants' orders, including liquidity your trades consume, remain held. Between flushes,
+//     public levels can lag your own orders and the book can appear locked or crossed. A flush has separate delta messages and no end-of-flush message
+//   - apply every delta in `seq` order within its subscription. Recover a gap with `get_snapshot` for all subscribed markets,
+//     or `unsubscribe`, wait for `unsubscribed`, then `subscribe` again. Replace each book with its new snapshot before applying later deltas;
+//     a repeated `subscribe` alone does not resynchronize existing markets
+//   - conflation windows are independent across subscriptions. When switching connections, rebuild from that
+//     connection's snapshot and follow its own `seq`; do not combine deltas from different connections
 const OrderbookDeltaAddressTemplate = "orderbook_delta"
 
 // CorporateActionsAddressTemplate is the address of the CorporateActions channel.
@@ -203,6 +218,20 @@ type SubscribeCommandPayloadParams struct {
 	SendInitialSnapshot *bool `json:"send_initial_snapshot,omitempty"`
 	// Default: false
 	SkipTickerAck *bool `json:"skip_ticker_ack,omitempty"`
+	// Orderbook channel only. Opts in to conflated `orderbook_delta` updates: one net delta per
+	// changed price level in each 100 or 1000 millisecond window. A window starts with its first
+	// held change; processing and transport can delay delivery. Your own orders within any subaccount restriction and snapshots bypass the interval;
+	// changes to other participants' orders, including liquidity you consume, remain held.
+	// Omit or set to 0 for real-time updates, the default. Use JSON integer literals: other signed
+	// 64-bit integer literals return error code 29. Values that fail integer decoding, including
+	// floating-point notation and strings, return code 1 for the whole command.
+	// A repeated subscribe adds markets to the existing sid and must specify the same interval
+	// (omission means 0); a mismatch returns error code 11. Change intervals by unsubscribing first.
+	// Follow seq within this subscription. Recover gaps with fresh snapshots for all subscribed markets
+	// or unsubscribe then subscribe again. Independently conflated streams cannot be combined.
+	//
+	// Default: 0
+	UpdateIntervalMs *SubscribeCommandPayloadParamsUpdateIntervalMs `json:"update_interval_ms,omitempty"`
 }
 
 // UnmarshalJSON decodes SubscribeCommandPayloadParams strictly. Required properties must be
@@ -244,6 +273,11 @@ func (v SubscribeCommandPayloadParams) Validate() error {
 			return err
 		}
 	}
+	if v.UpdateIntervalMs != nil {
+		if err := (*v.UpdateIntervalMs).Validate(); err != nil {
+			return ctxerrors.Wrap(err, "update_interval_ms")
+		}
+	}
 
 	return nil
 }
@@ -273,6 +307,39 @@ func (v SubscribeCommandPayloadParamsChannelsItem) Validate() error {
 }
 
 type MarketTicker = string
+
+// Orderbook channel only. Opts in to conflated `orderbook_delta` updates: one net delta per
+// changed price level in each 100 or 1000 millisecond window. A window starts with its first
+// held change; processing and transport can delay delivery. Your own orders within any subaccount restriction and snapshots bypass the interval;
+// changes to other participants' orders, including liquidity you consume, remain held.
+// Omit or set to 0 for real-time updates, the default. Use JSON integer literals: other signed
+// 64-bit integer literals return error code 29. Values that fail integer decoding, including
+// floating-point notation and strings, return code 1 for the whole command.
+// A repeated subscribe adds markets to the existing sid and must specify the same interval
+// (omission means 0); a mismatch returns error code 11. Change intervals by unsubscribing first.
+// Follow seq within this subscription. Recover gaps with fresh snapshots for all subscribed markets
+// or unsubscribe then subscribe again. Independently conflated streams cannot be combined.
+//
+// Default: 0
+type SubscribeCommandPayloadParamsUpdateIntervalMs int64
+
+// Values of SubscribeCommandPayloadParamsUpdateIntervalMs.
+const (
+	SubscribeCommandPayloadParamsUpdateIntervalMs0    SubscribeCommandPayloadParamsUpdateIntervalMs = 0
+	SubscribeCommandPayloadParamsUpdateIntervalMs100  SubscribeCommandPayloadParamsUpdateIntervalMs = 100
+	SubscribeCommandPayloadParamsUpdateIntervalMs1000 SubscribeCommandPayloadParamsUpdateIntervalMs = 1000
+)
+
+// Validate reports whether v is one of the values the schema lists.
+func (v SubscribeCommandPayloadParamsUpdateIntervalMs) Validate() error {
+	switch v {
+	case SubscribeCommandPayloadParamsUpdateIntervalMs0, SubscribeCommandPayloadParamsUpdateIntervalMs100, SubscribeCommandPayloadParamsUpdateIntervalMs1000:
+		return nil
+	}
+
+	return asyncapirt.Invalid("SubscribeCommandPayloadParamsUpdateIntervalMs", fmt.Sprintf("unknown value %v", v))
+}
+
 type UnsubscribeCommandPayload struct {
 	// Unique ID of the command request. Generated by the client and should be unique within a WS session.
 	// The simplest way to use it would be to start from 1 and then increment the value for every new command sent to the server.
@@ -1181,12 +1248,13 @@ const (
 	ErrorResponsePayloadMsgCode26 ErrorResponsePayloadMsgCode = 26
 	ErrorResponsePayloadMsgCode27 ErrorResponsePayloadMsgCode = 27
 	ErrorResponsePayloadMsgCode28 ErrorResponsePayloadMsgCode = 28
+	ErrorResponsePayloadMsgCode29 ErrorResponsePayloadMsgCode = 29
 )
 
 // Validate reports whether v is one of the values the schema lists.
 func (v ErrorResponsePayloadMsgCode) Validate() error {
 	switch v {
-	case ErrorResponsePayloadMsgCode1, ErrorResponsePayloadMsgCode2, ErrorResponsePayloadMsgCode3, ErrorResponsePayloadMsgCode4, ErrorResponsePayloadMsgCode5, ErrorResponsePayloadMsgCode7, ErrorResponsePayloadMsgCode8, ErrorResponsePayloadMsgCode9, ErrorResponsePayloadMsgCode10, ErrorResponsePayloadMsgCode11, ErrorResponsePayloadMsgCode12, ErrorResponsePayloadMsgCode13, ErrorResponsePayloadMsgCode14, ErrorResponsePayloadMsgCode15, ErrorResponsePayloadMsgCode18, ErrorResponsePayloadMsgCode23, ErrorResponsePayloadMsgCode24, ErrorResponsePayloadMsgCode25, ErrorResponsePayloadMsgCode26, ErrorResponsePayloadMsgCode27, ErrorResponsePayloadMsgCode28:
+	case ErrorResponsePayloadMsgCode1, ErrorResponsePayloadMsgCode2, ErrorResponsePayloadMsgCode3, ErrorResponsePayloadMsgCode4, ErrorResponsePayloadMsgCode5, ErrorResponsePayloadMsgCode7, ErrorResponsePayloadMsgCode8, ErrorResponsePayloadMsgCode9, ErrorResponsePayloadMsgCode10, ErrorResponsePayloadMsgCode11, ErrorResponsePayloadMsgCode12, ErrorResponsePayloadMsgCode13, ErrorResponsePayloadMsgCode14, ErrorResponsePayloadMsgCode15, ErrorResponsePayloadMsgCode18, ErrorResponsePayloadMsgCode23, ErrorResponsePayloadMsgCode24, ErrorResponsePayloadMsgCode25, ErrorResponsePayloadMsgCode26, ErrorResponsePayloadMsgCode27, ErrorResponsePayloadMsgCode28, ErrorResponsePayloadMsgCode29:
 		return nil
 	}
 
@@ -1412,6 +1480,8 @@ type MarginOrderbookDeltaPayloadMsg struct {
 	LastUpdateReason *LastUpdateReason `json:"last_update_reason,omitempty"`
 	ClientOrderID    *string           `json:"client_order_id,omitempty"`
 	// Unix timestamp in milliseconds.
+	// In conflated mode, this is the timestamp of the latest change included at this price level.
+	// It can decrease between deltas; follow the subscription's seq for delivery order.
 	TsMs       *int64 `json:"ts_ms,omitempty"`
 	Subaccount *int64 `json:"subaccount,omitempty"`
 }
@@ -2404,8 +2474,9 @@ type MarginFillPayloadMsg struct {
 	FeeCost      string `json:"fee_cost"`
 	PostPosition string `json:"post_position"`
 	Subaccount   *int64 `json:"subaccount,omitempty"`
-	// `system` for liquidations and margin exit or trailing-stop
-	// triggers. `user` for every other order.
+	// `system` for liquidations, margin exit or trailing-stop
+	// triggers, and auto-rebalance orders. `user` for every other
+	// order.
 	OrderSource MarginFillPayloadMsgOrderSource `json:"order_source"`
 }
 
@@ -2445,8 +2516,9 @@ func (v MarginFillPayloadMsg) Validate() error {
 	return nil
 }
 
-// `system` for liquidations and margin exit or trailing-stop
-// triggers. `user` for every other order.
+// `system` for liquidations, margin exit or trailing-stop
+// triggers, and auto-rebalance orders. `user` for every other
+// order.
 type MarginFillPayloadMsgOrderSource string
 
 // Values of MarginFillPayloadMsgOrderSource.
@@ -2556,8 +2628,9 @@ type MarginUserOrderPayloadMsg struct {
 	// Margin order update reason. The value ReduceOnlyCancel means reduce_only capped the order at placement. The field is omitted when no reason applies.
 	LastUpdateReason *LastUpdateReason `json:"last_update_reason,omitempty"`
 	SubaccountNumber *int64            `json:"subaccount_number,omitempty"`
-	// `system` for liquidations and margin exit or trailing-stop
-	// triggers. `user` for every other order.
+	// `system` for liquidations, margin exit or trailing-stop
+	// triggers, and auto-rebalance orders. `user` for every other
+	// order.
 	OrderSource MarginUserOrderPayloadMsgOrderSource `json:"order_source"`
 }
 
@@ -2626,8 +2699,9 @@ func (v SelfTradePreventionType) Validate() error {
 	return asyncapirt.Invalid("SelfTradePreventionType", fmt.Sprintf("unknown value %v", v))
 }
 
-// `system` for liquidations and margin exit or trailing-stop
-// triggers. `user` for every other order.
+// `system` for liquidations, margin exit or trailing-stop
+// triggers, and auto-rebalance orders. `user` for every other
+// order.
 type MarginUserOrderPayloadMsgOrderSource string
 
 // Values of MarginUserOrderPayloadMsgOrderSource.

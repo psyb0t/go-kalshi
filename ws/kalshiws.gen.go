@@ -51,14 +51,30 @@ const ControlFramesAddressTemplate = "/"
 //
 // - Sends `orderbook_snapshot` first, then incremental `orderbook_delta` updates
 // - Supports `update_subscription` with `add_markets` / `delete_markets` / `get_snapshot` actions
-// - `get_snapshot` returns an `orderbook_snapshot` for the requested `market_tickers` without modifying the subscription
+// - `get_snapshot` returns an `orderbook_snapshot` for the requested `market_tickers` without changing the subscribed markets. Apply every returned snapshot as a replacement for that market's local book
+// - Each connection has one `orderbook_delta` subscription. A repeated `subscribe` adds new markets to its existing `sid`; it does not resend snapshots for markets already subscribed
+// - A repeated `subscribe` must use the existing `update_interval_ms` (omitting it means `0`). A different valid interval returns error code 11 without adding markets. Use `update_subscription` with `add_markets` to add markets without respecifying the interval. To change the interval, `unsubscribe`, wait for `unsubscribed`, then `subscribe` again
 //
-// **Matching updates across connections:**
+// **Matching real-time updates across connections:**
+// These guarantees apply to subscriptions created in real-time mode (the initial `update_interval_ms` is omitted or `0`). Conflated subscriptions have the separate clock and recovery rules below.
+//
 // - `clock` is the exchange clock. It is the same on every connection, so it can match a market's updates across redundant connections; `seq` counts messages on one subscription only
 // - One exchange action can make several deltas, so several deltas can share a `clock`. Every connection sends them in the same order, before any delta for that market with a higher `clock`
 // - A snapshot includes every change with a `clock` at or below its own; the deltas that follow it on that connection have higher clocks
 // - While you are subscribed to a market, its clocks never go down outside exchange maintenance, but they skip values. They are not comparable across markets. Keep checking `seq` on each connection for missed messages
 // - A market's clock may decrease during exchange maintenance, so don't compare clocks from before a maintenance period with clocks after it
+//
+// **Conflated updates (opt-in):**
+// - Set `update_interval_ms` to `100` or `1000` on the initial `subscribe` to receive conflated updates instead of one `orderbook_delta` per change. Omit it or set it to `0` for real-time updates, the default
+// - Each window produces one `orderbook_delta` per changed price level, carrying the net held change at that level. Levels whose held changes cancel out are skipped. Apply every delta in sequence to account for those changes exactly
+// - Each window's flush is scheduled one interval after that window's first held change; processing and transport latency are additional. `clock`, `ts` and `ts_ms` are those of the latest change included in each delta
+// - A conflated delta's `clock` describes that price level's latest included change, not the completeness of the whole book. Clocks can decrease between messages, including when an immediate own-order update overtakes a held public update. Do not discard a delta because its clock is lower than a previously received clock
+// - Updates to your own orders bypass the interval, with the usual `client_order_id` and `subaccount` annotations when available. For a subaccount-restricted key, this applies only to orders within that restriction. Changes to other participants' orders, including liquidity your trades consume, are held like other public changes
+// - Snapshots bypass the interval and replace any unsent held changes for their market. Always replace your local book with a received snapshot before applying subsequent deltas for that market
+// - Between flushes, public levels can lag your own orders, and the book can appear locked or crossed. A flush contains separate delta messages, not an atomic full-book snapshot; there is no end-of-flush message
+// - `seq` stays contiguous; the interval is fixed for the life of the subscription
+// - Apply every delta in `seq` order within its subscription. If you detect a gap, request `get_snapshot` for all subscribed markets, or `unsubscribe`, wait for `unsubscribed`, then `subscribe` again. A repeated `subscribe` alone does not resynchronize existing markets
+// - Conflation windows are independent across subscriptions, so the same clock can accompany different net deltas on different connections. Do not merge or deduplicate conflated streams by clock. When switching connections, rebuild from that connection's snapshot and follow its own `seq`
 //
 // **Use case:** Building and maintaining a real-time orderbook
 const OrderbookDeltaAddressTemplate = "orderbook_delta"
@@ -594,6 +610,21 @@ type SubscribeCommandPayloadParams struct {
 	//
 	// Default: false
 	UseYesPrice *bool `json:"use_yes_price,omitempty"`
+	// Orderbook channel only. Opts in to conflated `orderbook_delta` updates: one net delta per
+	// changed price level in each 100 or 1000 millisecond window. A window starts with its first
+	// held change; processing and transport can delay delivery. Your own orders within any subaccount restriction and snapshots bypass the interval;
+	// changes to other participants' orders, including liquidity you consume, remain held.
+	// Omit or set to 0 for real-time updates, the default. Use JSON integer literals: other signed
+	// 64-bit integer literals return error code 29. Values that fail integer decoding, including
+	// floating-point notation and strings, return code 1 for the whole command.
+	// A repeated subscribe adds markets to the existing sid and must specify the same interval
+	// (omission means 0); a mismatch returns error code 11. Change intervals by unsubscribing first.
+	// Follow seq within this subscription; conflated clocks can decrease and cannot match or
+	// deduplicate updates across connections. Recover gaps with fresh snapshots for all subscribed
+	// markets or unsubscribe then subscribe again; a repeated subscribe alone does not resynchronize.
+	//
+	// Default: 0
+	UpdateIntervalMs *SubscribeCommandPayloadParamsUpdateIntervalMs `json:"update_interval_ms,omitempty"`
 	// Communications channel only. Set to "self" to receive RFQ and RFQ batch created/deleted events only for those you created. Omitted or empty receives them from all users. Quote and batch quote notifications are unchanged.
 	//
 	// Default: ""
@@ -650,6 +681,11 @@ func (v SubscribeCommandPayloadParams) Validate() error {
 	if v.MarketIds != nil {
 		if err := asyncapirt.CheckMinItems("market_ids", len(v.MarketIds), 1); err != nil {
 			return err
+		}
+	}
+	if v.UpdateIntervalMs != nil {
+		if err := (*v.UpdateIntervalMs).Validate(); err != nil {
+			return ctxerrors.Wrap(err, "update_interval_ms")
 		}
 	}
 	if v.UserFilter != nil {
@@ -712,6 +748,39 @@ func (v SubscribeCommandPayloadParamsChannelsItem) Validate() error {
 
 type MarketTicker = string
 type MarketID = string
+
+// Orderbook channel only. Opts in to conflated `orderbook_delta` updates: one net delta per
+// changed price level in each 100 or 1000 millisecond window. A window starts with its first
+// held change; processing and transport can delay delivery. Your own orders within any subaccount restriction and snapshots bypass the interval;
+// changes to other participants' orders, including liquidity you consume, remain held.
+// Omit or set to 0 for real-time updates, the default. Use JSON integer literals: other signed
+// 64-bit integer literals return error code 29. Values that fail integer decoding, including
+// floating-point notation and strings, return code 1 for the whole command.
+// A repeated subscribe adds markets to the existing sid and must specify the same interval
+// (omission means 0); a mismatch returns error code 11. Change intervals by unsubscribing first.
+// Follow seq within this subscription; conflated clocks can decrease and cannot match or
+// deduplicate updates across connections. Recover gaps with fresh snapshots for all subscribed
+// markets or unsubscribe then subscribe again; a repeated subscribe alone does not resynchronize.
+//
+// Default: 0
+type SubscribeCommandPayloadParamsUpdateIntervalMs int64
+
+// Values of SubscribeCommandPayloadParamsUpdateIntervalMs.
+const (
+	SubscribeCommandPayloadParamsUpdateIntervalMs0    SubscribeCommandPayloadParamsUpdateIntervalMs = 0
+	SubscribeCommandPayloadParamsUpdateIntervalMs100  SubscribeCommandPayloadParamsUpdateIntervalMs = 100
+	SubscribeCommandPayloadParamsUpdateIntervalMs1000 SubscribeCommandPayloadParamsUpdateIntervalMs = 1000
+)
+
+// Validate reports whether v is one of the values the schema lists.
+func (v SubscribeCommandPayloadParamsUpdateIntervalMs) Validate() error {
+	switch v {
+	case SubscribeCommandPayloadParamsUpdateIntervalMs0, SubscribeCommandPayloadParamsUpdateIntervalMs100, SubscribeCommandPayloadParamsUpdateIntervalMs1000:
+		return nil
+	}
+
+	return asyncapirt.Invalid("SubscribeCommandPayloadParamsUpdateIntervalMs", fmt.Sprintf("unknown value %v", v))
+}
 
 // Communications channel only. Set to "self" to receive RFQ and RFQ batch created/deleted events only for those you created. Omitted or empty receives them from all users. Quote and batch quote notifications are unchanged.
 //
@@ -2121,7 +2190,7 @@ type ErrorResponsePayloadMsg struct {
 	// - 8: Unknown channel name - Invalid channel in subscribe
 	// - 9: Authentication required - Channel requires authenticated connection
 	// - 10: Channel error - Channel-specific error
-	// - 11: Invalid parameter - Malformed parameter value
+	// - 11: Invalid parameter - Malformed parameter value, or update_interval_ms differs from the existing orderbook subscription
 	// - 12: Exactly one subscription ID is required - For update_subscription
 	// - 13: Unsupported action - Invalid action for update_subscription
 	// - 14: Market Ticker required - Missing market specification (market_ticker or market_id)
@@ -2137,6 +2206,7 @@ type ErrorResponsePayloadMsg struct {
 	// - 26: Subscription market limit exceeded - Adding markets would exceed the per-subscription market limit
 	// - 27: Too many requests - The subscription exceeded its command rate limit
 	// - 28: Underlying tickers required - Missing underlying_tickers for subscribe_underlyings/unsubscribe_underlyings on pyth_value
+	// - 29: update_interval_ms must be 0, 100 or 1000 - Invalid update_interval_ms on orderbook_delta
 	//
 	// Codes 6, 16, and 17 are retired. The service no longer emits
 	// them and their numbers stay reserved.
@@ -2192,7 +2262,7 @@ func (v ErrorResponsePayloadMsg) Validate() error {
 // - 8: Unknown channel name - Invalid channel in subscribe
 // - 9: Authentication required - Channel requires authenticated connection
 // - 10: Channel error - Channel-specific error
-// - 11: Invalid parameter - Malformed parameter value
+// - 11: Invalid parameter - Malformed parameter value, or update_interval_ms differs from the existing orderbook subscription
 // - 12: Exactly one subscription ID is required - For update_subscription
 // - 13: Unsupported action - Invalid action for update_subscription
 // - 14: Market Ticker required - Missing market specification (market_ticker or market_id)
@@ -2208,6 +2278,7 @@ func (v ErrorResponsePayloadMsg) Validate() error {
 // - 26: Subscription market limit exceeded - Adding markets would exceed the per-subscription market limit
 // - 27: Too many requests - The subscription exceeded its command rate limit
 // - 28: Underlying tickers required - Missing underlying_tickers for subscribe_underlyings/unsubscribe_underlyings on pyth_value
+// - 29: update_interval_ms must be 0, 100 or 1000 - Invalid update_interval_ms on orderbook_delta
 //
 // Codes 6, 16, and 17 are retired. The service no longer emits
 // them and their numbers stay reserved.
@@ -2240,12 +2311,13 @@ const (
 	ErrorResponsePayloadMsgCode26 ErrorResponsePayloadMsgCode = 26
 	ErrorResponsePayloadMsgCode27 ErrorResponsePayloadMsgCode = 27
 	ErrorResponsePayloadMsgCode28 ErrorResponsePayloadMsgCode = 28
+	ErrorResponsePayloadMsgCode29 ErrorResponsePayloadMsgCode = 29
 )
 
 // Validate reports whether v is one of the values the schema lists.
 func (v ErrorResponsePayloadMsgCode) Validate() error {
 	switch v {
-	case ErrorResponsePayloadMsgCode1, ErrorResponsePayloadMsgCode2, ErrorResponsePayloadMsgCode3, ErrorResponsePayloadMsgCode4, ErrorResponsePayloadMsgCode5, ErrorResponsePayloadMsgCode7, ErrorResponsePayloadMsgCode8, ErrorResponsePayloadMsgCode9, ErrorResponsePayloadMsgCode10, ErrorResponsePayloadMsgCode11, ErrorResponsePayloadMsgCode12, ErrorResponsePayloadMsgCode13, ErrorResponsePayloadMsgCode14, ErrorResponsePayloadMsgCode15, ErrorResponsePayloadMsgCode18, ErrorResponsePayloadMsgCode19, ErrorResponsePayloadMsgCode20, ErrorResponsePayloadMsgCode21, ErrorResponsePayloadMsgCode22, ErrorResponsePayloadMsgCode23, ErrorResponsePayloadMsgCode24, ErrorResponsePayloadMsgCode25, ErrorResponsePayloadMsgCode26, ErrorResponsePayloadMsgCode27, ErrorResponsePayloadMsgCode28:
+	case ErrorResponsePayloadMsgCode1, ErrorResponsePayloadMsgCode2, ErrorResponsePayloadMsgCode3, ErrorResponsePayloadMsgCode4, ErrorResponsePayloadMsgCode5, ErrorResponsePayloadMsgCode7, ErrorResponsePayloadMsgCode8, ErrorResponsePayloadMsgCode9, ErrorResponsePayloadMsgCode10, ErrorResponsePayloadMsgCode11, ErrorResponsePayloadMsgCode12, ErrorResponsePayloadMsgCode13, ErrorResponsePayloadMsgCode14, ErrorResponsePayloadMsgCode15, ErrorResponsePayloadMsgCode18, ErrorResponsePayloadMsgCode19, ErrorResponsePayloadMsgCode20, ErrorResponsePayloadMsgCode21, ErrorResponsePayloadMsgCode22, ErrorResponsePayloadMsgCode23, ErrorResponsePayloadMsgCode24, ErrorResponsePayloadMsgCode25, ErrorResponsePayloadMsgCode26, ErrorResponsePayloadMsgCode27, ErrorResponsePayloadMsgCode28, ErrorResponsePayloadMsgCode29:
 		return nil
 	}
 
@@ -2487,8 +2559,12 @@ type OrderbookDeltaPayloadMsg struct {
 	//
 	// Not enforced by the generated code: format uuid.
 	MarketID MarketID `json:"market_id"`
-	// Exchange clock of the exchange action that made this change. Every connection sends the same clock for the same change.
-	// Several deltas can share a clock when one action makes several changes.
+	// Exchange clock of the latest change included in this delta.
+	// In real-time mode, every connection sends the same clock for the same change;
+	// several deltas can share a clock.
+	// In conflated mode, the latest exchange clock included in this price level's net delta.
+	// It can decrease between messages and is not a whole-book watermark or a cross-connection
+	// deduplication key. Apply deltas using this subscription's seq order.
 	Clock int64 `json:"clock"`
 	// Price level in dollars
 	PriceDollars string `json:"price_dollars"`
