@@ -2,6 +2,11 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.7.0, 2026-11-01
+
+- Breaking: the REST fields `EventLiveData.Details`, `LiveData.Details` and `Milestone.Details` change type from `map[string]interface{}` to `json.RawMessage`. Callers that index the map must call `json.Unmarshal` on the raw bytes first.
+- Breaking: `Market.CustomStrike` changes type from `*map[string]interface{}` to `json.RawMessage`. It is still omitted when empty. Check `len(CustomStrike) > 0` instead of comparing to `nil`, and unmarshal it to read the values.
+
 ## v0.6.0, 2026-10-29
 
 - The REST client adds position exit trigger (take-profit and stop-loss bracket) endpoints: `GetEventContractExitTriggers` (`GET /portfolio/positions/{ticker}/exit_trigger`), `SetEventContractExitTrigger` (`PUT`) and `DeleteEventContractExitTrigger` (`DELETE`). `SetEventContractExitTrigger` also has a `WithBody` variant.

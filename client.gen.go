@@ -2614,7 +2614,7 @@ type EventLiveData struct {
 	DefaultRange *string `json:"default_range,omitempty"`
 
 	// Details Live data details as a flexible object whose shape depends on the type.
-	Details map[string]interface{} `json:"details"`
+	Details json.RawMessage `json:"details"`
 
 	// IsHistorical Present for crypto live data. True when the event has matured and the payload is a frozen historical snapshot.
 	IsHistorical *bool `json:"is_historical,omitempty"`
@@ -3631,7 +3631,7 @@ type ListFCMSubtradersResponse struct {
 // LiveData defines model for LiveData.
 type LiveData struct {
 	// Details Live data details as a flexible object
-	Details map[string]interface{} `json:"details"`
+	Details json.RawMessage `json:"details"`
 
 	// MilestoneId Milestone ID
 	MilestoneId string `json:"milestone_id"`
@@ -3659,7 +3659,7 @@ type Market struct {
 	CreatedTime time.Time `json:"created_time"`
 
 	// CustomStrike Expiration value for each target that leads to a YES settlement
-	CustomStrike *map[string]interface{} `json:"custom_strike,omitempty"`
+	CustomStrike json.RawMessage `json:"custom_strike,omitempty"`
 
 	// EarlyCloseCondition The condition under which the market can close early
 	EarlyCloseCondition string        `json:"early_close_condition,omitempty"`
@@ -3952,7 +3952,7 @@ type Milestone struct {
 	Category string `json:"category"`
 
 	// Details Additional details about the milestone. `details.status`, when present, is maintained by a periodic background job. It lags the game's live state and may be stale or inaccurate, for example remaining `live` after the game ends. For game status, prefer live data, which is updated far more often: `live_data.details.status` from `GET /live_data/milestone/{milestone_id}`, or each entry's `details.status` from `GET /live_data/batch`. Scores are in the sport-specific fields of that live data `details` object.
-	Details map[string]interface{} `json:"details"`
+	Details json.RawMessage `json:"details"`
 
 	// EndDate End date of the milestone, if any.
 	EndDate *time.Time `json:"end_date,omitempty"`
