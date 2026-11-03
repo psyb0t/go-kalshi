@@ -3396,9 +3396,12 @@ func (v MarketLifecycleV2PayloadMsg) Validate() error {
 }
 
 type LifecycleAdditionalMetadata struct {
-	Name                 string         `json:"name"`
-	Title                string         `json:"title"`
-	YesSubTitle          string         `json:"yes_sub_title"`
+	Name        string `json:"name"`
+	Title       string `json:"title"`
+	YesSubTitle string `json:"yes_sub_title"`
+	// Deprecated. Use `yes_sub_title` instead. Equal to `yes_sub_title` on every market created since September 2024.
+	//
+	// Deprecated: the schema marks this as deprecated.
 	NoSubTitle           string         `json:"no_sub_title"`
 	RulesPrimary         string         `json:"rules_primary"`
 	RulesSecondary       string         `json:"rules_secondary"`

@@ -2,6 +2,12 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.8.0, 2026-11-03
+
+- `perpsws.MarginTradePayloadMsg` adds the `IsBlockTrade` field (`is_block_trade`), which is true when the trade was matched off book as a block trade.
+- Breaking: `MarginTradePayloadMsg.UnmarshalJSON` now requires the `is_block_trade` key. A trade message without it returns an error, for example in recorded fixtures or test payloads.
+- Doc comments only: `Market.NoSubTitle` and `ws.LifecycleAdditionalMetadata.NoSubTitle` are now marked deprecated. Use `yes_sub_title` instead. The two are equal on every market created since September 2024.
+
 ## v0.7.0, 2026-11-01
 
 - Breaking: the REST fields `EventLiveData.Details`, `LiveData.Details` and `Milestone.Details` change type from `map[string]interface{}` to `json.RawMessage`. Callers that index the map must call `json.Unmarshal` on the raw bytes first.

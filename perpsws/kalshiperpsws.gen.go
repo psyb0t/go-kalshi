@@ -2354,6 +2354,8 @@ type MarginTradePayloadMsg struct {
 	Price        string       `json:"price"`
 	Count        string       `json:"count"`
 	TakerSide    BookSide     `json:"taker_side"`
+	// True if the trade was matched off book as a block trade
+	IsBlockTrade bool `json:"is_block_trade"`
 	// Unix timestamp in milliseconds.
 	TsMs int64 `json:"ts_ms"`
 }
@@ -2366,7 +2368,7 @@ func (v *MarginTradePayloadMsg) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	if err := asyncapirt.RequireKeys("MarginTradePayloadMsg", members, "trade_id", "market_ticker", "price", "count", "taker_side", "ts_ms"); err != nil {
+	if err := asyncapirt.RequireKeys("MarginTradePayloadMsg", members, "trade_id", "market_ticker", "price", "count", "taker_side", "is_block_trade", "ts_ms"); err != nil {
 		return err
 	}
 

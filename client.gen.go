@@ -3711,7 +3711,8 @@ type Market struct {
 	// Example: 0.5600
 	NoBidDollars FixedPointDollars `json:"no_bid_dollars"`
 
-	// NoSubTitle Shortened title for the no side of this market
+	// NoSubTitle Deprecated. Use `yes_sub_title` instead. Equal to `yes_sub_title` on every market created since September 2024.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	NoSubTitle string `json:"no_sub_title"`
 
 	// NotionalValueDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
