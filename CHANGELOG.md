@@ -2,6 +2,10 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.8.1, 2026-11-03
+
+- `MarketPosition` adds the `NettingEnabled` field (`netting_enabled`), which says whether netting applies to the position's event. The subaccount's first order in the event sets it.
+
 ## v0.8.0, 2026-11-03
 
 - `perpsws.MarginTradePayloadMsg` adds the `IsBlockTrade` field (`is_block_trade`), which is true when the trade was matched off book as a block trade.

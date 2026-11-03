@@ -3926,6 +3926,9 @@ type MarketPosition struct {
 	// Example: 0.5600
 	MarketExposureDollars FixedPointDollars `json:"market_exposure_dollars"`
 
+	// NettingEnabled Whether netting applies to this position's event. Set at the subaccount's first order in the event.
+	NettingEnabled bool `json:"netting_enabled"`
+
 	// PositionFp Fixed-point contract count string (2 decimals, e.g., "10.00"; referred to as "fp" in field names). Requests accept 0-2 decimal places (e.g., "10", "10.0", "10.00"); responses always emit 2 decimals. Fractional contract values (e.g., "2.50") are supported; the minimum granularity is 0.01 contracts.
 	//
 	// Example: 10.00
