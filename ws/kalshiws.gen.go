@@ -4232,7 +4232,7 @@ type RfqCreatedPayloadMsg struct {
 	MveCollectionTicker *string `json:"mve_collection_ticker,omitempty"`
 	// Selected legs for an MVE RFQ. Omitted when the array is empty.
 	MveSelectedLegs []RfqCreatedPayloadMsgMveSelectedLegsItem `json:"mve_selected_legs,omitempty"`
-	// Identifier of the RFQ batch this RFQ is a child of. Omitted for an RFQ outside a batch. A child can be quoted like a single RFQ, with these differences: a quote counts only for 30 seconds after it was sent, and resending an unchanged bid keeps its time priority; nothing executes until every winning maker of the batch has confirmed, so a confirmed quote can still close without a fill; an accepted quote can't be cancelled, and not confirming it lapses with the same penalty as cancelling; and `rfq_creator_id` on its quote messages is the shared placeholder.
+	// Identifier of the RFQ batch this RFQ is a child of. Omitted for an RFQ outside a batch. A child can be quoted like a single RFQ, with these differences: a quote counts only for 30 seconds after it was sent, and resending an unchanged bid keeps its time priority only within those 30 seconds; nothing executes until every winning maker of the batch has confirmed, so a confirmed quote can still close without a fill; an accepted quote can't be cancelled, and not confirming it lapses with the same penalty as cancelling; and `rfq_creator_id` on its quote messages is the shared placeholder.
 	RfqBatchID *string `json:"rfq_batch_id,omitempty"`
 }
 
@@ -4662,7 +4662,7 @@ func (v QuoteAcceptedPayload) Validate() error {
 }
 
 type QuoteAcceptedPayloadMsg struct {
-	// Unique identifier for the quote
+	// Unique identifier of the quote that executes. It can differ from the quote the RFQ creator named
 	QuoteID string `json:"quote_id"`
 	// Identifier of the RFQ this quote is for
 	RfqID string `json:"rfq_id"`

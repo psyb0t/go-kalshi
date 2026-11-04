@@ -479,16 +479,16 @@ func (e IntraExchangeInstanceTransferStatus) Valid() bool {
 
 // Defines values for MarketMarketType.
 const (
-	MarketMarketTypeBinary MarketMarketType = "binary"
-	MarketMarketTypeScalar MarketMarketType = "scalar"
+	MarketMarketTypeMarketMarketTypeBinary MarketMarketType = "binary"
+	MarketMarketTypeMarketMarketTypeScalar MarketMarketType = "scalar"
 )
 
 // Valid indicates whether the value is a known member of the MarketMarketType enum.
 func (e MarketMarketType) Valid() bool {
 	switch e {
-	case MarketMarketTypeBinary:
+	case MarketMarketTypeMarketMarketTypeBinary:
 		return true
-	case MarketMarketTypeScalar:
+	case MarketMarketTypeMarketMarketTypeScalar:
 		return true
 	default:
 		return false
@@ -926,6 +926,7 @@ func (e SetEventContractExitTriggerRequestKind) Valid() bool {
 
 // Defines values for SettlementMarketResult.
 const (
+	SettlementMarketResultEmpty  SettlementMarketResult = ""
 	SettlementMarketResultNo     SettlementMarketResult = "no"
 	SettlementMarketResultScalar SettlementMarketResult = "scalar"
 	SettlementMarketResultYes    SettlementMarketResult = "yes"
@@ -934,6 +935,8 @@ const (
 // Valid indicates whether the value is a known member of the SettlementMarketResult enum.
 func (e SettlementMarketResult) Valid() bool {
 	switch e {
+	case SettlementMarketResultEmpty:
+		return true
 	case SettlementMarketResultNo:
 		return true
 	case SettlementMarketResultScalar:
@@ -6739,7 +6742,7 @@ type ClientInterface interface {
 
 	// GetQuotes Get Quotes
 	//
-	// List quotes. The rfq_id filter requires an RFQ UUID. Pass pagination cursors back unchanged; malformed RFQ IDs or cursors return HTTP 400.
+	// List quotes. The rfq_id filter requires an RFQ UUID. With rfq_id, quotes are sorted on the RFQ's main side (no for a target-cost RFQ, yes otherwise): the best price first, then the earliest place in line at that price. Pass pagination cursors back unchanged; malformed RFQ IDs or cursors return HTTP 400.
 	//
 	// Corresponds with GET /communications/quotes (the `GetQuotes` operationId).
 	GetQuotes(ctx context.Context, params *GetQuotesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -6782,7 +6785,7 @@ type ClientInterface interface {
 
 	// AcceptQuoteWithBody Accept Quote
 	//
-	// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead. Endpoint for accepting a quote. This will require the quoter to confirm.
+	// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6793,7 +6796,7 @@ type ClientInterface interface {
 
 	// AcceptQuote Accept Quote
 	//
-	// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead. Endpoint for accepting a quote. This will require the quoter to confirm.
+	// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6993,7 +6996,7 @@ type ClientInterface interface {
 
 	// AcceptRFQQuoteWithBody Accept RFQ Quote
 	//
-	//  Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm.
+	// Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm. The quote that fills can be another maker's quote at the same price; see [RFQs](/getting_started/rfqs#flow).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -7002,7 +7005,7 @@ type ClientInterface interface {
 
 	// AcceptRFQQuote Accept RFQ Quote
 	//
-	//  Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm.
+	// Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm. The quote that fills can be another maker's quote at the same price; see [RFQs](/getting_started/rfqs#flow).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -8404,7 +8407,7 @@ func (c *Client) GetCommunicationsID(ctx context.Context, reqEditors ...RequestE
 
 // GetQuotes Get Quotes
 //
-// List quotes. The rfq_id filter requires an RFQ UUID. Pass pagination cursors back unchanged; malformed RFQ IDs or cursors return HTTP 400.
+// List quotes. The rfq_id filter requires an RFQ UUID. With rfq_id, quotes are sorted on the RFQ's main side (no for a target-cost RFQ, yes otherwise): the best price first, then the earliest place in line at that price. Pass pagination cursors back unchanged; malformed RFQ IDs or cursors return HTTP 400.
 //
 // Corresponds with GET /communications/quotes (the `GetQuotes` operationId).
 func (c *Client) GetQuotes(ctx context.Context, params *GetQuotesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -8495,7 +8498,7 @@ func (c *Client) GetQuote(ctx context.Context, quoteId QuoteIdPath, reqEditors .
 
 // AcceptQuoteWithBody Accept Quote
 //
-// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead. Endpoint for accepting a quote. This will require the quoter to confirm.
+// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead.
 //
 // Takes any type of body and a specified content type.
 //
@@ -8515,7 +8518,7 @@ func (c *Client) AcceptQuoteWithBody(ctx context.Context, quoteId QuoteIdPath, c
 
 // AcceptQuote Accept Quote
 //
-// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead. Endpoint for accepting a quote. This will require the quoter to confirm.
+// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -8952,7 +8955,7 @@ func (c *Client) GetRFQQuote(ctx context.Context, rfqId RfqIdPath, quoteId Quote
 
 // AcceptRFQQuoteWithBody Accept RFQ Quote
 //
-//	Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm.
+// Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm. The quote that fills can be another maker's quote at the same price; see [RFQs](/getting_started/rfqs#flow).
 //
 // Takes any type of body and a specified content type.
 //
@@ -8971,7 +8974,7 @@ func (c *Client) AcceptRFQQuoteWithBody(ctx context.Context, rfqId RfqIdPath, qu
 
 // AcceptRFQQuote Accept RFQ Quote
 //
-//	Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm.
+// Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm. The quote that fills can be another maker's quote at the same price; see [RFQs](/getting_started/rfqs#flow).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -19597,7 +19600,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetQuotesWithResponse Get Quotes
 	//
-	// List quotes. The rfq_id filter requires an RFQ UUID. Pass pagination cursors back unchanged; malformed RFQ IDs or cursors return HTTP 400.
+	// List quotes. The rfq_id filter requires an RFQ UUID. With rfq_id, quotes are sorted on the RFQ's main side (no for a target-cost RFQ, yes otherwise): the best price first, then the earliest place in line at that price. Pass pagination cursors back unchanged; malformed RFQ IDs or cursors return HTTP 400.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -19646,7 +19649,7 @@ type ClientWithResponsesInterface interface {
 
 	// AcceptQuoteWithBodyWithResponse Accept Quote
 	//
-	// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead. Endpoint for accepting a quote. This will require the quoter to confirm.
+	// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -19657,7 +19660,7 @@ type ClientWithResponsesInterface interface {
 
 	// AcceptQuoteWithResponse Accept Quote
 	//
-	// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead. Endpoint for accepting a quote. This will require the quoter to confirm.
+	// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -19879,7 +19882,7 @@ type ClientWithResponsesInterface interface {
 
 	// AcceptRFQQuoteWithBodyWithResponse Accept RFQ Quote
 	//
-	//  Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm.
+	// Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm. The quote that fills can be another maker's quote at the same price; see [RFQs](/getting_started/rfqs#flow).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -19888,7 +19891,7 @@ type ClientWithResponsesInterface interface {
 
 	// AcceptRFQQuoteWithResponse Accept RFQ Quote
 	//
-	//  Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm.
+	// Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm. The quote that fills can be another maker's quote at the same price; see [RFQs](/getting_started/rfqs#flow).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -29093,7 +29096,7 @@ func (c *ClientWithResponses) GetCommunicationsIDWithResponse(ctx context.Contex
 
 // GetQuotesWithResponse Get Quotes
 //
-// List quotes. The rfq_id filter requires an RFQ UUID. Pass pagination cursors back unchanged; malformed RFQ IDs or cursors return HTTP 400.
+// List quotes. The rfq_id filter requires an RFQ UUID. With rfq_id, quotes are sorted on the RFQ's main side (no for a target-cost RFQ, yes otherwise): the best price first, then the earliest place in line at that price. Pass pagination cursors back unchanged; malformed RFQ IDs or cursors return HTTP 400.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29172,7 +29175,7 @@ func (c *ClientWithResponses) GetQuoteWithResponse(ctx context.Context, quoteId 
 
 // AcceptQuoteWithBodyWithResponse Accept Quote
 //
-// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead. Endpoint for accepting a quote. This will require the quoter to confirm.
+// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29189,7 +29192,7 @@ func (c *ClientWithResponses) AcceptQuoteWithBodyWithResponse(ctx context.Contex
 
 // AcceptQuoteWithResponse Accept Quote
 //
-// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead. Endpoint for accepting a quote. This will require the quoter to confirm.
+// DEPRECATED: Use PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/accept instead.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29553,7 +29556,7 @@ func (c *ClientWithResponses) GetRFQQuoteWithResponse(ctx context.Context, rfqId
 
 // AcceptRFQQuoteWithBodyWithResponse Accept RFQ Quote
 //
-//	Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm.
+// Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm. The quote that fills can be another maker's quote at the same price; see [RFQs](/getting_started/rfqs#flow).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29568,7 +29571,7 @@ func (c *ClientWithResponses) AcceptRFQQuoteWithBodyWithResponse(ctx context.Con
 
 // AcceptRFQQuoteWithResponse Accept RFQ Quote
 //
-//	Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm.
+// Endpoint for accepting a quote scoped to its RFQ. This will require the quoter to confirm. The quote that fills can be another maker's quote at the same price; see [RFQs](/getting_started/rfqs#flow).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //

@@ -2,6 +2,13 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.9.0, 2026-11-04
+
+- Breaking: the `MarketMarketType` constants `MarketMarketTypeBinary` and `MarketMarketTypeScalar` are renamed to `MarketMarketTypeMarketMarketTypeBinary` and `MarketMarketTypeMarketMarketTypeScalar`. The values stay "binary" and "scalar". Callers must switch to the new names.
+- `SettlementMarketResult` adds the `SettlementMarketResultEmpty` constant (empty string), and `SettlementMarketResult.Valid` now accepts it.
+- Doc comments: `GetQuotes` now describes the sort order when `rfq_id` is set. The `AcceptRFQQuote` docs say another maker's quote at the same price can fill. The deprecated `AcceptQuote` docs are shortened.
+- Doc comment: the `ws.RfqCreatedPayloadMsg` `RfqBatchID` comment now says an unchanged bid keeps its time priority only within 30 seconds.
+
 ## v0.8.1, 2026-11-03
 
 - `MarketPosition` adds the `NettingEnabled` field (`netting_enabled`), which says whether netting applies to the position's event. The subaccount's first order in the event sets it.
