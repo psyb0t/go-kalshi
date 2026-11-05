@@ -2,6 +2,13 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.9.1, 2026-11-05
+
+- The REST client adds block trade proposal endpoints: `CancelBlockTradeProposal` (`DELETE /communications/block-trade-proposals/{block_trade_proposal_id}`, only the proposer can cancel) and `RejectBlockTradeProposal` (`POST /communications/block-trade-proposals/{block_trade_proposal_id}/reject`).
+- Each new method has a `WithResponse` variant on `ClientWithResponses`, plus matching `NewCancelBlockTradeProposalRequest`, `NewRejectBlockTradeProposalRequest`, `ParseCancelBlockTradeProposalResponse` and `ParseRejectBlockTradeProposalResponse` functions, and the `CancelBlockTradeProposalResponse` and `RejectBlockTradeProposalResponse` types. `RejectBlockTradeProposalResponse` also has a `JSON409` field.
+- `ClientInterface` and `ClientWithResponsesInterface` gain the four new methods. Custom types that implement these interfaces must add them.
+- Doc comments: `BlockTradeProposal.Status` now lists the values pending, executed, cancelled and rejected. The `perpsws.MarginMarketLifecycleV2PayloadMsg` `IsDeactivated` comment now says trading is paused when the market is halted or outside its trading hours.
+
 ## v0.9.0, 2026-11-04
 
 - Breaking: the `MarketMarketType` constants `MarketMarketTypeBinary` and `MarketMarketTypeScalar` are renamed to `MarketMarketTypeMarketMarketTypeBinary` and `MarketMarketTypeMarketMarketTypeScalar`. The values stay "binary" and "scalar". Callers must switch to the new names.

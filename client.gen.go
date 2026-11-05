@@ -1902,7 +1902,7 @@ type BlockTradeProposal struct {
 	// SellerUserId User ID of the seller. Empty when the authenticated user is not the seller.
 	SellerUserId string `json:"seller_user_id"`
 
-	// Status Current status of the proposal
+	// Status Current status of the proposal: pending, executed, cancelled (by the proposer, or on expiry) or rejected (by a counterparty)
 	Status string `json:"status"`
 
 	// UpdatedTs Timestamp when the proposal was last updated
@@ -6715,6 +6715,13 @@ type ClientInterface interface {
 	// Corresponds with POST /communications/block-trade-proposals (the `ProposeBlockTrade` operationId).
 	ProposeBlockTrade(ctx context.Context, body ProposeBlockTradeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CancelBlockTradeProposal Cancel Block Trade Proposal
+	//
+	//  Endpoint for cancelling a pending block trade proposal. Only the proposer can cancel it.
+	//
+	// Corresponds with DELETE /communications/block-trade-proposals/{block_trade_proposal_id} (the `CancelBlockTradeProposal` operationId).
+	CancelBlockTradeProposal(ctx context.Context, blockTradeProposalId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AcceptBlockTradeProposalWithBody Accept Block Trade Proposal
 	//
 	//  Endpoint for accepting a block trade proposal.
@@ -6732,6 +6739,13 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /communications/block-trade-proposals/{block_trade_proposal_id}/accept (the `AcceptBlockTradeProposal` operationId).
 	AcceptBlockTradeProposal(ctx context.Context, blockTradeProposalId string, body AcceptBlockTradeProposalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RejectBlockTradeProposal Reject Block Trade Proposal
+	//
+	//  Endpoint for rejecting a pending block trade proposal. Either counterparty can reject it, but not the proposer, which cancels it instead.
+	//
+	// Corresponds with POST /communications/block-trade-proposals/{block_trade_proposal_id}/reject (the `RejectBlockTradeProposal` operationId).
+	RejectBlockTradeProposal(ctx context.Context, blockTradeProposalId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCommunicationsID Get Communications ID
 	//
@@ -8350,6 +8364,23 @@ func (c *Client) ProposeBlockTrade(ctx context.Context, body ProposeBlockTradeJS
 	return c.Client.Do(req)
 }
 
+// CancelBlockTradeProposal Cancel Block Trade Proposal
+//
+//	Endpoint for cancelling a pending block trade proposal. Only the proposer can cancel it.
+//
+// Corresponds with DELETE /communications/block-trade-proposals/{block_trade_proposal_id} (the `CancelBlockTradeProposal` operationId).
+func (c *Client) CancelBlockTradeProposal(ctx context.Context, blockTradeProposalId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelBlockTradeProposalRequest(c.Server, blockTradeProposalId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // AcceptBlockTradeProposalWithBody Accept Block Trade Proposal
 //
 //	Endpoint for accepting a block trade proposal.
@@ -8378,6 +8409,23 @@ func (c *Client) AcceptBlockTradeProposalWithBody(ctx context.Context, blockTrad
 // Corresponds with POST /communications/block-trade-proposals/{block_trade_proposal_id}/accept (the `AcceptBlockTradeProposal` operationId).
 func (c *Client) AcceptBlockTradeProposal(ctx context.Context, blockTradeProposalId string, body AcceptBlockTradeProposalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAcceptBlockTradeProposalRequest(c.Server, blockTradeProposalId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RejectBlockTradeProposal Reject Block Trade Proposal
+//
+//	Endpoint for rejecting a pending block trade proposal. Either counterparty can reject it, but not the proposer, which cancels it instead.
+//
+// Corresponds with POST /communications/block-trade-proposals/{block_trade_proposal_id}/reject (the `RejectBlockTradeProposal` operationId).
+func (c *Client) RejectBlockTradeProposal(ctx context.Context, blockTradeProposalId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRejectBlockTradeProposalRequest(c.Server, blockTradeProposalId)
 	if err != nil {
 		return nil, err
 	}
@@ -11695,6 +11743,40 @@ func NewProposeBlockTradeRequestWithBody(server string, contentType string, body
 	return req, nil
 }
 
+// NewCancelBlockTradeProposalRequest constructs an http.Request for the CancelBlockTradeProposal method
+func NewCancelBlockTradeProposalRequest(server string, blockTradeProposalId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "block_trade_proposal_id", blockTradeProposalId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/block-trade-proposals/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewAcceptBlockTradeProposalRequest calls the generic AcceptBlockTradeProposal builder with application/json body
 func NewAcceptBlockTradeProposalRequest(server string, blockTradeProposalId string, body AcceptBlockTradeProposalJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -11738,6 +11820,40 @@ func NewAcceptBlockTradeProposalRequestWithBody(server string, blockTradeProposa
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRejectBlockTradeProposalRequest constructs an http.Request for the RejectBlockTradeProposal method
+func NewRejectBlockTradeProposalRequest(server string, blockTradeProposalId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "block_trade_proposal_id", blockTradeProposalId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/communications/block-trade-proposals/%s/reject", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -19571,6 +19687,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /communications/block-trade-proposals (the `ProposeBlockTrade` operationId).
 	ProposeBlockTradeWithResponse(ctx context.Context, body ProposeBlockTradeJSONRequestBody, reqEditors ...RequestEditorFn) (*ProposeBlockTradeResponse2, error)
 
+	// CancelBlockTradeProposalWithResponse Cancel Block Trade Proposal
+	//
+	//  Endpoint for cancelling a pending block trade proposal. Only the proposer can cancel it.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /communications/block-trade-proposals/{block_trade_proposal_id} (the `CancelBlockTradeProposal` operationId).
+	CancelBlockTradeProposalWithResponse(ctx context.Context, blockTradeProposalId string, reqEditors ...RequestEditorFn) (*CancelBlockTradeProposalResponse, error)
+
 	// AcceptBlockTradeProposalWithBodyWithResponse Accept Block Trade Proposal
 	//
 	//  Endpoint for accepting a block trade proposal.
@@ -19588,6 +19713,15 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /communications/block-trade-proposals/{block_trade_proposal_id}/accept (the `AcceptBlockTradeProposal` operationId).
 	AcceptBlockTradeProposalWithResponse(ctx context.Context, blockTradeProposalId string, body AcceptBlockTradeProposalJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptBlockTradeProposalResponse, error)
+
+	// RejectBlockTradeProposalWithResponse Reject Block Trade Proposal
+	//
+	//  Endpoint for rejecting a pending block trade proposal. Either counterparty can reject it, but not the proposer, which cancels it instead.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /communications/block-trade-proposals/{block_trade_proposal_id}/reject (the `RejectBlockTradeProposal` operationId).
+	RejectBlockTradeProposalWithResponse(ctx context.Context, blockTradeProposalId string, reqEditors ...RequestEditorFn) (*RejectBlockTradeProposalResponse, error)
 
 	// GetCommunicationsIDWithResponse Get Communications ID
 	//
@@ -21600,6 +21734,68 @@ func (r ProposeBlockTradeResponse2) ContentType() string {
 	return ""
 }
 
+type CancelBlockTradeProposalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CancelBlockTradeProposalResponse) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CancelBlockTradeProposalResponse) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CancelBlockTradeProposalResponse) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CancelBlockTradeProposalResponse) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CancelBlockTradeProposalResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CancelBlockTradeProposalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CancelBlockTradeProposalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CancelBlockTradeProposalResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type AcceptBlockTradeProposalResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -21656,6 +21852,75 @@ func (r AcceptBlockTradeProposalResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r AcceptBlockTradeProposalResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RejectBlockTradeProposalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RejectBlockTradeProposalResponse) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RejectBlockTradeProposalResponse) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r RejectBlockTradeProposalResponse) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r RejectBlockTradeProposalResponse) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RejectBlockTradeProposalResponse) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RejectBlockTradeProposalResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RejectBlockTradeProposalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RejectBlockTradeProposalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RejectBlockTradeProposalResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -29049,6 +29314,21 @@ func (c *ClientWithResponses) ProposeBlockTradeWithResponse(ctx context.Context,
 	return ParseProposeBlockTradeResponse2(rsp)
 }
 
+// CancelBlockTradeProposalWithResponse Cancel Block Trade Proposal
+//
+//	Endpoint for cancelling a pending block trade proposal. Only the proposer can cancel it.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /communications/block-trade-proposals/{block_trade_proposal_id} (the `CancelBlockTradeProposal` operationId).
+func (c *ClientWithResponses) CancelBlockTradeProposalWithResponse(ctx context.Context, blockTradeProposalId string, reqEditors ...RequestEditorFn) (*CancelBlockTradeProposalResponse, error) {
+	rsp, err := c.CancelBlockTradeProposal(ctx, blockTradeProposalId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelBlockTradeProposalResponse(rsp)
+}
+
 // AcceptBlockTradeProposalWithBodyWithResponse Accept Block Trade Proposal
 //
 //	Endpoint for accepting a block trade proposal.
@@ -29077,6 +29357,21 @@ func (c *ClientWithResponses) AcceptBlockTradeProposalWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParseAcceptBlockTradeProposalResponse(rsp)
+}
+
+// RejectBlockTradeProposalWithResponse Reject Block Trade Proposal
+//
+//	Endpoint for rejecting a pending block trade proposal. Either counterparty can reject it, but not the proposer, which cancels it instead.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /communications/block-trade-proposals/{block_trade_proposal_id}/reject (the `RejectBlockTradeProposal` operationId).
+func (c *ClientWithResponses) RejectBlockTradeProposalWithResponse(ctx context.Context, blockTradeProposalId string, reqEditors ...RequestEditorFn) (*RejectBlockTradeProposalResponse, error) {
+	rsp, err := c.RejectBlockTradeProposal(ctx, blockTradeProposalId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRejectBlockTradeProposalResponse(rsp)
 }
 
 // GetCommunicationsIDWithResponse Get Communications ID
@@ -31902,6 +32197,56 @@ func ParseProposeBlockTradeResponse2(rsp *http.Response) (*ProposeBlockTradeResp
 	return response, nil
 }
 
+// ParseCancelBlockTradeProposalResponse parses an HTTP response from a CancelBlockTradeProposalWithResponse call
+func ParseCancelBlockTradeProposalResponse(rsp *http.Response) (*CancelBlockTradeProposalResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CancelBlockTradeProposalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseAcceptBlockTradeProposalResponse parses an HTTP response from a AcceptBlockTradeProposalWithResponse call
 func ParseAcceptBlockTradeProposalResponse(rsp *http.Response) (*AcceptBlockTradeProposalResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -31939,6 +32284,63 @@ func ParseAcceptBlockTradeProposalResponse(rsp *http.Response) (*AcceptBlockTrad
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRejectBlockTradeProposalResponse parses an HTTP response from a RejectBlockTradeProposalWithResponse call
+func ParseRejectBlockTradeProposalResponse(rsp *http.Response) (*RejectBlockTradeProposalResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RejectBlockTradeProposalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalServerError

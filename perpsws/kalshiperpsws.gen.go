@@ -1957,7 +1957,7 @@ type MarginMarketLifecycleV2PayloadMsg struct {
 	// Unique market identifier
 	MarketTicker MarketTicker                               `json:"market_ticker"`
 	EventType    MarginMarketLifecycleV2PayloadMsgEventType `json:"event_type"`
-	// Whether trading on the market is paused.
+	// Whether trading on the market is paused, because it is halted or outside its trading hours.
 	IsDeactivated bool `json:"is_deactivated"`
 }
 
