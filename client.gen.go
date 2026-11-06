@@ -1490,10 +1490,10 @@ func (e GetMarketCandlesticksParamsPeriodInterval) Valid() bool {
 
 // AcceptBlockTradeProposalRequest defines model for AcceptBlockTradeProposalRequest.
 type AcceptBlockTradeProposalRequest struct {
-	// Subaccount User-managed subaccount number to accept as (0 for primary, 1-63 for numbered subaccounts). Provide either this or subtrader_id, not both.
+	// Subaccount User-managed subaccount number to book your side onto (0 for primary, 1-63 for numbered subaccounts). It may differ from the one the proposal named. Omit both this and subtrader_id to keep the proposal's. Provide either this or subtrader_id, not both.
 	Subaccount *int `json:"subaccount,omitempty"`
 
-	// SubtraderId Subtrader ID to accept as. Provide either this or subaccount, not both.
+	// SubtraderId Subtrader ID to book your side onto. It may differ from the one the proposal named. Omit both this and subaccount to keep the proposal's. Provide either this or subaccount, not both.
 	SubtraderId string `json:"subtrader_id,omitempty"`
 }
 
@@ -1629,6 +1629,9 @@ type ApiKey struct {
 
 	// FcmSubtraderId If set, the API key is bound to this single FCM subtrader ({fcm_user_id}_{suffix}) and is usable only as that institution's trading credential - FIX sessions and subtrader-scoped margin WebSocket sessions; every REST endpoint is denied. Absent/null means the key carries no subtrader binding.
 	FcmSubtraderId *string `json:"fcm_subtrader_id,omitempty"`
+
+	// KeyType Signing algorithm of this key, derived from its stored public key. Present for RSA and Ed25519 keys, including existing keys. Omitted when the algorithm is unknown.
+	KeyType *ApiKeyType `json:"key_type,omitempty"`
 
 	// Name User-provided name for the API key
 	Name string `json:"name"`
@@ -6239,10 +6242,10 @@ type GetPositionsParams struct {
 	// Limit Parameter to specify the number of results per page. Defaults to 100.
 	Limit *PositionsLimitQuery `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// CountFilter Restricts the positions to those with any of following fields with non-zero values, as a comma separated list. The following values are accepted - position, total_traded
+	// CountFilter Comma-separated filters combined with OR: `position` (non-zero net contracts), `total_traded` (any contracts traded, including fully exited positions). Omit for no count filter.
 	CountFilter *CountFilterQuery `form:"count_filter,omitempty" json:"count_filter,omitempty"`
 
-	// SettlementStatus Return unsettled positions by default, settled positions that have not yet been archived, or all positions in the live data set.
+	// SettlementStatus Filters settlement state, not trading status: `unsettled` (default), `settled` (not yet archived), or `all` (both live states).
 	SettlementStatus *GetPositionsParamsSettlementStatus `form:"settlement_status,omitempty" json:"settlement_status,omitempty"`
 
 	// Ticker Filter by market ticker
@@ -6724,7 +6727,7 @@ type ClientInterface interface {
 
 	// AcceptBlockTradeProposalWithBody Accept Block Trade Proposal
 	//
-	//  Endpoint for accepting a block trade proposal.
+	//  Endpoint for accepting a block trade proposal. The caller accepts as whichever side it is named on, and may book that side onto any of its own subaccounts, including one the proposal did not name. Without a subaccount, the side keeps the one the proposal named. A side that has already accepted may accept again to move to another subaccount until the trade executes.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6733,7 +6736,7 @@ type ClientInterface interface {
 
 	// AcceptBlockTradeProposal Accept Block Trade Proposal
 	//
-	//  Endpoint for accepting a block trade proposal.
+	//  Endpoint for accepting a block trade proposal. The caller accepts as whichever side it is named on, and may book that side onto any of its own subaccounts, including one the proposal did not name. Without a subaccount, the side keeps the one the proposal named. A side that has already accepted may accept again to move to another subaccount until the trade executes.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -7894,9 +7897,12 @@ type ClientInterface interface {
 
 	// GetPositions Get Positions
 	//
-	// Returns unsettled positions by default. Set `settlement_status=settled` to page through settled positions that are still in the live data set, or `settlement_status=all` for both live states. Positions already archived are available via `GET /historical/positions`.
-	// Settled and all-state positions are paginated by event ticker to keep large histories bounded. Cursors are specific to the selected settlement status.
-	// `count_filter` restricts positions to those with a non-zero position or total traded count.
+	// Returns unsettled positions by default, including closed markets awaiting determination or settlement. These may retain non-zero quantities and cost basis. Check the market's `status` via `GET /markets/{ticker}` for trading status.
+	//
+	// Set `settlement_status=settled` for unarchived settled positions or `all` for both states. These results paginate by event ticker; cursors are specific to settlement status. Archived positions are available via `GET /historical/positions`.
+	//
+	// Use `count_filter=position` for non-zero net holdings, including closed, unsettled markets. Without a count filter, results may include fully exited positions with trading history, realized P&L or fees.
+	//
 	// Registered partners may also use a user OAuth access token with the explicitly granted read::compliance_partner scope.
 	//
 	// Corresponds with GET /portfolio/positions (the `GetPositions` operationId).
@@ -7937,6 +7943,7 @@ type ClientInterface interface {
 	// GetSettlements Get Settlements
 	//
 	// Returns settlement records still in the live data set. Archived positions are available via `GET /historical/positions`, which has different fields; this endpoint does not return archived settlement records.
+	// Resource-bound MCP OAuth tokens may read the owner's settlements with read::mcp_portfolio.
 	//
 	// Corresponds with GET /portfolio/settlements (the `GetSettlements` operationId).
 	GetSettlements(ctx context.Context, params *GetSettlementsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -8383,7 +8390,7 @@ func (c *Client) CancelBlockTradeProposal(ctx context.Context, blockTradeProposa
 
 // AcceptBlockTradeProposalWithBody Accept Block Trade Proposal
 //
-//	Endpoint for accepting a block trade proposal.
+//	Endpoint for accepting a block trade proposal. The caller accepts as whichever side it is named on, and may book that side onto any of its own subaccounts, including one the proposal did not name. Without a subaccount, the side keeps the one the proposal named. A side that has already accepted may accept again to move to another subaccount until the trade executes.
 //
 // Takes any type of body and a specified content type.
 //
@@ -8402,7 +8409,7 @@ func (c *Client) AcceptBlockTradeProposalWithBody(ctx context.Context, blockTrad
 
 // AcceptBlockTradeProposal Accept Block Trade Proposal
 //
-//	Endpoint for accepting a block trade proposal.
+//	Endpoint for accepting a block trade proposal. The caller accepts as whichever side it is named on, and may book that side onto any of its own subaccounts, including one the proposal did not name. Without a subaccount, the side keeps the one the proposal named. A side that has already accepted may accept again to move to another subaccount until the trade executes.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10809,9 +10816,12 @@ func (c *Client) GetOrderQueuePosition(ctx context.Context, orderId OrderIdPath,
 
 // GetPositions Get Positions
 //
-// Returns unsettled positions by default. Set `settlement_status=settled` to page through settled positions that are still in the live data set, or `settlement_status=all` for both live states. Positions already archived are available via `GET /historical/positions`.
-// Settled and all-state positions are paginated by event ticker to keep large histories bounded. Cursors are specific to the selected settlement status.
-// `count_filter` restricts positions to those with a non-zero position or total traded count.
+// Returns unsettled positions by default, including closed markets awaiting determination or settlement. These may retain non-zero quantities and cost basis. Check the market's `status` via `GET /markets/{ticker}` for trading status.
+//
+// Set `settlement_status=settled` for unarchived settled positions or `all` for both states. These results paginate by event ticker; cursors are specific to settlement status. Archived positions are available via `GET /historical/positions`.
+//
+// Use `count_filter=position` for non-zero net holdings, including closed, unsettled markets. Without a count filter, results may include fully exited positions with trading history, realized P&L or fees.
+//
 // Registered partners may also use a user OAuth access token with the explicitly granted read::compliance_partner scope.
 //
 // Corresponds with GET /portfolio/positions (the `GetPositions` operationId).
@@ -10902,6 +10912,7 @@ func (c *Client) SetEventContractExitTrigger(ctx context.Context, ticker string,
 // GetSettlements Get Settlements
 //
 // Returns settlement records still in the live data set. Archived positions are available via `GET /historical/positions`, which has different fields; this endpoint does not return archived settlement records.
+// Resource-bound MCP OAuth tokens may read the owner's settlements with read::mcp_portfolio.
 //
 // Corresponds with GET /portfolio/settlements (the `GetSettlements` operationId).
 func (c *Client) GetSettlements(ctx context.Context, params *GetSettlementsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -19698,7 +19709,7 @@ type ClientWithResponsesInterface interface {
 
 	// AcceptBlockTradeProposalWithBodyWithResponse Accept Block Trade Proposal
 	//
-	//  Endpoint for accepting a block trade proposal.
+	//  Endpoint for accepting a block trade proposal. The caller accepts as whichever side it is named on, and may book that side onto any of its own subaccounts, including one the proposal did not name. Without a subaccount, the side keeps the one the proposal named. A side that has already accepted may accept again to move to another subaccount until the trade executes.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -19707,7 +19718,7 @@ type ClientWithResponsesInterface interface {
 
 	// AcceptBlockTradeProposalWithResponse Accept Block Trade Proposal
 	//
-	//  Endpoint for accepting a block trade proposal.
+	//  Endpoint for accepting a block trade proposal. The caller accepts as whichever side it is named on, and may book that side onto any of its own subaccounts, including one the proposal did not name. Without a subaccount, the side keeps the one the proposal named. A side that has already accepted may accept again to move to another subaccount until the trade executes.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21012,9 +21023,12 @@ type ClientWithResponsesInterface interface {
 
 	// GetPositionsWithResponse Get Positions
 	//
-	// Returns unsettled positions by default. Set `settlement_status=settled` to page through settled positions that are still in the live data set, or `settlement_status=all` for both live states. Positions already archived are available via `GET /historical/positions`.
-	// Settled and all-state positions are paginated by event ticker to keep large histories bounded. Cursors are specific to the selected settlement status.
-	// `count_filter` restricts positions to those with a non-zero position or total traded count.
+	// Returns unsettled positions by default, including closed markets awaiting determination or settlement. These may retain non-zero quantities and cost basis. Check the market's `status` via `GET /markets/{ticker}` for trading status.
+	//
+	// Set `settlement_status=settled` for unarchived settled positions or `all` for both states. These results paginate by event ticker; cursors are specific to settlement status. Archived positions are available via `GET /historical/positions`.
+	//
+	// Use `count_filter=position` for non-zero net holdings, including closed, unsettled markets. Without a count filter, results may include fully exited positions with trading history, realized P&L or fees.
+	//
 	// Registered partners may also use a user OAuth access token with the explicitly granted read::compliance_partner scope.
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -21061,6 +21075,7 @@ type ClientWithResponsesInterface interface {
 	// GetSettlementsWithResponse Get Settlements
 	//
 	// Returns settlement records still in the live data set. Archived positions are available via `GET /historical/positions`, which has different fields; this endpoint does not return archived settlement records.
+	// Resource-bound MCP OAuth tokens may read the owner's settlements with read::mcp_portfolio.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -29331,7 +29346,7 @@ func (c *ClientWithResponses) CancelBlockTradeProposalWithResponse(ctx context.C
 
 // AcceptBlockTradeProposalWithBodyWithResponse Accept Block Trade Proposal
 //
-//	Endpoint for accepting a block trade proposal.
+//	Endpoint for accepting a block trade proposal. The caller accepts as whichever side it is named on, and may book that side onto any of its own subaccounts, including one the proposal did not name. Without a subaccount, the side keeps the one the proposal named. A side that has already accepted may accept again to move to another subaccount until the trade executes.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29346,7 +29361,7 @@ func (c *ClientWithResponses) AcceptBlockTradeProposalWithBodyWithResponse(ctx c
 
 // AcceptBlockTradeProposalWithResponse Accept Block Trade Proposal
 //
-//	Endpoint for accepting a block trade proposal.
+//	Endpoint for accepting a block trade proposal. The caller accepts as whichever side it is named on, and may book that side onto any of its own subaccounts, including one the proposal did not name. Without a subaccount, the side keeps the one the proposal named. A side that has already accepted may accept again to move to another subaccount until the trade executes.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31401,9 +31416,12 @@ func (c *ClientWithResponses) GetOrderQueuePositionWithResponse(ctx context.Cont
 
 // GetPositionsWithResponse Get Positions
 //
-// Returns unsettled positions by default. Set `settlement_status=settled` to page through settled positions that are still in the live data set, or `settlement_status=all` for both live states. Positions already archived are available via `GET /historical/positions`.
-// Settled and all-state positions are paginated by event ticker to keep large histories bounded. Cursors are specific to the selected settlement status.
-// `count_filter` restricts positions to those with a non-zero position or total traded count.
+// Returns unsettled positions by default, including closed markets awaiting determination or settlement. These may retain non-zero quantities and cost basis. Check the market's `status` via `GET /markets/{ticker}` for trading status.
+//
+// Set `settlement_status=settled` for unarchived settled positions or `all` for both states. These results paginate by event ticker; cursors are specific to settlement status. Archived positions are available via `GET /historical/positions`.
+//
+// Use `count_filter=position` for non-zero net holdings, including closed, unsettled markets. Without a count filter, results may include fully exited positions with trading history, realized P&L or fees.
+//
 // Registered partners may also use a user OAuth access token with the explicitly granted read::compliance_partner scope.
 //
 // Returns a wrapper object for the known response body format(s).
@@ -31480,6 +31498,7 @@ func (c *ClientWithResponses) SetEventContractExitTriggerWithResponse(ctx contex
 // GetSettlementsWithResponse Get Settlements
 //
 // Returns settlement records still in the live data set. Archived positions are available via `GET /historical/positions`, which has different fields; this endpoint does not return archived settlement records.
+// Resource-bound MCP OAuth tokens may read the owner's settlements with read::mcp_portfolio.
 //
 // Returns a wrapper object for the known response body format(s).
 //

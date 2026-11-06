@@ -2,6 +2,14 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.9.2, 2026-11-06
+
+- `ApiKey` adds the optional `KeyType` field (`key_type`, `*ApiKeyType`). It holds the signing algorithm of the key, for RSA and Ed25519 keys including existing ones, and is omitted when the algorithm is unknown.
+- The REST spec moves to version 3.36.0.
+- Doc comments: `AcceptBlockTradeProposalRequest.Subaccount` and `SubtraderId` now say the side can be booked onto any of the caller's subaccounts, even one the proposal did not name, and that omitting both keeps the proposal's. The `AcceptBlockTradeProposal` docs say a side that has already accepted may accept again to move subaccounts until the trade executes.
+- Doc comments: `GetPositions`, `GetPositionsParams.CountFilter` and `GetPositionsParams.SettlementStatus` now say unsettled positions include closed markets awaiting settlement, that `settlement_status` filters settlement state and not trading status, and that `count_filter=position` returns non-zero net holdings.
+- Doc comment: the `GetSettlements` docs say resource-bound MCP OAuth tokens may read the owner's settlements with `read::mcp_portfolio`.
+
 ## v0.9.1, 2026-11-05
 
 - The REST client adds block trade proposal endpoints: `CancelBlockTradeProposal` (`DELETE /communications/block-trade-proposals/{block_trade_proposal_id}`, only the proposer can cancel) and `RejectBlockTradeProposal` (`POST /communications/block-trade-proposals/{block_trade_proposal_id}/reject`).
