@@ -2,6 +2,14 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.11.0, 2026-11-10
+
+- The REST client adds weather point market endpoints: `CreateWeatherPointMarket` (`POST /weather_point_markets`) and `GetWeatherPointAvailability` (`GET /weather_point_markets/availability`). `CreateWeatherPointMarket` also has a `WithBody` variant, `CreateWeatherPointMarketWithBody`.
+- Each new method has a `WithResponse` variant on `ClientWithResponses`: `CreateWeatherPointMarketWithResponse`, `CreateWeatherPointMarketWithBodyWithResponse` and `GetWeatherPointAvailabilityWithResponse`. Matching `NewCreateWeatherPointMarketRequest`, `NewCreateWeatherPointMarketRequestWithBody`, `NewGetWeatherPointAvailabilityRequest`, `ParseCreateWeatherPointMarketResponse2` and `ParseGetWeatherPointAvailabilityResponse2` build and parse the calls.
+- New REST types: `CreateWeatherPointMarketRequest` (also `CreateWeatherPointMarketJSONRequestBody`), `CreateWeatherPointMarketResponse`, `CreateWeatherPointMarketResponse2`, `GetWeatherPointAvailabilityResponse`, `GetWeatherPointAvailabilityResponse2`, `WeatherPointDomain` and `WeatherPointVariableAvailability`.
+- New enums: `WeatherPointVariable` (`WeatherPointVariableMaxTemp`, `WeatherPointVariableMinTemp`, `WeatherPointVariablePrecipHours`, `WeatherPointVariablePrecipTotal`) and `CreateWeatherPointMarketRequestStrikeType` with the values `greater`, `less` and `between`.
+- Breaking: `ClientInterface` gains `CreateWeatherPointMarket`, `CreateWeatherPointMarketWithBody` and `GetWeatherPointAvailability`, and `ClientWithResponsesInterface` gains the three matching `WithResponse` methods. Code that implements either interface, for example a mock, must add them. `Client` and `ClientWithResponses` already have them.
+
 ## v0.10.0, 2026-11-10
 
 - Breaking: `ws.Handler` gains `HandleEbattleScores`, `HandleEbattleScoresMatchlist` and `HandleSubscribedMatchesResponse`. Types that implement `Handler` without embedding `UnimplementedHandler` must add them. `UnimplementedHandler` has no-op versions.

@@ -183,6 +183,27 @@ func (e CreateOrderV2RequestTimeInForce) Valid() bool {
 	}
 }
 
+// Defines values for CreateWeatherPointMarketRequestStrikeType.
+const (
+	CreateWeatherPointMarketRequestStrikeTypeWeatherPointStrikeBetween CreateWeatherPointMarketRequestStrikeType = "between"
+	CreateWeatherPointMarketRequestStrikeTypeWeatherPointStrikeGreater CreateWeatherPointMarketRequestStrikeType = "greater"
+	CreateWeatherPointMarketRequestStrikeTypeWeatherPointStrikeLess    CreateWeatherPointMarketRequestStrikeType = "less"
+)
+
+// Valid indicates whether the value is a known member of the CreateWeatherPointMarketRequestStrikeType enum.
+func (e CreateWeatherPointMarketRequestStrikeType) Valid() bool {
+	switch e {
+	case CreateWeatherPointMarketRequestStrikeTypeWeatherPointStrikeBetween:
+		return true
+	case CreateWeatherPointMarketRequestStrikeTypeWeatherPointStrikeGreater:
+		return true
+	case CreateWeatherPointMarketRequestStrikeTypeWeatherPointStrikeLess:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreditHistoryStatus.
 const (
 	CreditHistoryStatusApplied CreditHistoryStatus = "applied"
@@ -1011,6 +1032,30 @@ const (
 func (e UserFilter) Valid() bool {
 	switch e {
 	case UserFilterUserFilterSelf:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WeatherPointVariable.
+const (
+	WeatherPointVariableMaxTemp     WeatherPointVariable = "max_temp"
+	WeatherPointVariableMinTemp     WeatherPointVariable = "min_temp"
+	WeatherPointVariablePrecipHours WeatherPointVariable = "precip_hours"
+	WeatherPointVariablePrecipTotal WeatherPointVariable = "precip_total"
+)
+
+// Valid indicates whether the value is a known member of the WeatherPointVariable enum.
+func (e WeatherPointVariable) Valid() bool {
+	switch e {
+	case WeatherPointVariableMaxTemp:
+		return true
+	case WeatherPointVariableMinTemp:
+		return true
+	case WeatherPointVariablePrecipHours:
+		return true
+	case WeatherPointVariablePrecipTotal:
 		return true
 	default:
 		return false
@@ -2364,6 +2409,83 @@ type CreateSubaccountResponse struct {
 	SubaccountNumber int `json:"subaccount_number"`
 }
 
+// CreateWeatherPointMarketRequest defines model for CreateWeatherPointMarketRequest.
+type CreateWeatherPointMarketRequest struct {
+	// CapValue Upper threshold, in the variable's unit. Required for `less` and `between`, and must be left out for `greater`. For the precipitation variables with `less` it must be above 0. For `between` it must not be below `floor_value`.
+	CapValue *int32 `json:"cap_value,omitempty"`
+
+	// Date Local calendar date the window starts on, as YYYY-MM-DD in `timezone`.
+	//
+	// Example: 2026-11-11
+	Date string `json:"date" validate:"required,datetime=2006-01-02"`
+
+	// EndHour Local hour the window ends at, exclusive (1-24, after `start_hour`). 24 is the following midnight, so 0 to 24 is the whole day.
+	EndHour *int32 `json:"end_hour" validate:"required,gte=1,lte=24,gtfield=StartHour"`
+
+	// FloorValue Lower threshold, in the variable's unit. Required for `greater` and `between`, and must be left out for `less`. For `precip_hours` with `greater` it must be below the number of hours in the window.
+	FloorValue *int32 `json:"floor_value,omitempty"`
+
+	// Latitude Latitude of the location in degrees.
+	//
+	// Example: 40.785
+	Latitude *float64 `json:"latitude" validate:"required,gte=-90,lte=90"`
+
+	// Longitude Longitude of the location in degrees.
+	//
+	// Example: -73.965
+	Longitude *float64 `json:"longitude" validate:"required,gte=-180,lte=180"`
+
+	// StartHour First local hour of the window (0-23).
+	StartHour *int32 `json:"start_hour" validate:"required,gte=0,lte=23"`
+
+	// StrikeType How the measured value is compared to the thresholds:
+	// `greater` settles Yes strictly above `floor_value`, `less`
+	// strictly below `cap_value`, and `between` from `floor_value` to
+	// `cap_value` inclusive.
+	StrikeType CreateWeatherPointMarketRequestStrikeType `json:"strike_type" validate:"required,oneof=greater less between"`
+
+	// Timezone IANA time zone of the location, which the date and hours are read in. The window must start and end on whole UTC hours, so zones offset by a fraction of an hour are refused.
+	//
+	// Example: America/New_York
+	Timezone string `json:"timezone" validate:"required"`
+
+	// Variable What a weather point market measures over its window, and the unit
+	// and allowed range of its thresholds:
+	// - `precip_hours`: number of whole hours with at least 0.01 inch of
+	//   precipitation. Whole hours, 0 to the length of the window.
+	// - `precip_total`: total precipitation. Hundredths of an inch, 0 to
+	//   2000 (so 25 is 0.25 inch).
+	// - `max_temp`: highest temperature. Whole °F, -80 to 140.
+	// - `min_temp`: lowest temperature. Whole °F, -80 to 140.
+	Variable WeatherPointVariable `json:"variable"`
+}
+
+// CreateWeatherPointMarketRequestStrikeType How the measured value is compared to the thresholds:
+// `greater` settles Yes strictly above `floor_value`, `less`
+// strictly below `cap_value`, and `between` from `floor_value` to
+// `cap_value` inclusive.
+type CreateWeatherPointMarketRequestStrikeType string
+
+// CreateWeatherPointMarketResponse defines model for CreateWeatherPointMarketResponse.
+type CreateWeatherPointMarketResponse struct {
+	// Created False when a market for the same request already existed.
+	Created bool `json:"created"`
+
+	// EventTicker Event ticker of the market.
+	EventTicker string `json:"event_ticker"`
+
+	// Latitude Latitude of the market's location, the center of the grid cell containing the request, to three decimal places.
+	Latitude float64 `json:"latitude"`
+
+	// Longitude Longitude of the market's location, the center of the grid cell containing the request, to three decimal places.
+	Longitude float64 `json:"longitude"`
+
+	// MarketTicker Market ticker of the market.
+	//
+	// Example: KXRFQRAINHOURS-40785N73965W-26NOV1105Z-24H-G2
+	MarketTicker string `json:"market_ticker"`
+}
+
 // CreditHistory defines model for CreditHistory.
 type CreditHistory struct {
 	// AmountDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
@@ -3495,6 +3617,18 @@ type GetWeatherIndexResponse struct {
 
 	// Units Always `fahrenheit`.
 	Units string `json:"units"`
+}
+
+// GetWeatherPointAvailabilityResponse defines model for GetWeatherPointAvailabilityResponse.
+type GetWeatherPointAvailabilityResponse struct {
+	// Domains The NOAA MRMS domains a location may lie in.
+	Domains []WeatherPointDomain `json:"domains"`
+
+	// Enabled Whether weather point markets can be created at all.
+	Enabled bool `json:"enabled"`
+
+	// Variables The variables on offer and where. A variable left out can't be created.
+	Variables []WeatherPointVariableAvailability `json:"variables"`
 }
 
 // GetWithdrawalsResponse defines model for GetWithdrawalsResponse.
@@ -5220,6 +5354,50 @@ type WeatherIndexStationReading struct {
 	TempF *float64 `json:"temp_f,omitempty"`
 }
 
+// WeatherPointDomain defines model for WeatherPointDomain.
+type WeatherPointDomain struct {
+	// East Easternmost grid cell center, in degrees longitude.
+	East float64 `json:"east"`
+
+	// Name Domain name, such as `conus`.
+	Name string `json:"name"`
+
+	// North Northernmost grid cell center, in degrees latitude.
+	North float64 `json:"north"`
+
+	// South Southernmost grid cell center, in degrees latitude.
+	South float64 `json:"south"`
+
+	// West Westernmost grid cell center, in degrees longitude.
+	West float64 `json:"west"`
+}
+
+// WeatherPointVariable What a weather point market measures over its window, and the unit
+// and allowed range of its thresholds:
+//   - `precip_hours`: number of whole hours with at least 0.01 inch of
+//     precipitation. Whole hours, 0 to the length of the window.
+//   - `precip_total`: total precipitation. Hundredths of an inch, 0 to
+//     2000 (so 25 is 0.25 inch).
+//   - `max_temp`: highest temperature. Whole °F, -80 to 140.
+//   - `min_temp`: lowest temperature. Whole °F, -80 to 140.
+type WeatherPointVariable string
+
+// WeatherPointVariableAvailability defines model for WeatherPointVariableAvailability.
+type WeatherPointVariableAvailability struct {
+	// Domains Names of the domains new markets of this variable may be created in.
+	Domains []string `json:"domains"`
+
+	// Variable What a weather point market measures over its window, and the unit
+	// and allowed range of its thresholds:
+	// - `precip_hours`: number of whole hours with at least 0.01 inch of
+	//   precipitation. Whole hours, 0 to the length of the window.
+	// - `precip_total`: total precipitation. Hundredths of an inch, 0 to
+	//   2000 (so 25 is 0.25 inch).
+	// - `max_temp`: highest temperature. Whole °F, -80 to 140.
+	// - `min_temp`: lowest temperature. Whole °F, -80 to 140.
+	Variable WeatherPointVariable `json:"variable"`
+}
+
 // WeeklySchedule defines model for WeeklySchedule.
 type WeeklySchedule struct {
 	// EndTime End date and time for when this weekly schedule is no longer effective.
@@ -6540,6 +6718,9 @@ type ApplySubaccountTransferJSONRequestBody = ApplySubaccountTransferRequest
 
 // SetTargetBalanceAllocationJSONRequestBody defines body for SetTargetBalanceAllocation for application/json ContentType.
 type SetTargetBalanceAllocationJSONRequestBody = SetTargetBalanceAllocationRequest
+
+// CreateWeatherPointMarketJSONRequestBody defines body for CreateWeatherPointMarket for application/json ContentType.
+type CreateWeatherPointMarketJSONRequestBody = CreateWeatherPointMarketRequest
 
 // RequestEditorFn is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -8138,6 +8319,105 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /structured_targets/{structured_target_id} (the `GetStructuredTarget` operationId).
 	GetStructuredTarget(ctx context.Context, structuredTargetId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWeatherPointMarketWithBody Create Weather Point Market
+	//
+	// Returns the on-request weather market for a location, time window and
+	// threshold, creating it if it doesn't exist yet. The same request always
+	// returns the same market, so call this before sending an RFQ for a
+	// market you haven't seen. `created` tells you whether the market is new.
+	// An existing market is returned until its window ends, even where new
+	// markets like it are no longer offered. The exception is when weather
+	// markets are switched off (`enabled` is false in the availability
+	// response) or the variable has been withdrawn entirely: the request is
+	// then refused whether or not the market exists.
+	//
+	// The location snaps to the center of the NOAA MRMS grid cell containing
+	// it; the response carries the snapped coordinates. Markets are only
+	// offered where `GET /weather_point_markets/availability` says so, and
+	// not over open water.
+	//
+	// The window is whole local hours on one calendar day. A new market's
+	// window must start at least 15 minutes from now and within 365 days.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
+	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
+	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /weather_point_markets (the `CreateWeatherPointMarket` operationId).
+	CreateWeatherPointMarketWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWeatherPointMarket Create Weather Point Market
+	//
+	// Returns the on-request weather market for a location, time window and
+	// threshold, creating it if it doesn't exist yet. The same request always
+	// returns the same market, so call this before sending an RFQ for a
+	// market you haven't seen. `created` tells you whether the market is new.
+	// An existing market is returned until its window ends, even where new
+	// markets like it are no longer offered. The exception is when weather
+	// markets are switched off (`enabled` is false in the availability
+	// response) or the variable has been withdrawn entirely: the request is
+	// then refused whether or not the market exists.
+	//
+	// The location snaps to the center of the NOAA MRMS grid cell containing
+	// it; the response carries the snapped coordinates. Markets are only
+	// offered where `GET /weather_point_markets/availability` says so, and
+	// not over open water.
+	//
+	// The window is whole local hours on one calendar day. A new market's
+	// window must start at least 15 minutes from now and within 365 days.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
+	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
+	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /weather_point_markets (the `CreateWeatherPointMarket` operationId).
+	CreateWeatherPointMarket(ctx context.Context, body CreateWeatherPointMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWeatherPointAvailability Get Weather Point Market Availability
+	//
+	// Returns which on-request weather markets can be created: whether
+	// creation is on, the NOAA MRMS domains a location may lie in, and the
+	// domains each offered variable may use. A variable missing from
+	// `variables` can't be created. Existing markets are unaffected.
+	//
+	// A location inside an offered domain can still be refused at creation
+	// when it is over open water.
+	//
+	// Corresponds with GET /weather_point_markets/availability (the `GetWeatherPointAvailability` operationId).
+	GetWeatherPointAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 // UpgradeAccountApiUsageLevel Upgrade Account API Usage Level
@@ -11350,6 +11630,135 @@ func (c *Client) GetStructuredTargets(ctx context.Context, params *GetStructured
 // Corresponds with GET /structured_targets/{structured_target_id} (the `GetStructuredTarget` operationId).
 func (c *Client) GetStructuredTarget(ctx context.Context, structuredTargetId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetStructuredTargetRequest(c.Server, structuredTargetId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateWeatherPointMarketWithBody Create Weather Point Market
+//
+// Returns the on-request weather market for a location, time window and
+// threshold, creating it if it doesn't exist yet. The same request always
+// returns the same market, so call this before sending an RFQ for a
+// market you haven't seen. `created` tells you whether the market is new.
+// An existing market is returned until its window ends, even where new
+// markets like it are no longer offered. The exception is when weather
+// markets are switched off (`enabled` is false in the availability
+// response) or the variable has been withdrawn entirely: the request is
+// then refused whether or not the market exists.
+//
+// The location snaps to the center of the NOAA MRMS grid cell containing
+// it; the response carries the snapped coordinates. Markets are only
+// offered where `GET /weather_point_markets/availability` says so, and
+// not over open water.
+//
+// The window is whole local hours on one calendar day. A new market's
+// window must start at least 15 minutes from now and within 365 days.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
+// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
+// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /weather_point_markets (the `CreateWeatherPointMarket` operationId).
+func (c *Client) CreateWeatherPointMarketWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWeatherPointMarketRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateWeatherPointMarket Create Weather Point Market
+//
+// Returns the on-request weather market for a location, time window and
+// threshold, creating it if it doesn't exist yet. The same request always
+// returns the same market, so call this before sending an RFQ for a
+// market you haven't seen. `created` tells you whether the market is new.
+// An existing market is returned until its window ends, even where new
+// markets like it are no longer offered. The exception is when weather
+// markets are switched off (`enabled` is false in the availability
+// response) or the variable has been withdrawn entirely: the request is
+// then refused whether or not the market exists.
+//
+// The location snaps to the center of the NOAA MRMS grid cell containing
+// it; the response carries the snapped coordinates. Markets are only
+// offered where `GET /weather_point_markets/availability` says so, and
+// not over open water.
+//
+// The window is whole local hours on one calendar day. A new market's
+// window must start at least 15 minutes from now and within 365 days.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
+// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
+// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /weather_point_markets (the `CreateWeatherPointMarket` operationId).
+func (c *Client) CreateWeatherPointMarket(ctx context.Context, body CreateWeatherPointMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWeatherPointMarketRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetWeatherPointAvailability Get Weather Point Market Availability
+//
+// Returns which on-request weather markets can be created: whether
+// creation is on, the NOAA MRMS domains a location may lie in, and the
+// domains each offered variable may use. A variable missing from
+// `variables` can't be created. Existing markets are unaffected.
+//
+// A location inside an offered domain can still be refused at creation
+// when it is over open water.
+//
+// Corresponds with GET /weather_point_markets/availability (the `GetWeatherPointAvailability` operationId).
+func (c *Client) GetWeatherPointAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWeatherPointAvailabilityRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -19541,6 +19950,73 @@ func NewGetStructuredTargetRequest(server string, structuredTargetId string) (*h
 	return req, nil
 }
 
+// NewCreateWeatherPointMarketRequest calls the generic CreateWeatherPointMarket builder with application/json body
+func NewCreateWeatherPointMarketRequest(server string, body CreateWeatherPointMarketJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWeatherPointMarketRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateWeatherPointMarketRequestWithBody constructs an http.Request for the CreateWeatherPointMarket method, with any body, and a specified content type
+func NewCreateWeatherPointMarketRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/weather_point_markets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetWeatherPointAvailabilityRequest constructs an http.Request for the GetWeatherPointAvailability method
+func NewGetWeatherPointAvailabilityRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/weather_point_markets/availability")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -21308,6 +21784,107 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /structured_targets/{structured_target_id} (the `GetStructuredTarget` operationId).
 	GetStructuredTargetWithResponse(ctx context.Context, structuredTargetId string, reqEditors ...RequestEditorFn) (*GetStructuredTargetResponse2, error)
+
+	// CreateWeatherPointMarketWithBodyWithResponse Create Weather Point Market
+	//
+	// Returns the on-request weather market for a location, time window and
+	// threshold, creating it if it doesn't exist yet. The same request always
+	// returns the same market, so call this before sending an RFQ for a
+	// market you haven't seen. `created` tells you whether the market is new.
+	// An existing market is returned until its window ends, even where new
+	// markets like it are no longer offered. The exception is when weather
+	// markets are switched off (`enabled` is false in the availability
+	// response) or the variable has been withdrawn entirely: the request is
+	// then refused whether or not the market exists.
+	//
+	// The location snaps to the center of the NOAA MRMS grid cell containing
+	// it; the response carries the snapped coordinates. Markets are only
+	// offered where `GET /weather_point_markets/availability` says so, and
+	// not over open water.
+	//
+	// The window is whole local hours on one calendar day. A new market's
+	// window must start at least 15 minutes from now and within 365 days.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
+	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
+	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /weather_point_markets (the `CreateWeatherPointMarket` operationId).
+	CreateWeatherPointMarketWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWeatherPointMarketResponse2, error)
+
+	// CreateWeatherPointMarketWithResponse Create Weather Point Market
+	//
+	// Returns the on-request weather market for a location, time window and
+	// threshold, creating it if it doesn't exist yet. The same request always
+	// returns the same market, so call this before sending an RFQ for a
+	// market you haven't seen. `created` tells you whether the market is new.
+	// An existing market is returned until its window ends, even where new
+	// markets like it are no longer offered. The exception is when weather
+	// markets are switched off (`enabled` is false in the availability
+	// response) or the variable has been withdrawn entirely: the request is
+	// then refused whether or not the market exists.
+	//
+	// The location snaps to the center of the NOAA MRMS grid cell containing
+	// it; the response carries the snapped coordinates. Markets are only
+	// offered where `GET /weather_point_markets/availability` says so, and
+	// not over open water.
+	//
+	// The window is whole local hours on one calendar day. A new market's
+	// window must start at least 15 minutes from now and within 365 days.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
+	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
+	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /weather_point_markets (the `CreateWeatherPointMarket` operationId).
+	CreateWeatherPointMarketWithResponse(ctx context.Context, body CreateWeatherPointMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWeatherPointMarketResponse2, error)
+
+	// GetWeatherPointAvailabilityWithResponse Get Weather Point Market Availability
+	//
+	// Returns which on-request weather markets can be created: whether
+	// creation is on, the NOAA MRMS domains a location may lie in, and the
+	// domains each offered variable may use. A variable missing from
+	// `variables` can't be created. Existing markets are unaffected.
+	//
+	// A location inside an offered domain can still be refused at creation
+	// when it is over open water.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /weather_point_markets/availability (the `GetWeatherPointAvailability` operationId).
+	GetWeatherPointAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetWeatherPointAvailabilityResponse2, error)
 }
 
 type UpgradeAccountApiUsageLevelResponse struct {
@@ -29147,6 +29724,144 @@ func (r GetStructuredTargetResponse2) ContentType() string {
 	return ""
 }
 
+type CreateWeatherPointMarketResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CreateWeatherPointMarketResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateWeatherPointMarketResponse2) GetJSON200() *CreateWeatherPointMarketResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateWeatherPointMarketResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateWeatherPointMarketResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateWeatherPointMarketResponse2) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateWeatherPointMarketResponse2) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r CreateWeatherPointMarketResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateWeatherPointMarketResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateWeatherPointMarketResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWeatherPointMarketResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWeatherPointMarketResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateWeatherPointMarketResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetWeatherPointAvailabilityResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetWeatherPointAvailabilityResponse
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetWeatherPointAvailabilityResponse2) GetJSON200() *GetWeatherPointAvailabilityResponse {
+	return r.JSON200
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r GetWeatherPointAvailabilityResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetWeatherPointAvailabilityResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetWeatherPointAvailabilityResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWeatherPointAvailabilityResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWeatherPointAvailabilityResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetWeatherPointAvailabilityResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // UpgradeAccountApiUsageLevelWithResponse Upgrade Account API Usage Level
 //
 // Grants a permanent Advanced API usage-level grant. Currently only the Predictions exchange instance is supported. Criteria: at least 1 of the user's last 100 Predictions orders was created via API. Use Get Account API Limits to inspect the resulting usage tier and grants.
@@ -31889,6 +32604,125 @@ func (c *ClientWithResponses) GetStructuredTargetWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParseGetStructuredTargetResponse2(rsp)
+}
+
+// CreateWeatherPointMarketWithBodyWithResponse Create Weather Point Market
+//
+// Returns the on-request weather market for a location, time window and
+// threshold, creating it if it doesn't exist yet. The same request always
+// returns the same market, so call this before sending an RFQ for a
+// market you haven't seen. `created` tells you whether the market is new.
+// An existing market is returned until its window ends, even where new
+// markets like it are no longer offered. The exception is when weather
+// markets are switched off (`enabled` is false in the availability
+// response) or the variable has been withdrawn entirely: the request is
+// then refused whether or not the market exists.
+//
+// The location snaps to the center of the NOAA MRMS grid cell containing
+// it; the response carries the snapped coordinates. Markets are only
+// offered where `GET /weather_point_markets/availability` says so, and
+// not over open water.
+//
+// The window is whole local hours on one calendar day. A new market's
+// window must start at least 15 minutes from now and within 365 days.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
+// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
+// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /weather_point_markets (the `CreateWeatherPointMarket` operationId).
+func (c *ClientWithResponses) CreateWeatherPointMarketWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWeatherPointMarketResponse2, error) {
+	rsp, err := c.CreateWeatherPointMarketWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWeatherPointMarketResponse2(rsp)
+}
+
+// CreateWeatherPointMarketWithResponse Create Weather Point Market
+//
+// Returns the on-request weather market for a location, time window and
+// threshold, creating it if it doesn't exist yet. The same request always
+// returns the same market, so call this before sending an RFQ for a
+// market you haven't seen. `created` tells you whether the market is new.
+// An existing market is returned until its window ends, even where new
+// markets like it are no longer offered. The exception is when weather
+// markets are switched off (`enabled` is false in the availability
+// response) or the variable has been withdrawn entirely: the request is
+// then refused whether or not the market exists.
+//
+// The location snaps to the center of the NOAA MRMS grid cell containing
+// it; the response carries the snapped coordinates. Markets are only
+// offered where `GET /weather_point_markets/availability` says so, and
+// not over open water.
+//
+// The window is whole local hours on one calendar day. A new market's
+// window must start at least 15 minutes from now and within 365 days.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
+// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
+// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /weather_point_markets (the `CreateWeatherPointMarket` operationId).
+func (c *ClientWithResponses) CreateWeatherPointMarketWithResponse(ctx context.Context, body CreateWeatherPointMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWeatherPointMarketResponse2, error) {
+	rsp, err := c.CreateWeatherPointMarket(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWeatherPointMarketResponse2(rsp)
+}
+
+// GetWeatherPointAvailabilityWithResponse Get Weather Point Market Availability
+//
+// Returns which on-request weather markets can be created: whether
+// creation is on, the NOAA MRMS domains a location may lie in, and the
+// domains each offered variable may use. A variable missing from
+// `variables` can't be created. Existing markets are unaffected.
+//
+// A location inside an offered domain can still be refused at creation
+// when it is over open water.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /weather_point_markets/availability (the `GetWeatherPointAvailability` operationId).
+func (c *ClientWithResponses) GetWeatherPointAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetWeatherPointAvailabilityResponse2, error) {
+	rsp, err := c.GetWeatherPointAvailability(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetWeatherPointAvailabilityResponse2(rsp)
 }
 
 // ParseUpgradeAccountApiUsageLevelResponse parses an HTTP response from a UpgradeAccountApiUsageLevelWithResponse call
@@ -38054,6 +38888,114 @@ func ParseGetStructuredTargetResponse2(rsp *http.Response) (*GetStructuredTarget
 
 	case rsp.StatusCode == 500:
 		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateWeatherPointMarketResponse2 parses an HTTP response from a CreateWeatherPointMarketWithResponse call
+func ParseCreateWeatherPointMarketResponse2(rsp *http.Response) (*CreateWeatherPointMarketResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWeatherPointMarketResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreateWeatherPointMarketResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetWeatherPointAvailabilityResponse2 parses an HTTP response from a GetWeatherPointAvailabilityWithResponse call
+func ParseGetWeatherPointAvailabilityResponse2(rsp *http.Response) (*GetWeatherPointAvailabilityResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWeatherPointAvailabilityResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetWeatherPointAvailabilityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
