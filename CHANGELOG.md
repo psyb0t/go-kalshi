@@ -2,6 +2,18 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.10.0, 2026-11-10
+
+- Breaking: `ws.Handler` gains `HandleEbattleScores`, `HandleEbattleScoresMatchlist` and `HandleSubscribedMatchesResponse`. Types that implement `Handler` without embedding `UnimplementedHandler` must add them. `UnimplementedHandler` has no-op versions.
+- Breaking: the value of `ws.MessageSubscribedIndicesResponse` changes from "ok" to "subscribedIndicesResponse". Code that matches on the old string must switch to the constant.
+- `ws` adds an eBattle scores channel: `EbattleScoresAddressTemplate`, `SubscribeCommandPayloadParamsChannelsItemEbattleScores`, `MessageEbattleScores`, `MessageEbattleScoresMatchlist`, and the payload types `EbattleScoresPayload`, `EbattleScoresPayloadMsg`, `EbattleScoresMatchlistPayload` and `EbattleScoresMatchlistPayloadMsg`.
+- `ws` adds the eBattle subscription update command: `(*Client).SendEbattleUpdateSubscription`, `MessageEbattleUpdateSubscriptionCommand`, `EbattleUpdateSubscriptionCommandPayload`, `EbattleUpdateSubscriptionCommandPayloadParams` and the action type `EbattleUpdateSubscriptionCommandPayloadParamsAction` with its `Matchlist`, `SubscribeMatches` and `UnsubscribeMatches` values.
+- `ws` adds the response to that command: `MessageSubscribedMatchesResponse`, `SubscribedMatchesResponsePayload` and `SubscribedMatchesResponsePayloadMsg`.
+- `CreateRFQResponse2` adds the `JSON429` field and the `GetJSON429` method. Creating an RFQ over the limit of 100 open RFQs returns 429 with code `open_rfq_limit_exceeded`, and retrying does not help until some RFQs close or expire.
+- Doc comments: `CreateRFQ` and `CreateRFQWithBody` say an RFQ on a market that is not open returns 400 with code `rfq_market_not_open`.
+- Doc comments: `GetBalanceResponse.BalanceBreakdown` now says it covers every exchange index, summed across subaccounts, including zero balances, and ignores `subaccount` and `exchange_index`. The `GetBalance` docs point to `GetSubaccountBalances` for per-subaccount balances.
+- Doc comment: the `GetSubaccountBalances` docs say it returns only existing subaccount and exchange index pairs, including zero balances.
+
 ## v0.9.2, 2026-11-06
 
 - `ApiKey` adds the optional `KeyType` field (`key_type`, `*ApiKeyType`). It holds the signing algorithm of the key, for RSA and Ed25519 keys including existing ones, and is omitted when the algorithm is unknown.

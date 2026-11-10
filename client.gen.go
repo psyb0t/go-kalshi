@@ -2973,7 +2973,7 @@ type GetBalanceResponse struct {
 	// Balance Member's available balance in cents for the requested account and exchange index. It includes all exchange indexes when `exchange_index` is omitted.
 	Balance int64 `json:"balance"`
 
-	// BalanceBreakdown User balance breakdown per exchange instance, omitted only when using a subaccount-restricted API key.
+	// BalanceBreakdown Balance for every exchange index, summed across all subaccounts, including zero balances. Unaffected by the `subaccount` and `exchange_index` parameters. Omitted when access is restricted to a subaccount.
 	BalanceBreakdown *[]IndexedBalance `json:"balance_breakdown,omitempty"`
 
 	// BalanceDollars Fixed-point US dollar string. Most request fields accept 2-4 decimal places (e.g., "0.56", "0.5600"); responses emit up to 6. Valid quote intervals for a given market are constrained by that market's price level structure.
@@ -6967,7 +6967,7 @@ type ClientInterface interface {
 
 	// CreateRFQWithBody Create RFQ
 	//
-	//  Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time.
+	//  Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time. Creating one more returns 429 with code `open_rfq_limit_exceeded`; unlike request-rate limiting, retrying does not help until some of your RFQs close or expire. An RFQ on a market that is not open returns 400 with code `rfq_market_not_open`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6976,7 +6976,7 @@ type ClientInterface interface {
 
 	// CreateRFQ Create RFQ
 	//
-	//  Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time.
+	//  Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time. Creating one more returns 429 with code `open_rfq_limit_exceeded`; unlike request-rate limiting, retrying does not help until some of your RFQs close or expire. An RFQ on a market that is not open returns 400 with code `rfq_market_not_open`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -7578,6 +7578,8 @@ type ClientInterface interface {
 	//
 	// Returns the balance and portfolio value for a member. Both values include all exchange indexes unless `exchange_index` is provided. Pass `subaccount` to use a subaccount instead of the primary account. This endpoint also accepts API keys with the 'read::portfolio_balance' scope.
 	//
+	// For per-subaccount balances, use `GET /portfolio/subaccounts/balances`. It returns existing subaccount and exchange index pairs, so its entry count can differ from `balance_breakdown`. The breakdown uses portfolio valuation snapshots; separate requests may reflect different stages of transfer processing.
+	//
 	// **Rate limit:** this endpoint has its own bucket, separate from the Read budget. Basic and Advanced tiers may call it **1 time per second**; all higher tiers may call it **5 times per second**. The bucket holds one second of budget, so there is no burst. Calls to this endpoint do not draw down the Read budget, and other reads do not draw down this bucket. Balance only changes on fills, settlements and transfers, so react to those (for example the user fills websocket channel) instead of polling this endpoint.
 	//
 	// Corresponds with GET /portfolio/balance (the `GetBalance` operationId).
@@ -7968,7 +7970,7 @@ type ClientInterface interface {
 
 	// GetSubaccountBalances Get All Subaccount Balances
 	//
-	// Gets balances for all subaccounts including the primary account. For an API key restricted to a subaccount, returns only that subaccount's balances across exchange indices.
+	// Returns balances for all subaccounts, including the primary account. Only existing subaccount and exchange index pairs are returned, including pairs with a zero balance. A pair can exist before it is funded. For an API key restricted to a subaccount, returns only that subaccount's balances.
 	//
 	// Corresponds with GET /portfolio/subaccounts/balances (the `GetSubaccountBalances` operationId).
 	GetSubaccountBalances(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -8904,7 +8906,7 @@ func (c *Client) GetRFQs(ctx context.Context, params *GetRFQsParams, reqEditors 
 
 // CreateRFQWithBody Create RFQ
 //
-//	Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time.
+//	Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time. Creating one more returns 429 with code `open_rfq_limit_exceeded`; unlike request-rate limiting, retrying does not help until some of your RFQs close or expire. An RFQ on a market that is not open returns 400 with code `rfq_market_not_open`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -8923,7 +8925,7 @@ func (c *Client) CreateRFQWithBody(ctx context.Context, contentType string, body
 
 // CreateRFQ Create RFQ
 //
-//	Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time.
+//	Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time. Creating one more returns 429 with code `open_rfq_limit_exceeded`; unlike request-rate limiting, retrying does not help until some of your RFQs close or expire. An RFQ on a market that is not open returns 400 with code `rfq_market_not_open`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10127,6 +10129,8 @@ func (c *Client) CreateMarketInMultivariateEventCollection(ctx context.Context, 
 //
 // Returns the balance and portfolio value for a member. Both values include all exchange indexes unless `exchange_index` is provided. Pass `subaccount` to use a subaccount instead of the primary account. This endpoint also accepts API keys with the 'read::portfolio_balance' scope.
 //
+// For per-subaccount balances, use `GET /portfolio/subaccounts/balances`. It returns existing subaccount and exchange index pairs, so its entry count can differ from `balance_breakdown`. The breakdown uses portfolio valuation snapshots; separate requests may reflect different stages of transfer processing.
+//
 // **Rate limit:** this endpoint has its own bucket, separate from the Read budget. Basic and Advanced tiers may call it **1 time per second**; all higher tiers may call it **5 times per second**. The bucket holds one second of budget, so there is no burst. Calls to this endpoint do not draw down the Read budget, and other reads do not draw down this bucket. Balance only changes on fills, settlements and transfers, so react to those (for example the user fills websocket channel) instead of polling this endpoint.
 //
 // Corresponds with GET /portfolio/balance (the `GetBalance` operationId).
@@ -10967,7 +10971,7 @@ func (c *Client) CreateSubaccount(ctx context.Context, body CreateSubaccountJSON
 
 // GetSubaccountBalances Get All Subaccount Balances
 //
-// Gets balances for all subaccounts including the primary account. For an API key restricted to a subaccount, returns only that subaccount's balances across exchange indices.
+// Returns balances for all subaccounts, including the primary account. Only existing subaccount and exchange index pairs are returned, including pairs with a zero balance. A pair can exist before it is funded. For an API key restricted to a subaccount, returns only that subaccount's balances.
 //
 // Corresponds with GET /portfolio/subaccounts/balances (the `GetSubaccountBalances` operationId).
 func (c *Client) GetSubaccountBalances(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -19973,7 +19977,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateRFQWithBodyWithResponse Create RFQ
 	//
-	//  Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time.
+	//  Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time. Creating one more returns 429 with code `open_rfq_limit_exceeded`; unlike request-rate limiting, retrying does not help until some of your RFQs close or expire. An RFQ on a market that is not open returns 400 with code `rfq_market_not_open`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -19982,7 +19986,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateRFQWithResponse Create RFQ
 	//
-	//  Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time.
+	//  Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time. Creating one more returns 429 with code `open_rfq_limit_exceeded`; unlike request-rate limiting, retrying does not help until some of your RFQs close or expire. An RFQ on a market that is not open returns 400 with code `rfq_market_not_open`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -20674,6 +20678,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Returns the balance and portfolio value for a member. Both values include all exchange indexes unless `exchange_index` is provided. Pass `subaccount` to use a subaccount instead of the primary account. This endpoint also accepts API keys with the 'read::portfolio_balance' scope.
 	//
+	// For per-subaccount balances, use `GET /portfolio/subaccounts/balances`. It returns existing subaccount and exchange index pairs, so its entry count can differ from `balance_breakdown`. The breakdown uses portfolio valuation snapshots; separate requests may reflect different stages of transfer processing.
+	//
 	// **Rate limit:** this endpoint has its own bucket, separate from the Read budget. Basic and Advanced tiers may call it **1 time per second**; all higher tiers may call it **5 times per second**. The bucket holds one second of budget, so there is no burst. Calls to this endpoint do not draw down the Read budget, and other reads do not draw down this bucket. Balance only changes on fills, settlements and transfers, so react to those (for example the user fills websocket channel) instead of polling this endpoint.
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -21102,7 +21108,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetSubaccountBalancesWithResponse Get All Subaccount Balances
 	//
-	// Gets balances for all subaccounts including the primary account. For an API key restricted to a subaccount, returns only that subaccount's balances across exchange indices.
+	// Returns balances for all subaccounts, including the primary account. Only existing subaccount and exchange index pairs are returned, including pairs with a zero balance. A pair can exist before it is funded. For an API key restricted to a subaccount, returns only that subaccount's balances.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -23160,6 +23166,8 @@ type CreateRFQResponse2 struct {
 	JSON401 *UnauthorizedError
 	// JSON409 the response for an HTTP 409 `application/json` response
 	JSON409 *ConflictError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalServerError
 }
@@ -23182,6 +23190,11 @@ func (r CreateRFQResponse2) GetJSON401() *UnauthorizedError {
 // GetJSON409 returns the response for an HTTP 409 `application/json` response
 func (r CreateRFQResponse2) GetJSON409() *ConflictError {
 	return r.JSON409
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r CreateRFQResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
@@ -29776,7 +29789,7 @@ func (c *ClientWithResponses) GetRFQsWithResponse(ctx context.Context, params *G
 
 // CreateRFQWithBodyWithResponse Create RFQ
 //
-//	Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time.
+//	Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time. Creating one more returns 429 with code `open_rfq_limit_exceeded`; unlike request-rate limiting, retrying does not help until some of your RFQs close or expire. An RFQ on a market that is not open returns 400 with code `rfq_market_not_open`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29791,7 +29804,7 @@ func (c *ClientWithResponses) CreateRFQWithBodyWithResponse(ctx context.Context,
 
 // CreateRFQWithResponse Create RFQ
 //
-//	Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time.
+//	Endpoint for creating a new RFQ. You can have a maximum of 100 open RFQs at a time. Creating one more returns 429 with code `open_rfq_limit_exceeded`; unlike request-rate limiting, retrying does not help until some of your RFQs close or expire. An RFQ on a market that is not open returns 400 with code `rfq_market_not_open`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -30845,6 +30858,8 @@ func (c *ClientWithResponses) CreateMarketInMultivariateEventCollectionWithRespo
 //
 // Returns the balance and portfolio value for a member. Both values include all exchange indexes unless `exchange_index` is provided. Pass `subaccount` to use a subaccount instead of the primary account. This endpoint also accepts API keys with the 'read::portfolio_balance' scope.
 //
+// For per-subaccount balances, use `GET /portfolio/subaccounts/balances`. It returns existing subaccount and exchange index pairs, so its entry count can differ from `balance_breakdown`. The breakdown uses portfolio valuation snapshots; separate requests may reflect different stages of transfer processing.
+//
 // **Rate limit:** this endpoint has its own bucket, separate from the Read budget. Basic and Advanced tiers may call it **1 time per second**; all higher tiers may call it **5 times per second**. The bucket holds one second of budget, so there is no burst. Calls to this endpoint do not draw down the Read budget, and other reads do not draw down this bucket. Balance only changes on fills, settlements and transfers, so react to those (for example the user fills websocket channel) instead of polling this endpoint.
 //
 // Returns a wrapper object for the known response body format(s).
@@ -31543,7 +31558,7 @@ func (c *ClientWithResponses) CreateSubaccountWithResponse(ctx context.Context, 
 
 // GetSubaccountBalancesWithResponse Get All Subaccount Balances
 //
-// Gets balances for all subaccounts including the primary account. For an API key restricted to a subaccount, returns only that subaccount's balances across exchange indices.
+// Returns balances for all subaccounts, including the primary account. Only existing subaccount and exchange index pairs are returned, including pairs with a zero balance. A pair can exist before it is funded. For an API key restricted to a subaccount, returns only that subaccount's balances.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -33369,6 +33384,13 @@ func ParseCreateRFQResponse2(rsp *http.Response) (*CreateRFQResponse2, error) {
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalServerError
