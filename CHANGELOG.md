@@ -2,6 +2,14 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.12.0, 2026-11-12
+
+- The REST client adds the incentive schedules endpoint: `GetIncentiveSchedules` (`GET /incentive_schedules`) on `Client`, with the `GetIncentiveSchedulesWithResponse` variant on `ClientWithResponses`. `NewGetIncentiveSchedulesRequest` and `ParseGetIncentiveSchedulesResponse2` build and parse the call.
+- New REST types: `IncentiveSchedule`, `GetIncentiveSchedulesResponse`, `GetIncentiveSchedulesResponse2` and the enum `IncentiveScheduleIncentiveType` (`IncentiveScheduleIncentiveTypeLiquidity`, `IncentiveScheduleIncentiveTypeVolume`).
+- `IncentiveProgram` adds the optional `EventTicker` and `SeriesTicker` fields. `GetIncentiveProgramsParams` adds the matching `EventTicker` and `SeriesTicker` query parameters.
+- Breaking: `ClientInterface` gains `GetIncentiveSchedules` and `ClientWithResponsesInterface` gains `GetIncentiveSchedulesWithResponse`. Code that implements either interface, for example a mock, must add them. `Client` and `ClientWithResponses` already have them.
+- The Go version moves from 1.26.10 to 1.26.11 in `go.mod`, `Dockerfile.dev` and the setup reference. Go 1.26.11 fixes the `net/http` vulnerability GO-2026-6859, which `make sec` flagged.
+
 ## v0.11.0, 2026-11-10
 
 - The REST client adds weather point market endpoints: `CreateWeatherPointMarket` (`POST /weather_point_markets`) and `GetWeatherPointAvailability` (`GET /weather_point_markets/availability`). `CreateWeatherPointMarket` also has a `WithBody` variant, `CreateWeatherPointMarketWithBody`.

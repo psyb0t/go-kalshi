@@ -480,6 +480,24 @@ func (e IncentiveProgramIncentiveType) Valid() bool {
 	}
 }
 
+// Defines values for IncentiveScheduleIncentiveType.
+const (
+	IncentiveScheduleIncentiveTypeLiquidity IncentiveScheduleIncentiveType = "liquidity"
+	IncentiveScheduleIncentiveTypeVolume    IncentiveScheduleIncentiveType = "volume"
+)
+
+// Valid indicates whether the value is a known member of the IncentiveScheduleIncentiveType enum.
+func (e IncentiveScheduleIncentiveType) Valid() bool {
+	switch e {
+	case IncentiveScheduleIncentiveTypeLiquidity:
+		return true
+	case IncentiveScheduleIncentiveTypeVolume:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for IntraExchangeInstanceTransferStatus.
 const (
 	IntraExchangeInstanceTransferStatusIntraExchangeInstanceTransferStatusComplete IntraExchangeInstanceTransferStatus = "complete"
@@ -3298,6 +3316,11 @@ type GetIncentiveProgramsResponse struct {
 	NextCursor *string `json:"next_cursor,omitempty"`
 }
 
+// GetIncentiveSchedulesResponse defines model for GetIncentiveSchedulesResponse.
+type GetIncentiveSchedulesResponse struct {
+	Schedules []IncentiveSchedule `json:"schedules"`
+}
+
 // GetIntraExchangeInstanceTransferResponse defines model for GetIntraExchangeInstanceTransferResponse.
 type GetIntraExchangeInstanceTransferResponse struct {
 	Transfer IntraExchangeInstanceTransfer `json:"transfer"`
@@ -3645,6 +3668,9 @@ type IncentiveProgram struct {
 	// EndDate End date of the incentive program
 	EndDate time.Time `json:"end_date"`
 
+	// EventTicker The event of the market associated with this incentive program; empty for a perpetual
+	EventTicker *string `json:"event_ticker,omitempty"`
+
 	// Id Unique identifier for the incentive program
 	Id string `json:"id"`
 
@@ -3669,6 +3695,9 @@ type IncentiveProgram struct {
 	// PeriodReward Total reward for the period in centi-cents
 	PeriodReward int64 `json:"period_reward"`
 
+	// SeriesTicker The series of the market associated with this incentive program
+	SeriesTicker *string `json:"series_ticker,omitempty"`
+
 	// StartDate Start date of the incentive program
 	StartDate time.Time `json:"start_date"`
 
@@ -3680,6 +3709,62 @@ type IncentiveProgram struct {
 
 // IncentiveProgramIncentiveType Type of incentive program
 type IncentiveProgramIncentiveType string
+
+// IncentiveSchedule defines model for IncentiveSchedule.
+type IncentiveSchedule struct {
+	// AllMarkets A promise that every market the schedule covers, including markets listed later, gets these terms window after window, from posted_ts until ends. When false the schedule is anticipated, not promised.
+	AllMarkets bool `json:"all_markets"`
+
+	// Description Plain text description of the schedule
+	Description string `json:"description"`
+
+	// DiscountFactorBps Discount factor in basis points (liquidity only)
+	DiscountFactorBps *int32 `json:"discount_factor_bps,omitempty"`
+
+	// Ends When the schedule stops (exclusive); null when it has no end
+	Ends *time.Time `json:"ends"`
+
+	// EventTicker The one event of the series the schedule covers; empty when it covers the whole series
+	EventTicker string `json:"event_ticker"`
+
+	// EventTitle The event's title; empty when the schedule covers the whole series
+	EventTitle string `json:"event_title"`
+
+	// IncentiveType Type of the incentives the schedule creates
+	IncentiveType IncentiveScheduleIncentiveType `json:"incentive_type"`
+
+	// PostedTs When the schedule was first published on its current terms
+	PostedTs time.Time `json:"posted_ts"`
+
+	// Reward What each market earns per window, in centi-cents, as period_reward is on an incentive program
+	Reward int64 `json:"reward"`
+
+	// SeriesCategory The series' category
+	SeriesCategory string `json:"series_category"`
+
+	// SeriesTicker The series the schedule covers
+	SeriesTicker string `json:"series_ticker"`
+
+	// SeriesTitle The series' title
+	SeriesTitle string `json:"series_title"`
+
+	// Source The job that publishes the schedule. With the series, event and type, it identifies the schedule.
+	Source string `json:"source"`
+
+	// TargetSizeFp Fixed-point contract count string (2 decimals, e.g., "10.00"; referred to as "fp" in field names). Requests accept 0-2 decimal places (e.g., "10", "10.0", "10.00"); responses always emit 2 decimals. Fractional contract values (e.g., "2.50") are supported; the minimum granularity is 0.01 contracts.
+	//
+	// Example: 10.00
+	TargetSizeFp *FixedPointCount `json:"target_size_fp,omitempty"`
+
+	// UpdatedTs When the schedule was last published
+	UpdatedTs time.Time `json:"updated_ts"`
+
+	// WindowDays Days per window; 0 rewards each market once, up to its close
+	WindowDays int32 `json:"window_days"`
+}
+
+// IncentiveScheduleIncentiveType Type of the incentives the schedule creates
+type IncentiveScheduleIncentiveType string
 
 // IndexedBalance defines model for IndexedBalance.
 type IndexedBalance struct {
@@ -6009,6 +6094,12 @@ type GetIncentiveProgramsParams struct {
 	// IncentiveDescription Filter by exact incentive description.
 	IncentiveDescription *string `form:"incentive_description,omitempty" json:"incentive_description,omitempty"`
 
+	// SeriesTicker Filter to one series' incentives.
+	SeriesTicker *string `form:"series_ticker,omitempty" json:"series_ticker,omitempty"`
+
+	// EventTicker Filter to one event's incentives. A perpetual's incentives belong to no event.
+	EventTicker *string `form:"event_ticker,omitempty" json:"event_ticker,omitempty"`
+
 	// Limit Number of results per page. Defaults to 100. Maximum value is 10000.
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -7602,6 +7693,13 @@ type ClientInterface interface {
 	// Corresponds with GET /incentive_programs (the `GetIncentivePrograms` operationId).
 	GetIncentivePrograms(ctx context.Context, params *GetIncentiveProgramsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetIncentiveSchedules Get Incentive Schedules
+	//
+	//  Recurring incentives: what each market of a series, or of one event, can expect to earn window after window. A schedule is anticipated, not promised, unless `all_markets` is true. The incentives themselves are listed by Get Incentives.
+	//
+	// Corresponds with GET /incentive_schedules (the `GetIncentiveSchedules` operationId).
+	GetIncentiveSchedules(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetLiveDatas Get Multiple Live Data
 	//
 	// Get live data for multiple milestones. Each entry's `details.status` is updated far more often than the milestone's own `details.status` and is the preferred source for game status. It is not guaranteed to be current: if the provider feed falls behind, a cached board may still be served, with `details.live_data_delayed` set to `true` only once it is significantly stale (some feeds never set it), so a missing flag does not by itself mean the data is current.
@@ -8326,11 +8424,10 @@ type ClientInterface interface {
 	// threshold, creating it if it doesn't exist yet. The same request always
 	// returns the same market, so call this before sending an RFQ for a
 	// market you haven't seen. `created` tells you whether the market is new.
-	// An existing market is returned until its window ends, even where new
-	// markets like it are no longer offered. The exception is when weather
-	// markets are switched off (`enabled` is false in the availability
-	// response) or the variable has been withdrawn entirely: the request is
-	// then refused whether or not the market exists.
+	// An existing market is normally returned until its window ends, even
+	// where new markets like it are no longer offered. If weather markets
+	// are switched off entirely, the request can be refused whether or not
+	// the market exists.
 	//
 	// The location snaps to the center of the NOAA MRMS grid cell containing
 	// it; the response carries the snapped coordinates. Markets are only
@@ -8369,11 +8466,10 @@ type ClientInterface interface {
 	// threshold, creating it if it doesn't exist yet. The same request always
 	// returns the same market, so call this before sending an RFQ for a
 	// market you haven't seen. `created` tells you whether the market is new.
-	// An existing market is returned until its window ends, even where new
-	// markets like it are no longer offered. The exception is when weather
-	// markets are switched off (`enabled` is false in the availability
-	// response) or the variable has been withdrawn entirely: the request is
-	// then refused whether or not the market exists.
+	// An existing market is normally returned until its window ends, even
+	// where new markets like it are no longer offered. If weather markets
+	// are switched off entirely, the request can be refused whether or not
+	// the market exists.
 	//
 	// The location snaps to the center of the NOAA MRMS grid cell containing
 	// it; the response carries the snapped coordinates. Markets are only
@@ -10060,6 +10156,23 @@ func (c *Client) GetIncentivePrograms(ctx context.Context, params *GetIncentiveP
 	return c.Client.Do(req)
 }
 
+// GetIncentiveSchedules Get Incentive Schedules
+//
+//	Recurring incentives: what each market of a series, or of one event, can expect to earn window after window. A schedule is anticipated, not promised, unless `all_markets` is true. The incentives themselves are listed by Get Incentives.
+//
+// Corresponds with GET /incentive_schedules (the `GetIncentiveSchedules` operationId).
+func (c *Client) GetIncentiveSchedules(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetIncentiveSchedulesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // GetLiveDatas Get Multiple Live Data
 //
 // Get live data for multiple milestones. Each entry's `details.status` is updated far more often than the milestone's own `details.status` and is the preferred source for game status. It is not guaranteed to be current: if the provider feed falls behind, a cached board may still be served, with `details.live_data_delayed` set to `true` only once it is significantly stale (some feeds never set it), so a missing flag does not by itself mean the data is current.
@@ -11646,11 +11759,10 @@ func (c *Client) GetStructuredTarget(ctx context.Context, structuredTargetId str
 // threshold, creating it if it doesn't exist yet. The same request always
 // returns the same market, so call this before sending an RFQ for a
 // market you haven't seen. `created` tells you whether the market is new.
-// An existing market is returned until its window ends, even where new
-// markets like it are no longer offered. The exception is when weather
-// markets are switched off (`enabled` is false in the availability
-// response) or the variable has been withdrawn entirely: the request is
-// then refused whether or not the market exists.
+// An existing market is normally returned until its window ends, even
+// where new markets like it are no longer offered. If weather markets
+// are switched off entirely, the request can be refused whether or not
+// the market exists.
 //
 // The location snaps to the center of the NOAA MRMS grid cell containing
 // it; the response carries the snapped coordinates. Markets are only
@@ -11699,11 +11811,10 @@ func (c *Client) CreateWeatherPointMarketWithBody(ctx context.Context, contentTy
 // threshold, creating it if it doesn't exist yet. The same request always
 // returns the same market, so call this before sending an RFQ for a
 // market you haven't seen. `created` tells you whether the market is new.
-// An existing market is returned until its window ends, even where new
-// markets like it are no longer offered. The exception is when weather
-// markets are switched off (`enabled` is false in the availability
-// response) or the variable has been withdrawn entirely: the request is
-// then refused whether or not the market exists.
+// An existing market is normally returned until its window ends, even
+// where new markets like it are no longer offered. If weather markets
+// are switched off entirely, the request can be refused whether or not
+// the market exists.
 //
 // The location snaps to the center of the NOAA MRMS grid cell containing
 // it; the response carries the snapped coordinates. Markets are only
@@ -15397,6 +15508,30 @@ func NewGetIncentiveProgramsRequest(server string, params *GetIncentiveProgramsP
 
 		}
 
+		if params.SeriesTicker != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "series_ticker", *params.SeriesTicker, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.EventTicker != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "event_ticker", *params.EventTicker, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
@@ -15425,6 +15560,33 @@ func NewGetIncentiveProgramsRequest(server string, params *GetIncentiveProgramsP
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
 		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetIncentiveSchedulesRequest constructs an http.Request for the GetIncentiveSchedules method
+func NewGetIncentiveSchedulesRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/incentive_schedules")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -20963,6 +21125,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /incentive_programs (the `GetIncentivePrograms` operationId).
 	GetIncentiveProgramsWithResponse(ctx context.Context, params *GetIncentiveProgramsParams, reqEditors ...RequestEditorFn) (*GetIncentiveProgramsResponse2, error)
 
+	// GetIncentiveSchedulesWithResponse Get Incentive Schedules
+	//
+	//  Recurring incentives: what each market of a series, or of one event, can expect to earn window after window. A schedule is anticipated, not promised, unless `all_markets` is true. The incentives themselves are listed by Get Incentives.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /incentive_schedules (the `GetIncentiveSchedules` operationId).
+	GetIncentiveSchedulesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetIncentiveSchedulesResponse2, error)
+
 	// GetLiveDatasWithResponse Get Multiple Live Data
 	//
 	// Get live data for multiple milestones. Each entry's `details.status` is updated far more often than the milestone's own `details.status` and is the preferred source for game status. It is not guaranteed to be current: if the provider feed falls behind, a cached board may still be served, with `details.live_data_delayed` set to `true` only once it is significantly stale (some feeds never set it), so a missing flag does not by itself mean the data is current.
@@ -21791,11 +21962,10 @@ type ClientWithResponsesInterface interface {
 	// threshold, creating it if it doesn't exist yet. The same request always
 	// returns the same market, so call this before sending an RFQ for a
 	// market you haven't seen. `created` tells you whether the market is new.
-	// An existing market is returned until its window ends, even where new
-	// markets like it are no longer offered. The exception is when weather
-	// markets are switched off (`enabled` is false in the availability
-	// response) or the variable has been withdrawn entirely: the request is
-	// then refused whether or not the market exists.
+	// An existing market is normally returned until its window ends, even
+	// where new markets like it are no longer offered. If weather markets
+	// are switched off entirely, the request can be refused whether or not
+	// the market exists.
 	//
 	// The location snaps to the center of the NOAA MRMS grid cell containing
 	// it; the response carries the snapped coordinates. Markets are only
@@ -21834,11 +22004,10 @@ type ClientWithResponsesInterface interface {
 	// threshold, creating it if it doesn't exist yet. The same request always
 	// returns the same market, so call this before sending an RFQ for a
 	// market you haven't seen. `created` tells you whether the market is new.
-	// An existing market is returned until its window ends, even where new
-	// markets like it are no longer offered. The exception is when weather
-	// markets are switched off (`enabled` is false in the availability
-	// response) or the variable has been withdrawn entirely: the request is
-	// then refused whether or not the market exists.
+	// An existing market is normally returned until its window ends, even
+	// where new markets like it are no longer offered. If weather markets
+	// are switched off entirely, the request can be refused whether or not
+	// the market exists.
 	//
 	// The location snaps to the center of the NOAA MRMS grid cell containing
 	// it; the response carries the snapped coordinates. Markets are only
@@ -25756,6 +25925,54 @@ func (r GetIncentiveProgramsResponse2) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetIncentiveProgramsResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetIncentiveSchedulesResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetIncentiveSchedulesResponse
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetIncentiveSchedulesResponse2) GetJSON200() *GetIncentiveSchedulesResponse {
+	return r.JSON200
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetIncentiveSchedulesResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetIncentiveSchedulesResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetIncentiveSchedulesResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetIncentiveSchedulesResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetIncentiveSchedulesResponse2) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -31266,6 +31483,21 @@ func (c *ClientWithResponses) GetIncentiveProgramsWithResponse(ctx context.Conte
 	return ParseGetIncentiveProgramsResponse2(rsp)
 }
 
+// GetIncentiveSchedulesWithResponse Get Incentive Schedules
+//
+//	Recurring incentives: what each market of a series, or of one event, can expect to earn window after window. A schedule is anticipated, not promised, unless `all_markets` is true. The incentives themselves are listed by Get Incentives.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /incentive_schedules (the `GetIncentiveSchedules` operationId).
+func (c *ClientWithResponses) GetIncentiveSchedulesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetIncentiveSchedulesResponse2, error) {
+	rsp, err := c.GetIncentiveSchedules(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetIncentiveSchedulesResponse2(rsp)
+}
+
 // GetLiveDatasWithResponse Get Multiple Live Data
 //
 // Get live data for multiple milestones. Each entry's `details.status` is updated far more often than the milestone's own `details.status` and is the preferred source for game status. It is not guaranteed to be current: if the provider feed falls behind, a cached board may still be served, with `details.live_data_delayed` set to `true` only once it is significantly stale (some feeds never set it), so a missing flag does not by itself mean the data is current.
@@ -32612,11 +32844,10 @@ func (c *ClientWithResponses) GetStructuredTargetWithResponse(ctx context.Contex
 // threshold, creating it if it doesn't exist yet. The same request always
 // returns the same market, so call this before sending an RFQ for a
 // market you haven't seen. `created` tells you whether the market is new.
-// An existing market is returned until its window ends, even where new
-// markets like it are no longer offered. The exception is when weather
-// markets are switched off (`enabled` is false in the availability
-// response) or the variable has been withdrawn entirely: the request is
-// then refused whether or not the market exists.
+// An existing market is normally returned until its window ends, even
+// where new markets like it are no longer offered. If weather markets
+// are switched off entirely, the request can be refused whether or not
+// the market exists.
 //
 // The location snaps to the center of the NOAA MRMS grid cell containing
 // it; the response carries the snapped coordinates. Markets are only
@@ -32661,11 +32892,10 @@ func (c *ClientWithResponses) CreateWeatherPointMarketWithBodyWithResponse(ctx c
 // threshold, creating it if it doesn't exist yet. The same request always
 // returns the same market, so call this before sending an RFQ for a
 // market you haven't seen. `created` tells you whether the market is new.
-// An existing market is returned until its window ends, even where new
-// markets like it are no longer offered. The exception is when weather
-// markets are switched off (`enabled` is false in the availability
-// response) or the variable has been withdrawn entirely: the request is
-// then refused whether or not the market exists.
+// An existing market is normally returned until its window ends, even
+// where new markets like it are no longer offered. If weather markets
+// are switched off entirely, the request can be refused whether or not
+// the market exists.
 //
 // The location snaps to the center of the NOAA MRMS grid cell containing
 // it; the response carries the snapped coordinates. Markets are only
@@ -35795,6 +36025,39 @@ func ParseGetIncentiveProgramsResponse2(rsp *http.Response) (*GetIncentiveProgra
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetIncentiveSchedulesResponse2 parses an HTTP response from a GetIncentiveSchedulesWithResponse call
+func ParseGetIncentiveSchedulesResponse2(rsp *http.Response) (*GetIncentiveSchedulesResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetIncentiveSchedulesResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetIncentiveSchedulesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
