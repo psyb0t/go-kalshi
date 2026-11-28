@@ -162,6 +162,27 @@ func (e BookSide) Valid() bool {
 	}
 }
 
+// Defines values for ConcertCover.
+const (
+	ConcertCoverConcertCoverCancelled ConcertCover = "cancelled"
+	ConcertCoverConcertCoverEither    ConcertCover = "either"
+	ConcertCoverConcertCoverPostponed ConcertCover = "postponed"
+)
+
+// Valid indicates whether the value is a known member of the ConcertCover enum.
+func (e ConcertCover) Valid() bool {
+	switch e {
+	case ConcertCoverConcertCoverCancelled:
+		return true
+	case ConcertCoverConcertCoverEither:
+		return true
+	case ConcertCoverConcertCoverPostponed:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateOrderV2RequestTimeInForce.
 const (
 	CreateOrderV2RequestTimeInForceFillOrKill        CreateOrderV2RequestTimeInForce = "fill_or_kill"
@@ -456,6 +477,45 @@ func (e FillSide) Valid() bool {
 	}
 }
 
+// Defines values for FlightCover.
+const (
+	FlightCoverFlightCoverCancelled FlightCover = "cancelled"
+	FlightCoverFlightCoverDelayed   FlightCover = "delayed"
+	FlightCoverFlightCoverEither    FlightCover = "either"
+)
+
+// Valid indicates whether the value is a known member of the FlightCover enum.
+func (e FlightCover) Valid() bool {
+	switch e {
+	case FlightCoverFlightCoverCancelled:
+		return true
+	case FlightCoverFlightCoverDelayed:
+		return true
+	case FlightCoverFlightCoverEither:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FlightDelayBasis.
+const (
+	FlightDelayBasisFlightDelayBasisArrival   FlightDelayBasis = "arrival"
+	FlightDelayBasisFlightDelayBasisDeparture FlightDelayBasis = "departure"
+)
+
+// Valid indicates whether the value is a known member of the FlightDelayBasis enum.
+func (e FlightDelayBasis) Valid() bool {
+	switch e {
+	case FlightDelayBasisFlightDelayBasisArrival:
+		return true
+	case FlightDelayBasisFlightDelayBasisDeparture:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for IncentiveProgramIncentiveType.
 const (
 	IncentiveProgramIncentiveTypeLiquidity         IncentiveProgramIncentiveType = "liquidity"
@@ -501,6 +561,7 @@ func (e IncentiveScheduleIncentiveType) Valid() bool {
 // Defines values for IntraExchangeInstanceTransferStatus.
 const (
 	IntraExchangeInstanceTransferStatusIntraExchangeInstanceTransferStatusComplete IntraExchangeInstanceTransferStatus = "complete"
+	IntraExchangeInstanceTransferStatusIntraExchangeInstanceTransferStatusFailed   IntraExchangeInstanceTransferStatus = "failed"
 	IntraExchangeInstanceTransferStatusIntraExchangeInstanceTransferStatusPending  IntraExchangeInstanceTransferStatus = "pending"
 )
 
@@ -508,6 +569,8 @@ const (
 func (e IntraExchangeInstanceTransferStatus) Valid() bool {
 	switch e {
 	case IntraExchangeInstanceTransferStatusIntraExchangeInstanceTransferStatusComplete:
+		return true
+	case IntraExchangeInstanceTransferStatusIntraExchangeInstanceTransferStatusFailed:
 		return true
 	case IntraExchangeInstanceTransferStatusIntraExchangeInstanceTransferStatusPending:
 		return true
@@ -1455,6 +1518,21 @@ func (e GetPositionsParamsSettlementStatus) Valid() bool {
 	}
 }
 
+// Defines values for GetPositionsParamsSortBy.
+const (
+	GetPositionsParamsSortByEventTicker GetPositionsParamsSortBy = "event_ticker"
+)
+
+// Valid indicates whether the value is a known member of the GetPositionsParamsSortBy enum.
+func (e GetPositionsParamsSortBy) Valid() bool {
+	switch e {
+	case GetPositionsParamsSortByEventTicker:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DeleteEventContractExitTriggerParamsKind.
 const (
 	DeleteEventContractExitTriggerParamsKindDeleteEventContractExitTriggerParamsKindBracket DeleteEventContractExitTriggerParamsKind = "bracket"
@@ -2012,6 +2090,125 @@ type CancelOrderV2Response struct {
 	TsMs int64 `json:"ts_ms"`
 }
 
+// Concert defines model for Concert.
+type Concert struct {
+	// City The venue's city.
+	City *string `json:"city,omitempty"`
+
+	// Country The venue's country code.
+	Country *string `json:"country,omitempty"`
+
+	// Headliner The top-billed act. Left out when the listing names none.
+	Headliner *string `json:"headliner,omitempty"`
+
+	// JambaseEventId The show's id, as `jambase:<id>`.
+	//
+	// Example: jambase:16543035
+	JambaseEventId string `json:"jambase_event_id"`
+
+	// Latitude Latitude of the venue. Left out when unknown.
+	Latitude *float64 `json:"latitude,omitempty"`
+
+	// Lineup The acts on the bill, in billing order.
+	Lineup []string `json:"lineup"`
+
+	// Longitude Longitude of the venue. Left out when unknown.
+	Longitude *float64 `json:"longitude,omitempty"`
+
+	// Markets One entry per offered cover.
+	Markets []ConcertMarket `json:"markets"`
+
+	// Name The show's name as listed.
+	Name string `json:"name"`
+
+	// Region The venue's state or region.
+	Region *string `json:"region,omitempty"`
+
+	// ScheduledDate The venue-local date the show is scheduled for, as YYYY-MM-DD.
+	//
+	// Example: 2026-11-20
+	ScheduledDate string `json:"scheduled_date"`
+
+	// StartTime Venue-local start time with no UTC offset, as YYYY-MM-DDTHH:MM:SS. Left out while only the date is announced.
+	//
+	// Example: 2026-11-20T20:00:00
+	StartTime *string `json:"start_time,omitempty"`
+
+	// Timezone IANA time zone of the venue, which `scheduled_date` and `start_time` are local to.
+	//
+	// Example: America/New_York
+	Timezone string `json:"timezone"`
+
+	// Url The show's listing page.
+	Url *string `json:"url,omitempty"`
+
+	// VenueName The venue's name.
+	VenueName string `json:"venue_name"`
+}
+
+// ConcertCover What a concert cancellation market pays on: what the show's listing
+// first shows from the market's creation to the show's scheduled start
+// (the market's close time is one minute before it), whatever the
+// listing says afterwards.
+//   - `postponed`: Yes when the show is postponed, or moved to a later
+//     date. A new start time on the scheduled date, or within six hours
+//     of the scheduled start, is not a postponement, even when it falls
+//     on the next calendar day (11:30 PM moved to 12:30 AM). A
+//     cancellation alone doesn't count: a show that is canceled and not
+//     postponed resolves to No, and one that is canceled, reinstated and
+//     then postponed was postponed.
+//   - `cancelled`: Yes when the show is canceled, including after a
+//     postponement.
+//   - `either`: Yes in both of those cases.
+type ConcertCover string
+
+// ConcertMarket defines model for ConcertMarket.
+type ConcertMarket struct {
+	// Cover What a concert cancellation market pays on: what the show's listing
+	// first shows from the market's creation to the show's scheduled start
+	// (the market's close time is one minute before it), whatever the
+	// listing says afterwards.
+	// - `postponed`: Yes when the show is postponed, or moved to a later
+	//   date. A new start time on the scheduled date, or within six hours
+	//   of the scheduled start, is not a postponement, even when it falls
+	//   on the next calendar day (11:30 PM moved to 12:30 AM). A
+	//   cancellation alone doesn't count: a show that is canceled and not
+	//   postponed resolves to No, and one that is canceled, reinstated and
+	//   then postponed was postponed.
+	// - `cancelled`: Yes when the show is canceled, including after a
+	//   postponement.
+	// - `either`: Yes in both of those cases.
+	Cover ConcertCover `json:"cover"`
+
+	// EventTicker Event ticker the show has or would get for this cover.
+	EventTicker string `json:"event_ticker"`
+
+	// MarketTicker Market ticker the show has or would get for this cover. The market may not exist yet.
+	MarketTicker string `json:"market_ticker"`
+}
+
+// ConcertMetro defines model for ConcertMetro.
+type ConcertMetro struct {
+	// Id Metro id to pass as `metro_id` when listing concerts.
+	//
+	// Example: jambase:1
+	Id string `json:"id"`
+
+	// Latitude Latitude of the metro's center. Left out when unknown.
+	Latitude *float64 `json:"latitude,omitempty"`
+
+	// Longitude Longitude of the metro's center. Left out when unknown.
+	Longitude *float64 `json:"longitude,omitempty"`
+
+	// Name Metro name.
+	//
+	// Example: New York
+	Name string `json:"name"`
+
+	// UpcomingShows Upcoming shows listed in the metro, within the request's dates when given. 0 when no count is available.
+	UpcomingShows int32 `json:"upcoming_shows"`
+}
+
 // CreateApiKeyRequest defines model for CreateApiKeyRequest.
 type CreateApiKeyRequest struct {
 	// FcmSubtraderId FCM members only. If set, binds the API key to a single FCM subtrader that you own, spelled {your_user_id}_{suffix} with a suffix of 1-16 case-sensitive ASCII alphanumeric characters. The subtrader must already exist. A bound key is the institution's trading credential for that subtrader - FIX order-entry and market-data sessions, plus margin WebSocket sessions scoped to the subtrader's own data - and is denied on every REST endpoint, including key management. Mutually exclusive with subaccount.
@@ -2037,6 +2234,67 @@ type CreateApiKeyResponse struct {
 
 	// Warning Present only when the minted key is bound to an FCM subtrader that is missing a per-subtrader risk control - the initial-margin cap (margin lane) or the event-contract daily cap. The mint still succeeds; the warning names each missing control - an event-contract subtrader without a daily cap has its event-contract orders rejected until one is set, while a margin subtrader without an initial-margin cap is bounded only by firm-level risk limits.
 	Warning *string `json:"warning,omitempty"`
+}
+
+// CreateConcertCancellationMarketRequest defines model for CreateConcertCancellationMarketRequest.
+type CreateConcertCancellationMarketRequest struct {
+	// Cover What a concert cancellation market pays on: what the show's listing
+	// first shows from the market's creation to the show's scheduled start
+	// (the market's close time is one minute before it), whatever the
+	// listing says afterwards.
+	// - `postponed`: Yes when the show is postponed, or moved to a later
+	//   date. A new start time on the scheduled date, or within six hours
+	//   of the scheduled start, is not a postponement, even when it falls
+	//   on the next calendar day (11:30 PM moved to 12:30 AM). A
+	//   cancellation alone doesn't count: a show that is canceled and not
+	//   postponed resolves to No, and one that is canceled, reinstated and
+	//   then postponed was postponed.
+	// - `cancelled`: Yes when the show is canceled, including after a
+	//   postponement.
+	// - `either`: Yes in both of those cases.
+	Cover ConcertCover `json:"cover"`
+
+	// JambaseEventId The show, as `jambase:<id>`, from the concert listing or search.
+	//
+	// Example: jambase:16543035
+	JambaseEventId string `json:"jambase_event_id" validate:"required"`
+
+	// ScheduledDate The venue-local date the show is scheduled for, as YYYY-MM-DD. It must match the show's current listing.
+	//
+	// Example: 2026-11-20
+	ScheduledDate string `json:"scheduled_date" validate:"required,datetime=2006-01-02"`
+}
+
+// CreateConcertCancellationMarketResponse defines model for CreateConcertCancellationMarketResponse.
+type CreateConcertCancellationMarketResponse struct {
+	// Cover What a concert cancellation market pays on: what the show's listing
+	// first shows from the market's creation to the show's scheduled start
+	// (the market's close time is one minute before it), whatever the
+	// listing says afterwards.
+	// - `postponed`: Yes when the show is postponed, or moved to a later
+	//   date. A new start time on the scheduled date, or within six hours
+	//   of the scheduled start, is not a postponement, even when it falls
+	//   on the next calendar day (11:30 PM moved to 12:30 AM). A
+	//   cancellation alone doesn't count: a show that is canceled and not
+	//   postponed resolves to No, and one that is canceled, reinstated and
+	//   then postponed was postponed.
+	// - `cancelled`: Yes when the show is canceled, including after a
+	//   postponement.
+	// - `either`: Yes in both of those cases.
+	Cover ConcertCover `json:"cover"`
+
+	// Created False when a market for the same request already existed.
+	Created bool `json:"created"`
+
+	// EventTicker Event ticker of the market.
+	//
+	// Example: KXRFQCONCERTP-JB16543035-26NOV20
+	EventTicker string `json:"event_ticker"`
+
+	// MarketTicker Market ticker of the market.
+	//
+	// Example: KXRFQCONCERTP-JB16543035-26NOV20-PPD
+	MarketTicker string `json:"market_ticker"`
 }
 
 // CreateFCMPositionTransferRequest defines model for CreateFCMPositionTransferRequest.
@@ -2073,6 +2331,90 @@ type CreateFCMSubtraderRequest struct {
 type CreateFCMSubtraderResponse struct {
 	// SubtraderId The full id of the created subtrader.
 	SubtraderId string `json:"subtrader_id"`
+}
+
+// CreateFlightDisruptionMarketRequest defines model for CreateFlightDisruptionMarketRequest.
+type CreateFlightDisruptionMarketRequest struct {
+	// ArrivalAirport The arrival airport's 3-letter code.
+	//
+	// Example: LHR
+	ArrivalAirport string `json:"arrival_airport" validate:"required,alpha,len=3"`
+
+	// Carrier The operating carrier's 2-character code, from the flight lookup.
+	//
+	// Example: AA
+	Carrier string `json:"carrier" validate:"required,alphanum,len=2"`
+
+	// Cover What a flight disruption market pays on, read from the flight's
+	// status after it was scheduled to arrive:
+	// - `cancelled`: Yes when the flight is canceled.
+	// - `delayed`: Yes when the flight operates and is at least
+	//   `delay_minutes` late on its `delay_basis`. A canceled flight
+	//   resolves to No.
+	// - `either`: Yes in both of those cases.
+	Cover FlightCover `json:"cover"`
+
+	// DelayBasis Which gate time a delay is measured at:
+	// - `departure`: the actual gate departure against the published
+	//   departure.
+	// - `arrival`: the actual gate arrival against the published arrival.
+	DelayBasis *FlightDelayBasis `json:"delay_basis,omitempty"`
+
+	// DelayMinutes The delay, in minutes, at which the market pays. Required for the `delayed` and `either` covers and left out for `cancelled`. A multiple of the availability's `delay_step_minutes`, up to its `max_delay_minutes`.
+	//
+	// Example: 120
+	DelayMinutes *int32 `json:"delay_minutes,omitempty" validate:"omitempty,min=1"`
+
+	// DepartureAirport The departure airport's 3-letter code.
+	//
+	// Example: JFK
+	DepartureAirport string `json:"departure_airport" validate:"required,alpha,len=3"`
+
+	// FlightNumber The operating carrier's flight number, 1 to 4 digits, from the flight lookup.
+	//
+	// Example: 100
+	FlightNumber string `json:"flight_number" validate:"required,number,max=4"`
+
+	// ScheduledDate The scheduled departure date at the departure airport, as YYYY-MM-DD.
+	//
+	// Example: 2026-11-25
+	ScheduledDate string `json:"scheduled_date" validate:"required,datetime=2006-01-02"`
+}
+
+// CreateFlightDisruptionMarketResponse defines model for CreateFlightDisruptionMarketResponse.
+type CreateFlightDisruptionMarketResponse struct {
+	// Cover What a flight disruption market pays on, read from the flight's
+	// status after it was scheduled to arrive:
+	// - `cancelled`: Yes when the flight is canceled.
+	// - `delayed`: Yes when the flight operates and is at least
+	//   `delay_minutes` late on its `delay_basis`. A canceled flight
+	//   resolves to No.
+	// - `either`: Yes in both of those cases.
+	Cover FlightCover `json:"cover"`
+
+	// Created False when a market for the same request already existed.
+	Created bool `json:"created"`
+
+	// DelayBasis Which gate time a delay is measured at:
+	// - `departure`: the actual gate departure against the published
+	//   departure.
+	// - `arrival`: the actual gate arrival against the published arrival.
+	DelayBasis *FlightDelayBasis `json:"delay_basis,omitempty"`
+
+	// DelayMinutes The market's delay threshold in minutes. Left out for the `cancelled` cover.
+	//
+	// Example: 120
+	DelayMinutes *int32 `json:"delay_minutes,omitempty"`
+
+	// EventTicker Event ticker of the market.
+	//
+	// Example: KXRFQFLIGHTD-AA100-JFKLHR-26NOV25
+	EventTicker string `json:"event_ticker"`
+
+	// MarketTicker Market ticker of the market.
+	//
+	// Example: KXRFQFLIGHTD-AA100-JFKLHR-26NOV25-DEP120
+	MarketTicker string `json:"market_ticker"`
 }
 
 // CreateMarketInMultivariateEventCollectionRequest defines model for CreateMarketInMultivariateEventCollectionRequest.
@@ -2125,8 +2467,10 @@ type CreateOrderGroupResponse struct {
 // CreateOrderV2Request Example: {"cancel_order_on_pause":false,"client_order_id":"8c35ecb3-328f-4f52-8c7c-0f4b9862f8d1","count":"10.00","exchange_index":0,"post_only":false,"price":"0.5600","reduce_only":false,"self_trade_prevention_type":"taker_at_cross","side":"bid","subaccount":0,"ticker":"HIGHNY-24JAN01-T60","time_in_force":"good_till_canceled"}
 type CreateOrderV2Request struct {
 	// CancelOrderOnPause If this flag is set to true, the order will be canceled if the order is open and trading on the exchange is paused for any reason.
-	CancelOrderOnPause *bool  `json:"cancel_order_on_pause,omitempty"`
-	ClientOrderId      string `json:"client_order_id,omitempty"`
+	CancelOrderOnPause *bool `json:"cancel_order_on_pause,omitempty"`
+
+	// ClientOrderId Optional client-assigned ID, up to 64 characters from letters, digits and `_ - : + = /`. It must be unique per subaccount on the market's exchange shard while the order is open. See [Order Errors](/getting_started/order_errors#client-order-ids).
+	ClientOrderId string `json:"client_order_id,omitempty"`
 
 	// Count Fixed-point contract count string (2 decimals, e.g., "10.00"; referred to as "fp" in field names). Requests accept 0-2 decimal places (e.g., "10", "10.0", "10.00"); responses always emit 2 decimals. Fractional contract values (e.g., "2.50") are supported; the minimum granularity is 0.01 contracts.
 	//
@@ -2208,8 +2552,10 @@ type CreateOrderV2Response struct {
 // CreateOrderWithExitTriggerRequest defines model for CreateOrderWithExitTriggerRequest.
 type CreateOrderWithExitTriggerRequest struct {
 	// CancelOrderOnPause If this flag is set to true, the order will be canceled if the order is open and trading on the exchange is paused for any reason.
-	CancelOrderOnPause *bool  `json:"cancel_order_on_pause,omitempty"`
-	ClientOrderId      string `json:"client_order_id,omitempty"`
+	CancelOrderOnPause *bool `json:"cancel_order_on_pause,omitempty"`
+
+	// ClientOrderId Optional client-assigned ID, up to 64 characters from letters, digits and `_ - : + = /`. It must be unique per subaccount on the market's exchange shard while the order is open. See [Order Errors](/getting_started/order_errors#client-order-ids).
+	ClientOrderId string `json:"client_order_id,omitempty"`
 
 	// Count Fixed-point contract count string (2 decimals, e.g., "10.00"; referred to as "fp" in field names). Requests accept 0-2 decimal places (e.g., "10", "10.0", "10.00"); responses always emit 2 decimals. Fractional contract values (e.g., "2.50") are supported; the minimum granularity is 0.01 contracts.
 	//
@@ -2384,7 +2730,7 @@ type CreateRFQRequest struct {
 	// ObscureCreatorId Replace the RFQ creator's public communications ID with a shared empty-input SHA-256 hash for other users. Applies to RFQ responses and broadcasts, and to quotes before successful execution. Successful execution reveals the normal ID in subsequent RFQ responses and in the executed quote. Accepting or confirming a quote does not reveal the ID. The creator always sees their normal ID. See the RFQ guide for the placeholder and visibility rules.
 	ObscureCreatorId bool `json:"obscure_creator_id,omitempty"`
 
-	// ReplaceExisting Whether to delete existing RFQs as part of this RFQ's creation
+	// ReplaceExisting Whether to close your older open RFQs to make room for this one. When true, the oldest open RFQs on the subaccount are closed, on any market, until at most two remain open including this one. An RFQ with a confirmed quote, or with an accepted quote still inside its confirmation window, is never closed, so the RFQ that stays open is not always the newest. If too few RFQs can be closed, the request fails with `expired`. It also skips the one-open-RFQ-per-market check.
 	ReplaceExisting bool `json:"replace_existing,omitempty"`
 
 	// RestRemainder Whether to rest the remainder of the RFQ after execution
@@ -2437,8 +2783,13 @@ type CreateWeatherPointMarketRequest struct {
 	// Example: 2026-11-11
 	Date string `json:"date" validate:"required,datetime=2006-01-02"`
 
-	// EndHour Local hour the window ends at, exclusive (1-24, after `start_hour`). 24 is the following midnight, so 0 to 24 is the whole day.
-	EndHour *int32 `json:"end_hour" validate:"required,gte=1,lte=24,gtfield=StartHour"`
+	// EndDate Local calendar date the window ends on, as YYYY-MM-DD in `timezone`. Leave it out, or repeat `date`, for a window within one day. Set it to the day after `date` for a window that crosses midnight in `timezone`; `end_hour` is then read on this date, and the window is at most 24 hours long. Any other date is refused. Whether a window across midnight is offered (`max_window_days` 2 in availability) doesn't go by this field. For a market that starts a new event it goes by the dates at the market's location; where `max_window_days` is 1, a request with `end_date` is accepted when the window lies within one date at the location, and one without it is refused when the window crosses midnight there. A threshold added to an event that already exists goes by the dates that event stores, which on an older event are those of its first request.
+	//
+	// Example: 2026-11-12
+	EndDate *string `json:"end_date,omitempty" validate:"omitempty,datetime=2006-01-02"`
+
+	// EndHour Local hour the window ends at, exclusive (1-24). Within one day it must be after `start_hour`; 24 is the following midnight, so 0 to 24 is the whole day. With `end_date` the day after `date` it is an hour of that day and must not be after `start_hour`, so 23 to 3 is 11pm to 3am and 8 to 8 is 24 hours.
+	EndHour *int32 `json:"end_hour" validate:"required,gte=1,lte=24"`
 
 	// FloorValue Lower threshold, in the variable's unit. Required for `greater` and `between`, and must be left out for `less`. For `precip_hours` with `greater` it must be below the number of hours in the window.
 	FloorValue *int32 `json:"floor_value,omitempty"`
@@ -2462,7 +2813,7 @@ type CreateWeatherPointMarketRequest struct {
 	// `cap_value` inclusive.
 	StrikeType CreateWeatherPointMarketRequestStrikeType `json:"strike_type" validate:"required,oneof=greater less between"`
 
-	// Timezone IANA time zone of the location, which the date and hours are read in. The window must start and end on whole UTC hours, so zones offset by a fraction of an hour are refused.
+	// Timezone IANA time zone that `date`, `end_date` and the hours are read in. It only says which span of time they mean, and needn't be the location's; the market's title and rules are written in the location's own time zone, whatever is sent here. The window must start and end on whole UTC hours, so zones offset by a fraction of an hour are refused.
 	//
 	// Example: America/New_York
 	Timezone string `json:"timezone" validate:"required"`
@@ -2492,10 +2843,10 @@ type CreateWeatherPointMarketResponse struct {
 	// EventTicker Event ticker of the market.
 	EventTicker string `json:"event_ticker"`
 
-	// Latitude Latitude of the market's location, the center of the grid cell containing the request, to three decimal places.
+	// Latitude Latitude of the market's location, the requested latitude to three decimal places.
 	Latitude float64 `json:"latitude"`
 
-	// Longitude Longitude of the market's location, the center of the grid cell containing the request, to three decimal places.
+	// Longitude Longitude of the market's location, the requested longitude to three decimal places.
 	Longitude float64 `json:"longitude"`
 
 	// MarketTicker Market ticker of the market.
@@ -3011,6 +3362,128 @@ type FixedPointCount = string
 // Example: 0.5600
 type FixedPointDollars = string
 
+// Flight defines model for Flight.
+type Flight struct {
+	// AirlineName The operating carrier's name.
+	AirlineName *string `json:"airline_name,omitempty"`
+
+	// ArrivalAirport The arrival airport's 3-letter code.
+	//
+	// Example: LHR
+	ArrivalAirport string `json:"arrival_airport"`
+
+	// ArrivalAirportName The arrival airport's name.
+	ArrivalAirportName *string `json:"arrival_airport_name,omitempty"`
+
+	// ArrivalCity The arrival airport's city.
+	ArrivalCity *string `json:"arrival_city,omitempty"`
+
+	// ArrivalCountry The arrival airport's ISO country code.
+	ArrivalCountry *string `json:"arrival_country,omitempty"`
+
+	// ArrivalTimezone IANA time zone of the arrival airport.
+	//
+	// Example: Europe/London
+	ArrivalTimezone *string `json:"arrival_timezone,omitempty"`
+
+	// Carrier The operating carrier's 2-character code.
+	//
+	// Example: AA
+	Carrier string `json:"carrier"`
+
+	// CloseTime When the flight's markets close, which is its scheduled departure.
+	CloseTime *time.Time `json:"close_time,omitempty"`
+
+	// DepartureAirport The departure airport's 3-letter code.
+	//
+	// Example: JFK
+	DepartureAirport string `json:"departure_airport"`
+
+	// DepartureAirportName The departure airport's name.
+	DepartureAirportName *string `json:"departure_airport_name,omitempty"`
+
+	// DepartureCity The departure airport's city.
+	DepartureCity *string `json:"departure_city,omitempty"`
+
+	// DepartureCountry The departure airport's ISO country code.
+	DepartureCountry *string `json:"departure_country,omitempty"`
+
+	// DepartureTimezone IANA time zone of the departure airport, which `scheduled_date` is local to.
+	//
+	// Example: America/New_York
+	DepartureTimezone *string `json:"departure_timezone,omitempty"`
+
+	// Events One entry per offered cover.
+	Events []FlightCoverEvent `json:"events"`
+
+	// FlightNumber The operating carrier's flight number.
+	//
+	// Example: 100
+	FlightNumber string `json:"flight_number"`
+
+	// RequestedCarrier The carrier code the lookup asked for, when it is a codeshare number and not the operating flight's. Left out otherwise.
+	RequestedCarrier *string `json:"requested_carrier,omitempty"`
+
+	// RequestedFlightNumber The flight number the lookup asked for, when it is a codeshare number and not the operating flight's. Left out otherwise.
+	RequestedFlightNumber *string `json:"requested_flight_number,omitempty"`
+
+	// ScheduledArrival The published arrival time, in UTC.
+	ScheduledArrival *time.Time `json:"scheduled_arrival,omitempty"`
+
+	// ScheduledDate The scheduled departure date at the departure airport, as YYYY-MM-DD.
+	//
+	// Example: 2026-11-25
+	ScheduledDate string `json:"scheduled_date"`
+
+	// ScheduledDeparture The published departure time, in UTC.
+	ScheduledDeparture *time.Time `json:"scheduled_departure,omitempty"`
+
+	// SettleAfter The earliest the flight's status is read to determine its markets.
+	SettleAfter *time.Time `json:"settle_after,omitempty"`
+}
+
+// FlightCover What a flight disruption market pays on, read from the flight's
+// status after it was scheduled to arrive:
+//   - `cancelled`: Yes when the flight is canceled.
+//   - `delayed`: Yes when the flight operates and is at least
+//     `delay_minutes` late on its `delay_basis`. A canceled flight
+//     resolves to No.
+//   - `either`: Yes in both of those cases.
+type FlightCover string
+
+// FlightCoverEvent defines model for FlightCoverEvent.
+type FlightCoverEvent struct {
+	// Cover What a flight disruption market pays on, read from the flight's
+	// status after it was scheduled to arrive:
+	// - `cancelled`: Yes when the flight is canceled.
+	// - `delayed`: Yes when the flight operates and is at least
+	//   `delay_minutes` late on its `delay_basis`. A canceled flight
+	//   resolves to No.
+	// - `either`: Yes in both of those cases.
+	Cover FlightCover `json:"cover"`
+
+	// EventTicker Event ticker the flight has or would get for this cover. It holds every market of the cover for the flight.
+	//
+	// Example: KXRFQFLIGHTD-AA100-JFKLHR-26NOV25
+	EventTicker string `json:"event_ticker"`
+
+	// MarketTicker Market ticker of the `cancelled` cover's one market. Left out for `delayed` and `either`, whose market tickers depend on the delay requested. The market may not exist yet.
+	//
+	// Example: KXRFQFLIGHTC-AA100-JFKLHR-26NOV25-CXL
+	MarketTicker *string `json:"market_ticker,omitempty"`
+
+	// SeriesTicker Series ticker of the cover.
+	//
+	// Example: KXRFQFLIGHTD
+	SeriesTicker string `json:"series_ticker"`
+}
+
+// FlightDelayBasis Which gate time a delay is measured at:
+//   - `departure`: the actual gate departure against the published
+//     departure.
+//   - `arrival`: the actual gate arrival against the published arrival.
+type FlightDelayBasis string
+
 // ForecastPercentilesPoint defines model for ForecastPercentilesPoint.
 type ForecastPercentilesPoint struct {
 	// EndPeriodTs Unix timestamp for the inclusive end of the forecast period.
@@ -3141,6 +3614,32 @@ type GetBlockTradeProposalsResponse struct {
 type GetCommunicationsIDResponse struct {
 	// CommunicationsId A public communications ID which is used to identify the user
 	CommunicationsId string `json:"communications_id"`
+}
+
+// GetConcertCancellationAvailabilityResponse defines model for GetConcertCancellationAvailabilityResponse.
+type GetConcertCancellationAvailabilityResponse struct {
+	// Covers The covers on offer. A cover left out can't be created.
+	Covers []ConcertCover `json:"covers"`
+
+	// Enabled Whether concert cancellation markets are listed. It doesn't promise that they can be created: where concerts are listed before markets are offered, it is true and every create request returns 409.
+	Enabled bool `json:"enabled"`
+
+	// MaxDaysAhead How many days ahead a show may be scheduled for a new market.
+	MaxDaysAhead int32 `json:"max_days_ahead"`
+
+	// Metros The metros whose concerts are listed.
+	Metros []ConcertMetro `json:"metros"`
+}
+
+// GetConcertsResponse defines model for GetConcertsResponse.
+type GetConcertsResponse struct {
+	Concerts []Concert `json:"concerts"`
+
+	// Page The page returned.
+	Page int32 `json:"page"`
+
+	// TotalPages Pages available for this metro and these dates.
+	TotalPages int32 `json:"total_pages"`
 }
 
 // GetCreditHistoryResponse defines model for GetCreditHistoryResponse.
@@ -3285,6 +3784,42 @@ type GetFiltersBySportsResponse struct {
 
 	// SportOrdering Ordered list of sports for display
 	SportOrdering []string `json:"sport_ordering"`
+}
+
+// GetFlightDisruptionAvailabilityResponse defines model for GetFlightDisruptionAvailabilityResponse.
+type GetFlightDisruptionAvailabilityResponse struct {
+	// Covers The covers on offer. A cover left out can't be created.
+	Covers []FlightCover `json:"covers"`
+
+	// DelayBases The delay bases on offer for the `delayed` and `either` covers.
+	DelayBases []FlightDelayBasis `json:"delay_bases"`
+
+	// DelayStepMinutes A market's `delay_minutes` is a multiple of this, from one step up to `max_delay_minutes`.
+	//
+	// Example: 30
+	DelayStepMinutes int32 `json:"delay_step_minutes"`
+
+	// DepartureCountries ISO country codes a flight must depart from, such as `US`. An empty list means every country is offered.
+	DepartureCountries []string `json:"departure_countries"`
+
+	// Enabled Whether flight disruption markets can be created at all.
+	Enabled bool `json:"enabled"`
+
+	// MaxDaysAhead How many days ahead a flight may be scheduled for a new market.
+	MaxDaysAhead int32 `json:"max_days_ahead"`
+
+	// MaxDelayMinutes The largest `delay_minutes` a market may use.
+	//
+	// Example: 360
+	MaxDelayMinutes int32 `json:"max_delay_minutes"`
+
+	// MinLeadMinutes A new market's flight must be scheduled to leave more than this many minutes from now.
+	MinLeadMinutes int32 `json:"min_lead_minutes"`
+}
+
+// GetFlightsResponse defines model for GetFlightsResponse.
+type GetFlightsResponse struct {
+	Flights []Flight `json:"flights"`
 }
 
 // GetGameStatsResponse defines model for GetGameStatsResponse.
@@ -3650,6 +4185,16 @@ type GetWeatherPointAvailabilityResponse struct {
 	// Enabled Whether weather point markets can be created at all.
 	Enabled bool `json:"enabled"`
 
+	// MaxWindowDays How many local calendar days a new market's window may touch. 2 means a window may cross midnight into the next day (`end_date` on the create request); anything less means it must start and end on one day. Every offered variable follows it.
+	//
+	// Example: 2
+	MaxWindowDays int32 `json:"max_window_days"`
+
+	// MaxWindowHours The longest window that crosses midnight, in hours. A window within one day can be the whole day, which lasts 25 hours when clocks go back.
+	//
+	// Example: 24
+	MaxWindowHours int32 `json:"max_window_hours"`
+
 	// Variables The variables on offer and where. A variable left out can't be created.
 	Variables []WeatherPointVariableAvailability `json:"variables"`
 }
@@ -3891,10 +4436,8 @@ type Market struct {
 	EventTicker         string        `json:"event_ticker"`
 	ExchangeIndex       ExchangeIndex `json:"exchange_index"`
 
-	// ExpectedExpirationTime Time when this market is expected to expire
+	// ExpectedExpirationTime Time when this market is expected to expire. Never later than `latest_expiration_time`.
 	ExpectedExpirationTime *time.Time `json:"expected_expiration_time,omitempty"`
-	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
-	ExpirationTime time.Time `json:"expiration_time,omitzero"`
 
 	// ExpirationValue The value that was considered for the settlement
 	ExpirationValue string `json:"expiration_value"`
@@ -4221,7 +4764,7 @@ type Milestone struct {
 
 // MultivariateEventCollection defines model for MultivariateEventCollection.
 type MultivariateEventCollection struct {
-	// AssociatedEventTickers [DEPRECATED - Use associated_events instead] A list of events associated with the collection. Markets in these events can be passed as inputs to the Lookup and Create endpoints.
+	// AssociatedEventTickers [DEPRECATED - Use associated_events instead] A list of events associated with the collection. Markets in these events can be passed as inputs to the Create endpoint.
 	AssociatedEventTickers []string `json:"associated_event_tickers"`
 
 	// AssociatedEvents List of events with their individual configuration.
@@ -4245,10 +4788,10 @@ type MultivariateEventCollection struct {
 	// IsAllYes [DEPRECATED - Use associated_events instead] Whether the collection requires that only the market side of 'yes' may be used.
 	IsAllYes bool `json:"is_all_yes"`
 
-	// IsOrdered Whether the collection is ordered. If true, the order of markets passed into Lookup/Create affects the output. If false, the order does not matter.
+	// IsOrdered Whether the collection is ordered. If true, the order of markets passed into Create affects the output. If false, the order does not matter.
 	IsOrdered bool `json:"is_ordered"`
 
-	// IsSingleMarketPerEvent [DEPRECATED - Use associated_events instead] Whether the collection accepts multiple markets from the same event passed into Lookup/Create.
+	// IsSingleMarketPerEvent [DEPRECATED - Use associated_events instead] Whether the collection accepts multiple markets from the same event passed into Create.
 	IsSingleMarketPerEvent bool `json:"is_single_market_per_event"`
 
 	// OpenDate The open date of the collection. Before this time, the collection cannot be interacted with.
@@ -4263,10 +4806,10 @@ type MultivariateEventCollection struct {
 	// SeriesTicker Series associated with the collection. Events produced in the collection will be associated with this series.
 	SeriesTicker string `json:"series_ticker"`
 
-	// SizeMax The maximum number of markets that must be passed into Lookup/Create (inclusive).
+	// SizeMax The maximum number of markets that must be passed into Create (inclusive).
 	SizeMax int32 `json:"size_max"`
 
-	// SizeMin The minimum number of markets that must be passed into Lookup/Create (inclusive).
+	// SizeMin The minimum number of markets that must be passed into Create (inclusive).
 	SizeMin int32 `json:"size_min"`
 
 	// Title Title of the collection.
@@ -4962,6 +5505,11 @@ type Schedule struct {
 type ScopeList struct {
 	// Scopes List of scopes
 	Scopes []string `json:"scopes"`
+}
+
+// SearchConcertsResponse defines model for SearchConcertsResponse.
+type SearchConcertsResponse struct {
+	Concerts []Concert `json:"concerts"`
 }
 
 // SelfTradePreventionType The self-trade prevention type for orders. `taker_at_cross` cancels the taker order when it would trade against another order from the same user; execution stops and any partial fills already matched are executed. `maker` cancels the resting maker order and continues matching.
@@ -5799,6 +6347,36 @@ type GetRFQsParams struct {
 	UserFilter    UserFilter `form:"user_filter,omitempty" json:"user_filter,omitempty" validate:"omitempty,oneof=self"`
 }
 
+// GetConcertCancellationAvailabilityParams defines parameters for GetConcertCancellationAvailability.
+type GetConcertCancellationAvailabilityParams struct {
+	// DateFrom Count shows from this venue-local date, as YYYY-MM-DD. Omitted counts from today.
+	DateFrom *string `form:"date_from,omitempty" json:"date_from,omitempty" validate:"omitempty,datetime=2006-01-02"`
+
+	// DateTo Count shows up to this venue-local date, inclusive, as YYYY-MM-DD. Omitted for no end.
+	DateTo *string `form:"date_to,omitempty" json:"date_to,omitempty" validate:"omitempty,datetime=2006-01-02"`
+}
+
+// GetConcertsParams defines parameters for GetConcerts.
+type GetConcertsParams struct {
+	// MetroId One of the metros from `GET /concert_cancellation_markets/availability`, such as `jambase:1`.
+	MetroId string `form:"metro_id" json:"metro_id" validate:"required"`
+
+	// DateFrom List shows from this venue-local date, as YYYY-MM-DD. Omitted, or a date that has passed, lists from today. Pages count from it.
+	DateFrom *string `form:"date_from,omitempty" json:"date_from,omitempty" validate:"omitempty,datetime=2006-01-02"`
+
+	// DateTo List shows up to this venue-local date, inclusive, as YYYY-MM-DD. Must not be before `date_from`. Omitted for no end.
+	DateTo *string `form:"date_to,omitempty" json:"date_to,omitempty" validate:"omitempty,datetime=2006-01-02"`
+
+	// Page Page to return, starting at 1.
+	Page *int32 `form:"page,omitempty" json:"page,omitempty" validate:"omitempty,min=1,max=20"`
+}
+
+// SearchConcertsParams defines parameters for SearchConcerts.
+type SearchConcertsParams struct {
+	// Q The name to search for, or part of one. 2 to 80 characters; some searches need at least 3.
+	Q string `form:"q" json:"q" validate:"required,min=2,max=80"`
+}
+
 // GetEventsParams defines parameters for GetEvents.
 type GetEventsParams struct {
 	// Limit Parameter to specify the number of results per page. Defaults to 200. Maximum value is 200.
@@ -5963,10 +6541,22 @@ type GetFCMEventContractDailyCapParams struct {
 	SubtraderId string `form:"subtrader_id,omitempty" json:"subtrader_id,omitempty"`
 }
 
+// GetFlightsParams defines parameters for GetFlights.
+type GetFlightsParams struct {
+	// Carrier The airline's 2-character code, such as `AA`. The operating carrier's or a codeshare partner's.
+	Carrier string `form:"carrier" json:"carrier" validate:"required,alphanum,len=2"`
+
+	// FlightNumber The flight number without the airline code, 1 to 4 digits, such as `100`.
+	FlightNumber string `form:"flight_number" json:"flight_number" validate:"required,number,max=4"`
+
+	// Date The scheduled departure date at the departure airport, as YYYY-MM-DD.
+	Date string `form:"date" json:"date" validate:"required,datetime=2006-01-02"`
+}
+
 // GetFillsHistoricalParams defines parameters for GetFillsHistorical.
 type GetFillsHistoricalParams struct {
-	// Ticker Filter by market ticker
-	Ticker TickerQuery `form:"ticker,omitempty" json:"ticker,omitempty"`
+	// Ticker Filter by market ticker. Accepts a comma-separated list of up to 100 market tickers.
+	Ticker string `form:"ticker,omitempty" json:"ticker,omitempty"`
 
 	// MinTs Filter items after this Unix timestamp
 	MinTs *MinTsQuery `form:"min_ts,omitempty" json:"min_ts,omitempty"`
@@ -6259,7 +6849,7 @@ type GetTradesParams struct {
 
 // GetMarketOrderbookParams defines parameters for GetMarketOrderbook.
 type GetMarketOrderbookParams struct {
-	// Depth Depth of the orderbook to retrieve (0 or negative means all levels, 1-100 for specific depth)
+	// Depth Number of price levels to return per side, counted from the best bid. Omit it or pass 0 for all levels; pass 1-100 for a specific depth. Values below 0 or above 100 are rejected with 400.
 	Depth *int `form:"depth,omitempty" json:"depth,omitempty" validate:"omitempty,min=0,max=100"`
 }
 
@@ -6505,7 +7095,7 @@ type GetOrderQueuePositionsParams struct {
 
 // GetPositionsParams defines parameters for GetPositions.
 type GetPositionsParams struct {
-	// Cursor The Cursor represents a pointer to the next page of records in the pagination. Use the value returned from the previous response to get the next page.
+	// Cursor Cursor returned by the previous page. Keep filters and sort_by unchanged while paginating.
 	Cursor *PositionsCursorQuery `form:"cursor,omitempty" json:"cursor,omitempty"`
 
 	// Limit Parameter to specify the number of results per page. Defaults to 100.
@@ -6516,6 +7106,9 @@ type GetPositionsParams struct {
 
 	// SettlementStatus Filters settlement state, not trading status: `unsettled` (default), `settled` (not yet archived), or `all` (both live states).
 	SettlementStatus *GetPositionsParamsSettlementStatus `form:"settlement_status,omitempty" json:"settlement_status,omitempty"`
+
+	// SortBy Order event groups by ticker ascending. Omit to use the default ordering.
+	SortBy *GetPositionsParamsSortBy `form:"sort_by,omitempty" json:"sort_by,omitempty"`
 
 	// Ticker Filter by market ticker
 	Ticker TickerQuery `form:"ticker,omitempty" json:"ticker,omitempty"`
@@ -6532,6 +7125,9 @@ type GetPositionsParams struct {
 
 // GetPositionsParamsSettlementStatus defines parameters for GetPositions.
 type GetPositionsParamsSettlementStatus string
+
+// GetPositionsParamsSortBy defines parameters for GetPositions.
+type GetPositionsParamsSortBy string
 
 // DeleteEventContractExitTriggerParams defines parameters for DeleteEventContractExitTrigger.
 type DeleteEventContractExitTriggerParams struct {
@@ -6747,6 +7343,9 @@ type AcceptRFQQuoteJSONRequestBody = AcceptQuoteRequest
 // ConfirmRFQQuoteJSONRequestBody defines body for ConfirmRFQQuote for application/json ContentType.
 type ConfirmRFQQuoteJSONRequestBody = EmptyResponse
 
+// CreateConcertCancellationMarketJSONRequestBody defines body for CreateConcertCancellationMarket for application/json ContentType.
+type CreateConcertCancellationMarketJSONRequestBody = CreateConcertCancellationMarketRequest
+
 // CreateFCMPositionTransferJSONRequestBody defines body for CreateFCMPositionTransfer for application/json ContentType.
 type CreateFCMPositionTransferJSONRequestBody = CreateFCMPositionTransferRequest
 
@@ -6758,6 +7357,9 @@ type UpdateFCMSubtraderBlockedCategoriesJSONRequestBody = UpdateFCMSubtraderBloc
 
 // UpdateFCMEventContractDailyCapJSONRequestBody defines body for UpdateFCMEventContractDailyCap for application/json ContentType.
 type UpdateFCMEventContractDailyCapJSONRequestBody = UpdateFCMEventContractDailyCapRequest
+
+// CreateFlightDisruptionMarketJSONRequestBody defines body for CreateFlightDisruptionMarket for application/json ContentType.
+type CreateFlightDisruptionMarketJSONRequestBody = CreateFlightDisruptionMarketRequest
 
 // CreateMarketInMultivariateEventCollectionJSONRequestBody defines body for CreateMarketInMultivariateEventCollection for application/json ContentType.
 type CreateMarketInMultivariateEventCollectionJSONRequestBody = CreateMarketInMultivariateEventCollectionRequest
@@ -6924,7 +7526,7 @@ type ClientInterface interface {
 
 	// CreateApiKeyWithBody Create API Key
 	//
-	//  Endpoint for creating a new API key with a user-provided public key.  This endpoint allows users with Premier or Market Maker API usage levels to create API keys by providing their own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys.
+	//  Endpoint for creating a new API key with a user-provided public key.  This endpoint is available on every API usage tier. Provide your own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6933,7 +7535,7 @@ type ClientInterface interface {
 
 	// CreateApiKey Create API Key
 	//
-	//  Endpoint for creating a new API key with a user-provided public key.  This endpoint allows users with Premier or Market Maker API usage levels to create API keys by providing their own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys.
+	//  Endpoint for creating a new API key with a user-provided public key.  This endpoint is available on every API usage tier. Provide your own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6942,7 +7544,7 @@ type ClientInterface interface {
 
 	// GenerateApiKeyWithBody Generate API Key
 	//
-	//  Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again.
+	//  Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -6951,7 +7553,7 @@ type ClientInterface interface {
 
 	// GenerateApiKey Generate API Key
 	//
-	//  Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again.
+	//  Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -7319,6 +7921,159 @@ type ClientInterface interface {
 	// Corresponds with PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/confirm (the `ConfirmRFQQuote` operationId).
 	ConfirmRFQQuote(ctx context.Context, rfqId RfqIdPath, quoteId QuoteIdPath, body ConfirmRFQQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateConcertCancellationMarketWithBody Create Concert Cancellation Market
+	//
+	// Returns the on-request market on whether a concert is called off,
+	// creating it if it doesn't exist yet. A market is defined by the show
+	// (`jambase_event_id`), the date it is scheduled for and the `cover`:
+	// `postponed`, `cancelled` or `either`. The same request always returns
+	// the same market, so call this before sending an RFQ for a market you
+	// haven't seen. `created` tells you whether the market is new.
+	//
+	// Take `jambase_event_id` and `scheduled_date` from
+	// `GET /concert_cancellation_markets/concerts` or
+	// `GET /concert_cancellation_markets/concerts/search`. A new market is
+	// created from the show's listing as it stands now, so the request is
+	// refused when the show has moved to another date or has already been
+	// canceled or postponed.
+	//
+	// A new market's show must start more than 7 days from now and within
+	// the `max_days_ahead` that
+	// `GET /concert_cancellation_markets/availability` reports. An existing
+	// market is returned only while its show is more than 7 days away too:
+	// inside that, counted to the market's close time or the show's start as
+	// now listed, whichever is earlier, the request returns 409. Further
+	// out, an existing market is usually returned even when new markets are
+	// no longer offered; where creation or its cover is switched off, the
+	// request returns 409. A 409 here changes nothing about the market
+	// itself, which stays open until its close time and is still returned by
+	// `GET /markets/{ticker}`.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover, a `jambase_event_id` that isn't `jambase:<id>`, a `scheduled_date` that isn't YYYY-MM-DD, or a show scheduled further ahead than `max_days_ahead`. |
+	// | 404 | `not_found` | The listing source has no show with that id. |
+	// | 409 | `concert_cancellation_market_unavailable` | The request is valid but the market isn't offered: concert markets or the cover are switched off, the show is now listed on another date, has already been canceled or postponed, starts in 7 days or less (whether or not its market already exists), isn't a concert, or its market has closed. |
+	// | 429 | `concert_cancellation_market_limit_exceeded` | A daily limit on new concert markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /concert_cancellation_markets (the `CreateConcertCancellationMarket` operationId).
+	CreateConcertCancellationMarketWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateConcertCancellationMarket Create Concert Cancellation Market
+	//
+	// Returns the on-request market on whether a concert is called off,
+	// creating it if it doesn't exist yet. A market is defined by the show
+	// (`jambase_event_id`), the date it is scheduled for and the `cover`:
+	// `postponed`, `cancelled` or `either`. The same request always returns
+	// the same market, so call this before sending an RFQ for a market you
+	// haven't seen. `created` tells you whether the market is new.
+	//
+	// Take `jambase_event_id` and `scheduled_date` from
+	// `GET /concert_cancellation_markets/concerts` or
+	// `GET /concert_cancellation_markets/concerts/search`. A new market is
+	// created from the show's listing as it stands now, so the request is
+	// refused when the show has moved to another date or has already been
+	// canceled or postponed.
+	//
+	// A new market's show must start more than 7 days from now and within
+	// the `max_days_ahead` that
+	// `GET /concert_cancellation_markets/availability` reports. An existing
+	// market is returned only while its show is more than 7 days away too:
+	// inside that, counted to the market's close time or the show's start as
+	// now listed, whichever is earlier, the request returns 409. Further
+	// out, an existing market is usually returned even when new markets are
+	// no longer offered; where creation or its cover is switched off, the
+	// request returns 409. A 409 here changes nothing about the market
+	// itself, which stays open until its close time and is still returned by
+	// `GET /markets/{ticker}`.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover, a `jambase_event_id` that isn't `jambase:<id>`, a `scheduled_date` that isn't YYYY-MM-DD, or a show scheduled further ahead than `max_days_ahead`. |
+	// | 404 | `not_found` | The listing source has no show with that id. |
+	// | 409 | `concert_cancellation_market_unavailable` | The request is valid but the market isn't offered: concert markets or the cover are switched off, the show is now listed on another date, has already been canceled or postponed, starts in 7 days or less (whether or not its market already exists), isn't a concert, or its market has closed. |
+	// | 429 | `concert_cancellation_market_limit_exceeded` | A daily limit on new concert markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /concert_cancellation_markets (the `CreateConcertCancellationMarket` operationId).
+	CreateConcertCancellationMarket(ctx context.Context, body CreateConcertCancellationMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConcertCancellationAvailability Get Concert Cancellation Market Availability
+	//
+	// Returns which on-request concert markets are offered: whether they
+	// are listed, the covers offered, how far ahead a show may be
+	// scheduled, and the metros whose concerts
+	// `GET /concert_cancellation_markets/concerts` lists. A cover missing
+	// from `covers` can't be created. Where concerts are listed before
+	// markets are offered, `enabled` is true and every create request
+	// returns 409. Existing markets are unaffected.
+	//
+	// Each metro carries the number of upcoming shows listed for it. Pass
+	// `date_from` and `date_to` to count only the shows a listing with the
+	// same dates would return.
+	//
+	// Corresponds with GET /concert_cancellation_markets/availability (the `GetConcertCancellationAvailability` operationId).
+	GetConcertCancellationAvailability(ctx context.Context, params *GetConcertCancellationAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConcerts Get Concerts
+	//
+	// Lists a metro's upcoming concerts that a cancellation market can still
+	// be created for, soonest first, 50 to a page and at most 20 pages.
+	// Narrow the dates to reach later shows. Each concert carries the
+	// `jambase_event_id` and `scheduled_date` that
+	// `POST /concert_cancellation_markets` takes, and the event and market
+	// tickers it has or would get for each offered cover. A ticker listed
+	// here names a market that may not exist yet: create it before sending
+	// an RFQ.
+	//
+	// Dates and times are local to the venue.
+	//
+	// Corresponds with GET /concert_cancellation_markets/concerts (the `GetConcerts` operationId).
+	GetConcerts(ctx context.Context, params *GetConcertsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SearchConcerts Search Concerts
+	//
+	// Lists upcoming concerts matching a name, across the metros that
+	// availability lists, that a
+	// cancellation market can still be created for: up to 50, in the same
+	// shape as `GET /concert_cancellation_markets/concerts`. The name is
+	// matched against the acts on the bill, and may also match venues and
+	// cities.
+	//
+	// Searches can be limited across all users. When the limit is reached
+	// the request returns 429 `concert_search_limit_exceeded`; browse by
+	// metro instead, or retry later.
+	//
+	// Corresponds with GET /concert_cancellation_markets/concerts/search (the `SearchConcerts` operationId).
+	SearchConcerts(ctx context.Context, params *SearchConcertsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetEvents Get Events
 	//
 	// Get all events. This endpoint excludes multivariate events.
@@ -7367,7 +8122,11 @@ type ClientInterface interface {
 
 	// GetExchangeStatus Get Exchange Status
 	//
-	//  Endpoint for getting the exchange status.
+	// Endpoint for getting the exchange status.
+	//
+	// The top-level fields describe the default exchange index (0). Read the flags only from a 200 response. When the status of the default index cannot be read, the response is a 500, 503 or 504; its body can be an `ExchangeStatus` with `exchange_active` and `trading_active` set to `false`, or an error object, and in neither case does it mean the exchange is paused.
+	//
+	// In `exchange_index_statuses` on a 200 response, an index other than 0 whose status request failed or timed out is reported with all of its flags `false`. Read the status again before treating a single `false` reading for one index as a pause.
 	//
 	// Corresponds with GET /exchange/status (the `GetExchangeStatus` operationId).
 	GetExchangeStatus(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7583,7 +8342,7 @@ type ClientInterface interface {
 	// Returns the event-contract daily premium cap configured for an FCM member's subtrader,
 	// together with its live utilization. Executed utilization is the net premium deployed by
 	// fills today (sells and settlements credit back); resting and pending utilization reserve
-	// open and in-flight orders at their full worst-case cost plus fees. Executed utilization
+	// open orders and orders still being placed at their full worst-case cost plus fees. Executed utilization
 	// resets at midnight New York time on the returned cap date; resting and pending
 	// reservations persist for as long as their orders remain open, including across the reset.
 	// Returns 404 when the subtrader has no cap configured — in that state every order placed
@@ -7620,6 +8379,146 @@ type ClientInterface interface {
 	//
 	// Corresponds with PUT /fcm/subtraders/event_contract_daily_cap (the `UpdateFCMEventContractDailyCap` operationId).
 	UpdateFCMEventContractDailyCap(ctx context.Context, body UpdateFCMEventContractDailyCapJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateFlightDisruptionMarketWithBody Create Flight Disruption Market
+	//
+	// Returns the on-request market on whether a flight is canceled or
+	// delayed, creating it if it doesn't exist yet. A market is defined by
+	// the flight (`carrier`, `flight_number`, `departure_airport`,
+	// `arrival_airport` and `scheduled_date`), the `cover` (`cancelled`,
+	// `delayed` or `either`) and, for `delayed` and `either`, the
+	// `delay_basis` and `delay_minutes`. The same request always returns the
+	// same market, so call this before sending an RFQ for a market you
+	// haven't seen. `created` tells you whether the market is new.
+	//
+	// Take the flight's five fields from
+	// `GET /flight_disruption_markets/flights`. A flight is one nonstop leg:
+	// a flight number that flies several legs in a day is several flights.
+	// `carrier` and `flight_number` are the operating carrier's, which the
+	// lookup returns even when you searched by a codeshare number.
+	//
+	// `delay_minutes` is a multiple of `delay_step_minutes`, up to
+	// `max_delay_minutes`, both from
+	// `GET /flight_disruption_markets/availability`. A `cancelled` market
+	// takes neither `delay_basis` nor `delay_minutes`.
+	//
+	// An existing market is returned until it closes, even when new markets
+	// are no longer offered. A new market's flight must be scheduled to
+	// leave more than `min_lead_minutes` from now and within
+	// `max_days_ahead` days, from an airport in one of
+	// `departure_countries`.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover or delay basis, a carrier, flight number or airport code of the wrong form, a `scheduled_date` that isn't YYYY-MM-DD, a `delayed` or `either` request without `delay_basis` and `delay_minutes`, a `cancelled` request with either of them, a `delay_minutes` that isn't a multiple of `delay_step_minutes` or is above `max_delay_minutes`, or a flight scheduled further ahead than `max_days_ahead`. |
+	// | 404 | `not_found` | No such flight is scheduled on that date. |
+	// | 409 | `flight_disruption_market_unavailable` | The request is valid but the market isn't offered: flight markets or the cover are switched off, the flight leaves too soon, departs from a country that isn't offered, or its market has closed. |
+	// | 429 | `flight_disruption_market_limit_exceeded` | A daily limit on new flight markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /flight_disruption_markets (the `CreateFlightDisruptionMarket` operationId).
+	CreateFlightDisruptionMarketWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateFlightDisruptionMarket Create Flight Disruption Market
+	//
+	// Returns the on-request market on whether a flight is canceled or
+	// delayed, creating it if it doesn't exist yet. A market is defined by
+	// the flight (`carrier`, `flight_number`, `departure_airport`,
+	// `arrival_airport` and `scheduled_date`), the `cover` (`cancelled`,
+	// `delayed` or `either`) and, for `delayed` and `either`, the
+	// `delay_basis` and `delay_minutes`. The same request always returns the
+	// same market, so call this before sending an RFQ for a market you
+	// haven't seen. `created` tells you whether the market is new.
+	//
+	// Take the flight's five fields from
+	// `GET /flight_disruption_markets/flights`. A flight is one nonstop leg:
+	// a flight number that flies several legs in a day is several flights.
+	// `carrier` and `flight_number` are the operating carrier's, which the
+	// lookup returns even when you searched by a codeshare number.
+	//
+	// `delay_minutes` is a multiple of `delay_step_minutes`, up to
+	// `max_delay_minutes`, both from
+	// `GET /flight_disruption_markets/availability`. A `cancelled` market
+	// takes neither `delay_basis` nor `delay_minutes`.
+	//
+	// An existing market is returned until it closes, even when new markets
+	// are no longer offered. A new market's flight must be scheduled to
+	// leave more than `min_lead_minutes` from now and within
+	// `max_days_ahead` days, from an airport in one of
+	// `departure_countries`.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover or delay basis, a carrier, flight number or airport code of the wrong form, a `scheduled_date` that isn't YYYY-MM-DD, a `delayed` or `either` request without `delay_basis` and `delay_minutes`, a `cancelled` request with either of them, a `delay_minutes` that isn't a multiple of `delay_step_minutes` or is above `max_delay_minutes`, or a flight scheduled further ahead than `max_days_ahead`. |
+	// | 404 | `not_found` | No such flight is scheduled on that date. |
+	// | 409 | `flight_disruption_market_unavailable` | The request is valid but the market isn't offered: flight markets or the cover are switched off, the flight leaves too soon, departs from a country that isn't offered, or its market has closed. |
+	// | 429 | `flight_disruption_market_limit_exceeded` | A daily limit on new flight markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /flight_disruption_markets (the `CreateFlightDisruptionMarket` operationId).
+	CreateFlightDisruptionMarket(ctx context.Context, body CreateFlightDisruptionMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetFlightDisruptionAvailability Get Flight Disruption Market Availability
+	//
+	// Returns which on-request flight markets can be created: whether
+	// creation is on, the covers and delay bases offered, the delay
+	// thresholds a market may use, how soon and how far ahead a flight may
+	// be scheduled, and the countries it may depart from. A cover missing
+	// from `covers` can't be created. Existing markets are unaffected.
+	//
+	// Corresponds with GET /flight_disruption_markets/availability (the `GetFlightDisruptionAvailability` operationId).
+	GetFlightDisruptionAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetFlights Get Flights
+	//
+	// Looks up a flight number on a departure date and returns the flights
+	// a disruption market can still be created for, in departure order. A
+	// flight is one nonstop leg, so a number that flies several legs that
+	// day returns several flights, and one that flies none returns an empty
+	// list.
+	//
+	// `carrier` and `flight_number` may be the operating carrier's or a
+	// codeshare number. Each flight returned is the operating flight, with
+	// the number you asked for in `requested_carrier` and
+	// `requested_flight_number` when it differs.
+	//
+	// Each flight carries the five fields
+	// `POST /flight_disruption_markets` takes, and the series and event
+	// tickers it has or would get for each offered cover. A ticker listed
+	// here names an event or market that may not exist yet: create the
+	// market before sending an RFQ.
+	//
+	// Lookups can be limited across all users. When the limit is reached
+	// the request returns 429 `flight_lookup_limit_exceeded`; retry later.
+	//
+	// Corresponds with GET /flight_disruption_markets/flights (the `GetFlights` operationId).
+	GetFlights(ctx context.Context, params *GetFlightsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetHistoricalCutoff Get Historical Cutoff Timestamps
 	//
@@ -7659,7 +8558,7 @@ type ClientInterface interface {
 
 	// GetMarketCandlesticksHistorical Get Historical Market Candlesticks
 	//
-	//  Endpoint for fetching historical candlestick data for markets that have been archived from the live data set. Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day).
+	//  Endpoint for fetching historical candlestick data for markets that have been archived from the live data set. Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day). One request can span at most 5,000 periods: if the minutes between `start_ts` and `end_ts` divided by `period_interval` exceed 5,000, the request is rejected with 400 `bad_request`. Split a longer range into several requests.
 	//
 	// Corresponds with GET /historical/markets/{ticker}/candlesticks (the `GetMarketCandlesticksHistorical` operationId).
 	GetMarketCandlesticksHistorical(ctx context.Context, ticker string, params *GetMarketCandlesticksHistoricalParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7764,6 +8663,14 @@ type ClientInterface interface {
 	//
 	//  Markets that settled before the historical cutoff are only available via `GET /historical/markets`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
 	//
+	//  Paging and ordering:
+	//  - When `event_ticker` or `tickers` is the only filter (no `status`, `series_ticker`, timestamp filter, `mve_filter` or `cursor`), every matching market is returned in one response, in no guaranteed order. `limit` is not applied and the returned `cursor` is empty.
+	//  - Otherwise results are sorted by creation time, newest first, with these exceptions. With `min_updated_ts` or `max_updated_ts` they are sorted by last update time, oldest first. When neither `event_ticker` nor `tickers` is supplied, `status=closed`, `min_close_ts` or `max_close_ts` sorts by close time, latest first, and `min_settled_ts` or `max_settled_ts` sorts by settlement time, latest first. A request that supplies `event_ticker` or `tickers` together with another filter is sorted by creation time, even when that filter is `status=closed` or a close-time or settlement-time filter. The unpaged case above, where `event_ticker` or `tickers` is the only filter, has no guaranteed order.
+	//  - A market whose close time changes while you page through a listing sorted by close time can be skipped or returned twice. Deduplicate by `ticker`.
+	//  - A `cursor` that cannot be decoded is ignored and the first page is returned, with no error. Pass the cursor exactly as it was returned, and stop when the returned `cursor` is empty.
+	//
+	//  Responses are cached for a short time, so prices, sizes and `status` can lag the exchange by several seconds, and filtered listings can lag longer than a read of a single market. Use the WebSocket API when you need current state.
+	//
 	// Corresponds with GET /markets (the `GetMarkets` operationId).
 	GetMarkets(ctx context.Context, params *GetMarketsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -7772,7 +8679,7 @@ type ClientInterface interface {
 	// Endpoint for retrieving candlestick data for multiple markets.
 	//
 	// - Accepts up to 100 market tickers per request
-	// - Returns up to 10,000 candlesticks total across all markets
+	// - The request may cover at most 10,000 candlestick periods in total: the minutes between `start_ts` and `end_ts`, divided by `period_interval`, multiplied by the number of tickers. A larger request is rejected with 400 `bad_request` (the `details` field gives the requested and maximum counts) even if fewer candlesticks exist; the response is never truncated
 	// - Returns candlesticks grouped by market_id
 	// - Optionally includes a synthetic initial candlestick for price continuity (see `include_latest_before_start` parameter)
 	//
@@ -7781,7 +8688,7 @@ type ClientInterface interface {
 
 	// GetMarketOrderbooks Get Multiple Market Orderbooks
 	//
-	// Endpoint for getting the current order books for multiple markets in a single request. The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes. Each side shows price levels with their corresponding quantities and order counts, organized from best to worst prices. Returns one orderbook per requested market ticker.
+	// Endpoint for getting the current order books for multiple markets in a single request. The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes. Each side lists price levels as [price, quantity] pairs sorted by price in ascending order, so the best (highest) bid is the last element. Order counts are not returned. Returns one orderbook per requested market ticker, in request order. A ticker that has no order book, including a ticker that does not match any market, is returned with empty arrays.
 	//
 	// Corresponds with GET /markets/orderbooks (the `GetMarketOrderbooks` operationId).
 	GetMarketOrderbooks(ctx context.Context, params *GetMarketOrderbooksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7790,19 +8697,21 @@ type ClientInterface interface {
 	//
 	// Endpoint for getting all trades for all markets. A trade represents a completed transaction between two users on a specific market. Each trade includes the market ticker, price, quantity, and timestamp information. Block trades are included in the response by default and identified by the `is_block_trade` field; use the `is_block_trade` query parameter to filter by block / non-block. This endpoint returns a paginated response. Use the 'limit' parameter to control page size (1-1000, defaults to 100). The response includes a 'cursor' field - pass this value in the 'cursor' parameter of your next request to get the next page. An empty cursor indicates no more pages are available.
 	//
+	// A `ticker` that does not match any market returns 200 with an empty `trades` list, not 404. A `cursor` that cannot be decoded is ignored and the first page is returned, so pass the cursor exactly as it was returned. `min_ts` and `max_ts` must be in seconds; millisecond values are rejected with 400 `bad_request`.
+	//
 	// Corresponds with GET /markets/trades (the `GetTrades` operationId).
 	GetTrades(ctx context.Context, params *GetTradesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetMarket Get Market
 	//
-	//  Endpoint for getting data about a specific market by its ticker. A market represents a specific binary outcome within an event that users can trade on (e.g., "Will candidate X win?"). Markets have yes/no positions, current prices, volume, and settlement rules.
+	//  Endpoint for getting data about a specific market by its ticker. A market represents a specific binary outcome within an event that users can trade on (e.g., "Will candidate X win?"). Markets have yes/no positions, current prices, volume, and settlement rules. The response is cached for a short time, so prices, sizes and `status` can lag the exchange by a few seconds; use the WebSocket API when you need current state.
 	//
 	// Corresponds with GET /markets/{ticker} (the `GetMarket` operationId).
 	GetMarket(ctx context.Context, ticker TickerPath, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetMarketOrderbook Get Market Orderbook
 	//
-	//  Endpoint for getting the current order book for a specific market.  The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes.  Each side shows price levels with their corresponding quantities and order counts, organized from best to worst prices.
+	//  Endpoint for getting the current order book for a specific market.  The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes.  Each side lists price levels as [price, quantity] pairs sorted by price in ascending order, so the best (highest) bid is the last element. Order counts are not returned. When `depth` is set, the best `depth` levels of each side are returned. A ticker that has no order book, including a ticker that does not match any market, returns 200 with empty arrays rather than 404.
 	//
 	// Corresponds with GET /markets/{ticker}/orderbook (the `GetMarketOrderbook` operationId).
 	GetMarketOrderbook(ctx context.Context, ticker TickerPath, params *GetMarketOrderbookParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7837,7 +8746,7 @@ type ClientInterface interface {
 
 	// CreateMarketInMultivariateEventCollectionWithBody Create Market In Multivariate Event Collection
 	//
-	// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before trading or looking up a market. Users are limited to 5000 creations per week.
+	// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before a combo market can be quoted or traded. If the same legs were created before, it returns the existing market, which does not count toward the limit; the legs are still validated again, so a selection that worked before can later be rejected. On the production API, the standard limit is 5000 new markets per user per rolling 7 days, counted both across all collections and within each collection; over either limit the endpoint returns 429 `too_many_requests` until earlier creations pass the 7-day mark. Ordinary request-rate limiting returns the same status and code. A leg selection that cannot be combined returns 400 with `code` `conflicting_leg_outcomes`, `duplicated_legs` or `invalid_market_combination`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -7846,7 +8755,7 @@ type ClientInterface interface {
 
 	// CreateMarketInMultivariateEventCollection Create Market In Multivariate Event Collection
 	//
-	// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before trading or looking up a market. Users are limited to 5000 creations per week.
+	// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before a combo market can be quoted or traded. If the same legs were created before, it returns the existing market, which does not count toward the limit; the legs are still validated again, so a selection that worked before can later be rejected. On the production API, the standard limit is 5000 new markets per user per rolling 7 days, counted both across all collections and within each collection; over either limit the endpoint returns 429 `too_many_requests` until earlier creations pass the 7-day mark. Ordinary request-rate limiting returns the same status and code. A leg selection that cannot be combined returns 400 with `code` `conflicting_leg_outcomes`, `duplicated_legs` or `invalid_market_combination`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -7888,7 +8797,7 @@ type ClientInterface interface {
 
 	// CreateOrderV2WithBody Create Order (V2)
 	//
-	// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` endpoint will be deprecated no earlier than May 6, 2026 — clients should migrate to this path.
+	// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` write endpoints (create, cancel, amend, decrease and their batch forms) have been removed and now return `410 Gone` with code `deprecated_v1_order_endpoint`; use this path instead. A `201` means the order was accepted, not that it is resting: check `remaining_count`. See [Order Errors](/getting_started/order_errors) for the error codes this endpoint returns.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -7897,7 +8806,7 @@ type ClientInterface interface {
 
 	// CreateOrderV2 Create Order (V2)
 	//
-	// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` endpoint will be deprecated no earlier than May 6, 2026 — clients should migrate to this path.
+	// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` write endpoints (create, cancel, amend, decrease and their batch forms) have been removed and now return `410 Gone` with code `deprecated_v1_order_endpoint`; use this path instead. A `201` means the order was accepted, not that it is resting: check `remaining_count`. See [Order Errors](/getting_started/order_errors) for the error codes this endpoint returns.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -7906,7 +8815,7 @@ type ClientInterface interface {
 
 	// BatchCancelOrdersV2WithBody Batch Cancel Orders (V2)
 	//
-	// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+	// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). The batch is not atomic: the `200` response carries one entry per order, and a cancellation that failed has an `error` object and `reduced_by` of `0.00`. An entry error with a timeout or unavailable code does not prove the order was not cancelled. Some checks reject the whole batch before any cancellation is sent. See [Order Errors](/getting_started/order_errors#batch-requests).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -7915,7 +8824,7 @@ type ClientInterface interface {
 
 	// BatchCancelOrdersV2 Batch Cancel Orders (V2)
 	//
-	// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+	// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). The batch is not atomic: the `200` response carries one entry per order, and a cancellation that failed has an `error` object and `reduced_by` of `0.00`. An entry error with a timeout or unavailable code does not prove the order was not cancelled. Some checks reject the whole batch before any cancellation is sent. See [Order Errors](/getting_started/order_errors#batch-requests).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -7924,7 +8833,7 @@ type ClientInterface interface {
 
 	// BatchCreateOrdersV2WithBody Batch Create Orders (V2)
 	//
-	// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+	// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). Orders are processed one at a time in request order and the batch is not atomic: a `201` response carries one entry per order, and an order that failed has an `error` object (`code`, `message`, `details`) in place of `order_id`. An entry error with a timeout or unavailable code does not prove the order was not placed. Some checks reject the whole batch before any order is sent. See [Order Errors](/getting_started/order_errors#batch-requests) for those cases and for the error body.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -7933,7 +8842,7 @@ type ClientInterface interface {
 
 	// BatchCreateOrdersV2 Batch Create Orders (V2)
 	//
-	// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+	// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). Orders are processed one at a time in request order and the batch is not atomic: a `201` response carries one entry per order, and an order that failed has an `error` object (`code`, `message`, `details`) in place of `order_id`. An entry error with a timeout or unavailable code does not prove the order was not placed. Some checks reject the whole batch before any order is sent. See [Order Errors](/getting_started/order_errors#batch-requests) for those cases and for the error body.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -7960,14 +8869,14 @@ type ClientInterface interface {
 
 	// CancelOrderV2 Cancel Order (V2)
 	//
-	// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object.
+	// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object. A cancellation sent to an exchange shard other than the one the order rests on returns `404`, even though the order is still resting; see [Order Errors](/getting_started/order_errors#requests-sent-to-the-wrong-exchange-shard).
 	//
 	// Corresponds with DELETE /portfolio/events/orders/{order_id} (the `CancelOrderV2` operationId).
 	CancelOrderV2(ctx context.Context, orderId OrderIdPath, params *CancelOrderV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AmendOrderV2WithBody Amend Order (V2)
 	//
-	// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. This behavior matches the v1 amend endpoints; only the request/response shape differs.
+	// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. An amend that changes nothing returns `400` with code `AMEND_ORDER_NO_OP`. See [Order Errors](/getting_started/order_errors).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -7976,7 +8885,7 @@ type ClientInterface interface {
 
 	// AmendOrderV2 Amend Order (V2)
 	//
-	// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. This behavior matches the v1 amend endpoints; only the request/response shape differs.
+	// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. An amend that changes nothing returns `400` with code `AMEND_ORDER_NO_OP`. See [Order Errors](/getting_started/order_errors).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -8006,6 +8915,7 @@ type ClientInterface interface {
 	// Endpoint for getting all fills for the member. A fill is when a trade you have is matched.
 	// Registered partners may also use a user OAuth access token with the explicitly granted read::compliance_partner scope.
 	// Fills that occurred before the historical cutoff are only available via `GET /historical/fills`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
+	// Available to direct member accounts. FCM member accounts receive 403 with code `permission_denied` here and use `GET /fcm/fills` instead.
 	//
 	// Corresponds with GET /portfolio/fills (the `GetFills` operationId).
 	GetFills(ctx context.Context, params *GetFillsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -8019,6 +8929,10 @@ type ClientInterface interface {
 	// When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 	//
 	// Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
+	//
+	// Naming a numbered subaccount requires the Advanced API tier or above; on the Basic tier the request returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`.
+	//
+	// **Rate limit:** this endpoint has its own bucket, separate from the Read and Write budgets and the same on every tier. It refills at 600 tokens per minute and holds 600 tokens; at the default cost of 10 tokens that is 60 transfers per minute. A request over the limit returns 429.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -8034,6 +8948,10 @@ type ClientInterface interface {
 	// When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 	//
 	// Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
+	//
+	// Naming a numbered subaccount requires the Advanced API tier or above; on the Basic tier the request returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`.
+	//
+	// **Rate limit:** this endpoint has its own bucket, separate from the Read and Write budgets and the same on every tier. It refills at 600 tokens per minute and holds 600 tokens; at the default cost of 10 tokens that is 60 transfers per minute. A request over the limit returns 429.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -8164,7 +9082,7 @@ type ClientInterface interface {
 
 	// GetOrder Get Order
 	//
-	//  Endpoint for getting a single order.
+	//  Endpoint for getting a single order. Order reads are updated asynchronously after the matching engine processes a write, so an order created, amended or cancelled moments ago can briefly return `404 not_found` or its previous state. The response of the write itself is the only immediate result; the `user_orders` WebSocket channel is also asynchronous and is the stream to wait on for updates.
 	//
 	// Corresponds with GET /portfolio/orders/{order_id} (the `GetOrder` operationId).
 	GetOrder(ctx context.Context, orderId OrderIdPath, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -8225,13 +9143,14 @@ type ClientInterface interface {
 	//
 	// Returns settlement records still in the live data set. Archived positions are available via `GET /historical/positions`, which has different fields; this endpoint does not return archived settlement records.
 	// Resource-bound MCP OAuth tokens may read the owner's settlements with read::mcp_portfolio.
+	// Available to direct member accounts. FCM member accounts receive 403 with code `permission_denied`.
 	//
 	// Corresponds with GET /portfolio/settlements (the `GetSettlements` operationId).
 	GetSettlements(ctx context.Context, params *GetSettlementsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSubaccountWithBody Create Subaccount
 	//
-	// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
+	// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above; on the Basic tier it returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`. The demo environment does not enforce the tier requirement. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -8240,7 +9159,7 @@ type ClientInterface interface {
 
 	// CreateSubaccount Create Subaccount
 	//
-	// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
+	// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above; on the Basic tier it returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`. The demo environment does not enforce the tier requirement. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -8401,6 +9320,10 @@ type ClientInterface interface {
 	// Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day).
 	// Candlesticks for markets that settled before the historical cutoff are only available via `GET /historical/markets/{ticker}/candlesticks`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
 	//
+	// One request can span at most 5,000 periods. If the minutes between `start_ts` and `end_ts` divided by `period_interval` exceed 5,000, the request is rejected with 400 `bad_request` and the `details` field gives the requested and maximum counts. For example, 1-minute candlesticks are limited to about 3.5 days per request; split a longer range into several requests. `start_ts` and `end_ts` must be in seconds; millisecond values are rejected with 400 `bad_request`.
+	//
+	// The most recent candlesticks can be a few seconds behind the latest trades and quotes.
+	//
 	// Corresponds with GET /series/{series_ticker}/markets/{ticker}/candlesticks (the `GetMarketCandlesticks` operationId).
 	GetMarketCandlesticks(ctx context.Context, seriesTicker string, ticker string, params *GetMarketCandlesticksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -8429,13 +9352,38 @@ type ClientInterface interface {
 	// are switched off entirely, the request can be refused whether or not
 	// the market exists.
 	//
-	// The location snaps to the center of the NOAA MRMS grid cell containing
-	// it; the response carries the snapped coordinates. Markets are only
-	// offered where `GET /weather_point_markets/availability` says so, and
-	// not over open water.
+	// The market's location is the requested coordinates rounded to three
+	// decimal places; requests that agree to three decimal places share a
+	// market. A rounded location exactly on the boundary between two NOAA
+	// MRMS grid cells is moved 0.001° north or east, into one of them. The
+	// response carries the market's coordinates. Markets are only offered
+	// where `GET /weather_point_markets/availability` says so, and only
+	// where the market's grid cell touches land in a US state or territory:
+	// a cell entirely over open water or outside the US is refused, while
+	// any point in a coastal cell that touches land is accepted.
 	//
-	// The window is whole local hours on one calendar day. A new market's
-	// window must start at least 15 minutes from now and within 365 days.
+	// The window is whole local hours, on one calendar day or, with
+	// `end_date` set to the day after `date`, from one day into the next.
+	// A window that crosses midnight is at most 24 hours long, and only
+	// offered where `GET /weather_point_markets/availability` returns
+	// `max_window_days: 2`. A new market's window must start at least 6
+	// hours from now (15 minutes on demo) and within 365 days.
+	//
+	// `timezone` only says which span of time `date` and the hours mean. The
+	// market is described in the IANA time zone of its location, which
+	// Kalshi determines from the coordinates: its title and `rules_primary`
+	// give the window there, with the weekday and the zone abbreviation in
+	// force (`on Thu, Nov 19, 2026, 8pm–12am PST`), whatever zone the
+	// request used. The limits on a window's dates go by the location's
+	// zone as well: where `max_window_days` is 1, a new market whose window
+	// crosses midnight at the location is refused even when the request
+	// names one date in another zone, and one within one date at the
+	// location is accepted even with `end_date`; and a window that crosses
+	// midnight at the location is at most 24 hours long there. A market
+	// that already exists is returned either way. An event created before
+	// this applied keeps its description and its dates, in the time zone of
+	// its first request, and so do thresholds added to it later: for those,
+	// the `max_window_days` limit goes by the dates the event stores.
 	//
 	// A market is traded through RFQs: pass the returned `market_ticker` to
 	// `POST /communications/rfqs`. These markets are in series starting with
@@ -8450,9 +9398,9 @@ type ClientInterface interface {
 	// | --- | --- | --- |
 	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
 	// | 400 | `missing_parameters` | A required field is missing or empty. |
-	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
-	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
-	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour` on one day, an `end_date` other than `date` or the day after it, a window across midnight, in `timezone` or at the location, longer than 24 hours, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats in `timezone`. |
+	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the market's grid cell is entirely over open water or outside US land, the window starts in less than 6 hours (15 minutes on demo), the market's window crosses midnight in the location's time zone where `max_window_days` is 1, or the location's time zone can't be determined. |
+	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets for your account, the daily limit across all users, or 40 markets for one variable, location and window. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
 	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
 	//
 	// Takes any type of body and a specified content type.
@@ -8471,13 +9419,38 @@ type ClientInterface interface {
 	// are switched off entirely, the request can be refused whether or not
 	// the market exists.
 	//
-	// The location snaps to the center of the NOAA MRMS grid cell containing
-	// it; the response carries the snapped coordinates. Markets are only
-	// offered where `GET /weather_point_markets/availability` says so, and
-	// not over open water.
+	// The market's location is the requested coordinates rounded to three
+	// decimal places; requests that agree to three decimal places share a
+	// market. A rounded location exactly on the boundary between two NOAA
+	// MRMS grid cells is moved 0.001° north or east, into one of them. The
+	// response carries the market's coordinates. Markets are only offered
+	// where `GET /weather_point_markets/availability` says so, and only
+	// where the market's grid cell touches land in a US state or territory:
+	// a cell entirely over open water or outside the US is refused, while
+	// any point in a coastal cell that touches land is accepted.
 	//
-	// The window is whole local hours on one calendar day. A new market's
-	// window must start at least 15 minutes from now and within 365 days.
+	// The window is whole local hours, on one calendar day or, with
+	// `end_date` set to the day after `date`, from one day into the next.
+	// A window that crosses midnight is at most 24 hours long, and only
+	// offered where `GET /weather_point_markets/availability` returns
+	// `max_window_days: 2`. A new market's window must start at least 6
+	// hours from now (15 minutes on demo) and within 365 days.
+	//
+	// `timezone` only says which span of time `date` and the hours mean. The
+	// market is described in the IANA time zone of its location, which
+	// Kalshi determines from the coordinates: its title and `rules_primary`
+	// give the window there, with the weekday and the zone abbreviation in
+	// force (`on Thu, Nov 19, 2026, 8pm–12am PST`), whatever zone the
+	// request used. The limits on a window's dates go by the location's
+	// zone as well: where `max_window_days` is 1, a new market whose window
+	// crosses midnight at the location is refused even when the request
+	// names one date in another zone, and one within one date at the
+	// location is accepted even with `end_date`; and a window that crosses
+	// midnight at the location is at most 24 hours long there. A market
+	// that already exists is returned either way. An event created before
+	// this applied keeps its description and its dates, in the time zone of
+	// its first request, and so do thresholds added to it later: for those,
+	// the `max_window_days` limit goes by the dates the event stores.
 	//
 	// A market is traded through RFQs: pass the returned `market_ticker` to
 	// `POST /communications/rfqs`. These markets are in series starting with
@@ -8492,9 +9465,9 @@ type ClientInterface interface {
 	// | --- | --- | --- |
 	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
 	// | 400 | `missing_parameters` | A required field is missing or empty. |
-	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
-	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
-	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour` on one day, an `end_date` other than `date` or the day after it, a window across midnight, in `timezone` or at the location, longer than 24 hours, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats in `timezone`. |
+	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the market's grid cell is entirely over open water or outside US land, the window starts in less than 6 hours (15 minutes on demo), the market's window crosses midnight in the location's time zone where `max_window_days` is 1, or the location's time zone can't be determined. |
+	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets for your account, the daily limit across all users, or 40 markets for one variable, location and window. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
 	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
 	//
 	// Takes a body of the `application/json` content type.
@@ -8507,10 +9480,12 @@ type ClientInterface interface {
 	// Returns which on-request weather markets can be created: whether
 	// creation is on, the NOAA MRMS domains a location may lie in, and the
 	// domains each offered variable may use. A variable missing from
-	// `variables` can't be created. Existing markets are unaffected.
+	// `variables` can't be created. `max_window_days` and
+	// `max_window_hours` say whether a window may cross midnight and how
+	// long it may then be. Existing markets are unaffected.
 	//
 	// A location inside an offered domain can still be refused at creation
-	// when it is over open water.
+	// when its grid cell is entirely over open water or outside US land.
 	//
 	// Corresponds with GET /weather_point_markets/availability (the `GetWeatherPointAvailability` operationId).
 	GetWeatherPointAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -8603,7 +9578,7 @@ func (c *Client) GetApiKeys(ctx context.Context, params *GetApiKeysParams, reqEd
 
 // CreateApiKeyWithBody Create API Key
 //
-//	Endpoint for creating a new API key with a user-provided public key.  This endpoint allows users with Premier or Market Maker API usage levels to create API keys by providing their own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys.
+//	Endpoint for creating a new API key with a user-provided public key.  This endpoint is available on every API usage tier. Provide your own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 //
 // Takes any type of body and a specified content type.
 //
@@ -8622,7 +9597,7 @@ func (c *Client) CreateApiKeyWithBody(ctx context.Context, contentType string, b
 
 // CreateApiKey Create API Key
 //
-//	Endpoint for creating a new API key with a user-provided public key.  This endpoint allows users with Premier or Market Maker API usage levels to create API keys by providing their own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys.
+//	Endpoint for creating a new API key with a user-provided public key.  This endpoint is available on every API usage tier. Provide your own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -8641,7 +9616,7 @@ func (c *Client) CreateApiKey(ctx context.Context, body CreateApiKeyJSONRequestB
 
 // GenerateApiKeyWithBody Generate API Key
 //
-//	Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again.
+//	Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 //
 // Takes any type of body and a specified content type.
 //
@@ -8660,7 +9635,7 @@ func (c *Client) GenerateApiKeyWithBody(ctx context.Context, contentType string,
 
 // GenerateApiKey Generate API Key
 //
-//	Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again.
+//	Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -9462,6 +10437,209 @@ func (c *Client) ConfirmRFQQuote(ctx context.Context, rfqId RfqIdPath, quoteId Q
 	return c.Client.Do(req)
 }
 
+// CreateConcertCancellationMarketWithBody Create Concert Cancellation Market
+//
+// Returns the on-request market on whether a concert is called off,
+// creating it if it doesn't exist yet. A market is defined by the show
+// (`jambase_event_id`), the date it is scheduled for and the `cover`:
+// `postponed`, `cancelled` or `either`. The same request always returns
+// the same market, so call this before sending an RFQ for a market you
+// haven't seen. `created` tells you whether the market is new.
+//
+// Take `jambase_event_id` and `scheduled_date` from
+// `GET /concert_cancellation_markets/concerts` or
+// `GET /concert_cancellation_markets/concerts/search`. A new market is
+// created from the show's listing as it stands now, so the request is
+// refused when the show has moved to another date or has already been
+// canceled or postponed.
+//
+// A new market's show must start more than 7 days from now and within
+// the `max_days_ahead` that
+// `GET /concert_cancellation_markets/availability` reports. An existing
+// market is returned only while its show is more than 7 days away too:
+// inside that, counted to the market's close time or the show's start as
+// now listed, whichever is earlier, the request returns 409. Further
+// out, an existing market is usually returned even when new markets are
+// no longer offered; where creation or its cover is switched off, the
+// request returns 409. A 409 here changes nothing about the market
+// itself, which stays open until its close time and is still returned by
+// `GET /markets/{ticker}`.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover, a `jambase_event_id` that isn't `jambase:<id>`, a `scheduled_date` that isn't YYYY-MM-DD, or a show scheduled further ahead than `max_days_ahead`. |
+// | 404 | `not_found` | The listing source has no show with that id. |
+// | 409 | `concert_cancellation_market_unavailable` | The request is valid but the market isn't offered: concert markets or the cover are switched off, the show is now listed on another date, has already been canceled or postponed, starts in 7 days or less (whether or not its market already exists), isn't a concert, or its market has closed. |
+// | 429 | `concert_cancellation_market_limit_exceeded` | A daily limit on new concert markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /concert_cancellation_markets (the `CreateConcertCancellationMarket` operationId).
+func (c *Client) CreateConcertCancellationMarketWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateConcertCancellationMarketRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateConcertCancellationMarket Create Concert Cancellation Market
+//
+// Returns the on-request market on whether a concert is called off,
+// creating it if it doesn't exist yet. A market is defined by the show
+// (`jambase_event_id`), the date it is scheduled for and the `cover`:
+// `postponed`, `cancelled` or `either`. The same request always returns
+// the same market, so call this before sending an RFQ for a market you
+// haven't seen. `created` tells you whether the market is new.
+//
+// Take `jambase_event_id` and `scheduled_date` from
+// `GET /concert_cancellation_markets/concerts` or
+// `GET /concert_cancellation_markets/concerts/search`. A new market is
+// created from the show's listing as it stands now, so the request is
+// refused when the show has moved to another date or has already been
+// canceled or postponed.
+//
+// A new market's show must start more than 7 days from now and within
+// the `max_days_ahead` that
+// `GET /concert_cancellation_markets/availability` reports. An existing
+// market is returned only while its show is more than 7 days away too:
+// inside that, counted to the market's close time or the show's start as
+// now listed, whichever is earlier, the request returns 409. Further
+// out, an existing market is usually returned even when new markets are
+// no longer offered; where creation or its cover is switched off, the
+// request returns 409. A 409 here changes nothing about the market
+// itself, which stays open until its close time and is still returned by
+// `GET /markets/{ticker}`.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover, a `jambase_event_id` that isn't `jambase:<id>`, a `scheduled_date` that isn't YYYY-MM-DD, or a show scheduled further ahead than `max_days_ahead`. |
+// | 404 | `not_found` | The listing source has no show with that id. |
+// | 409 | `concert_cancellation_market_unavailable` | The request is valid but the market isn't offered: concert markets or the cover are switched off, the show is now listed on another date, has already been canceled or postponed, starts in 7 days or less (whether or not its market already exists), isn't a concert, or its market has closed. |
+// | 429 | `concert_cancellation_market_limit_exceeded` | A daily limit on new concert markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /concert_cancellation_markets (the `CreateConcertCancellationMarket` operationId).
+func (c *Client) CreateConcertCancellationMarket(ctx context.Context, body CreateConcertCancellationMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateConcertCancellationMarketRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetConcertCancellationAvailability Get Concert Cancellation Market Availability
+//
+// Returns which on-request concert markets are offered: whether they
+// are listed, the covers offered, how far ahead a show may be
+// scheduled, and the metros whose concerts
+// `GET /concert_cancellation_markets/concerts` lists. A cover missing
+// from `covers` can't be created. Where concerts are listed before
+// markets are offered, `enabled` is true and every create request
+// returns 409. Existing markets are unaffected.
+//
+// Each metro carries the number of upcoming shows listed for it. Pass
+// `date_from` and `date_to` to count only the shows a listing with the
+// same dates would return.
+//
+// Corresponds with GET /concert_cancellation_markets/availability (the `GetConcertCancellationAvailability` operationId).
+func (c *Client) GetConcertCancellationAvailability(ctx context.Context, params *GetConcertCancellationAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConcertCancellationAvailabilityRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetConcerts Get Concerts
+//
+// Lists a metro's upcoming concerts that a cancellation market can still
+// be created for, soonest first, 50 to a page and at most 20 pages.
+// Narrow the dates to reach later shows. Each concert carries the
+// `jambase_event_id` and `scheduled_date` that
+// `POST /concert_cancellation_markets` takes, and the event and market
+// tickers it has or would get for each offered cover. A ticker listed
+// here names a market that may not exist yet: create it before sending
+// an RFQ.
+//
+// Dates and times are local to the venue.
+//
+// Corresponds with GET /concert_cancellation_markets/concerts (the `GetConcerts` operationId).
+func (c *Client) GetConcerts(ctx context.Context, params *GetConcertsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConcertsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SearchConcerts Search Concerts
+//
+// Lists upcoming concerts matching a name, across the metros that
+// availability lists, that a
+// cancellation market can still be created for: up to 50, in the same
+// shape as `GET /concert_cancellation_markets/concerts`. The name is
+// matched against the acts on the bill, and may also match venues and
+// cities.
+//
+// Searches can be limited across all users. When the limit is reached
+// the request returns 429 `concert_search_limit_exceeded`; browse by
+// metro instead, or retry later.
+//
+// Corresponds with GET /concert_cancellation_markets/concerts/search (the `SearchConcerts` operationId).
+func (c *Client) SearchConcerts(ctx context.Context, params *SearchConcertsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSearchConcertsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // GetEvents Get Events
 //
 // Get all events. This endpoint excludes multivariate events.
@@ -9570,7 +10748,11 @@ func (c *Client) GetExchangeSchedule(ctx context.Context, reqEditors ...RequestE
 
 // GetExchangeStatus Get Exchange Status
 //
-//	Endpoint for getting the exchange status.
+// Endpoint for getting the exchange status.
+//
+// The top-level fields describe the default exchange index (0). Read the flags only from a 200 response. When the status of the default index cannot be read, the response is a 500, 503 or 504; its body can be an `ExchangeStatus` with `exchange_active` and `trading_active` set to `false`, or an error object, and in neither case does it mean the exchange is paused.
+//
+// In `exchange_index_statuses` on a 200 response, an index other than 0 whose status request failed or timed out is reported with all of its flags `false`. Read the status again before treating a single `false` reading for one index as a pause.
 //
 // Corresponds with GET /exchange/status (the `GetExchangeStatus` operationId).
 func (c *Client) GetExchangeStatus(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9926,7 +11108,7 @@ func (c *Client) DeleteFCMEventContractDailyCap(ctx context.Context, params *Del
 // Returns the event-contract daily premium cap configured for an FCM member's subtrader,
 // together with its live utilization. Executed utilization is the net premium deployed by
 // fills today (sells and settlements credit back); resting and pending utilization reserve
-// open and in-flight orders at their full worst-case cost plus fees. Executed utilization
+// open orders and orders still being placed at their full worst-case cost plus fees. Executed utilization
 // resets at midnight New York time on the returned cap date; resting and pending
 // reservations persist for as long as their orders remain open, including across the reset.
 // Returns 404 when the subtrader has no cap configured — in that state every order placed
@@ -9984,6 +11166,186 @@ func (c *Client) UpdateFCMEventContractDailyCapWithBody(ctx context.Context, con
 // Corresponds with PUT /fcm/subtraders/event_contract_daily_cap (the `UpdateFCMEventContractDailyCap` operationId).
 func (c *Client) UpdateFCMEventContractDailyCap(ctx context.Context, body UpdateFCMEventContractDailyCapJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateFCMEventContractDailyCapRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateFlightDisruptionMarketWithBody Create Flight Disruption Market
+//
+// Returns the on-request market on whether a flight is canceled or
+// delayed, creating it if it doesn't exist yet. A market is defined by
+// the flight (`carrier`, `flight_number`, `departure_airport`,
+// `arrival_airport` and `scheduled_date`), the `cover` (`cancelled`,
+// `delayed` or `either`) and, for `delayed` and `either`, the
+// `delay_basis` and `delay_minutes`. The same request always returns the
+// same market, so call this before sending an RFQ for a market you
+// haven't seen. `created` tells you whether the market is new.
+//
+// Take the flight's five fields from
+// `GET /flight_disruption_markets/flights`. A flight is one nonstop leg:
+// a flight number that flies several legs in a day is several flights.
+// `carrier` and `flight_number` are the operating carrier's, which the
+// lookup returns even when you searched by a codeshare number.
+//
+// `delay_minutes` is a multiple of `delay_step_minutes`, up to
+// `max_delay_minutes`, both from
+// `GET /flight_disruption_markets/availability`. A `cancelled` market
+// takes neither `delay_basis` nor `delay_minutes`.
+//
+// An existing market is returned until it closes, even when new markets
+// are no longer offered. A new market's flight must be scheduled to
+// leave more than `min_lead_minutes` from now and within
+// `max_days_ahead` days, from an airport in one of
+// `departure_countries`.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover or delay basis, a carrier, flight number or airport code of the wrong form, a `scheduled_date` that isn't YYYY-MM-DD, a `delayed` or `either` request without `delay_basis` and `delay_minutes`, a `cancelled` request with either of them, a `delay_minutes` that isn't a multiple of `delay_step_minutes` or is above `max_delay_minutes`, or a flight scheduled further ahead than `max_days_ahead`. |
+// | 404 | `not_found` | No such flight is scheduled on that date. |
+// | 409 | `flight_disruption_market_unavailable` | The request is valid but the market isn't offered: flight markets or the cover are switched off, the flight leaves too soon, departs from a country that isn't offered, or its market has closed. |
+// | 429 | `flight_disruption_market_limit_exceeded` | A daily limit on new flight markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /flight_disruption_markets (the `CreateFlightDisruptionMarket` operationId).
+func (c *Client) CreateFlightDisruptionMarketWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateFlightDisruptionMarketRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateFlightDisruptionMarket Create Flight Disruption Market
+//
+// Returns the on-request market on whether a flight is canceled or
+// delayed, creating it if it doesn't exist yet. A market is defined by
+// the flight (`carrier`, `flight_number`, `departure_airport`,
+// `arrival_airport` and `scheduled_date`), the `cover` (`cancelled`,
+// `delayed` or `either`) and, for `delayed` and `either`, the
+// `delay_basis` and `delay_minutes`. The same request always returns the
+// same market, so call this before sending an RFQ for a market you
+// haven't seen. `created` tells you whether the market is new.
+//
+// Take the flight's five fields from
+// `GET /flight_disruption_markets/flights`. A flight is one nonstop leg:
+// a flight number that flies several legs in a day is several flights.
+// `carrier` and `flight_number` are the operating carrier's, which the
+// lookup returns even when you searched by a codeshare number.
+//
+// `delay_minutes` is a multiple of `delay_step_minutes`, up to
+// `max_delay_minutes`, both from
+// `GET /flight_disruption_markets/availability`. A `cancelled` market
+// takes neither `delay_basis` nor `delay_minutes`.
+//
+// An existing market is returned until it closes, even when new markets
+// are no longer offered. A new market's flight must be scheduled to
+// leave more than `min_lead_minutes` from now and within
+// `max_days_ahead` days, from an airport in one of
+// `departure_countries`.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover or delay basis, a carrier, flight number or airport code of the wrong form, a `scheduled_date` that isn't YYYY-MM-DD, a `delayed` or `either` request without `delay_basis` and `delay_minutes`, a `cancelled` request with either of them, a `delay_minutes` that isn't a multiple of `delay_step_minutes` or is above `max_delay_minutes`, or a flight scheduled further ahead than `max_days_ahead`. |
+// | 404 | `not_found` | No such flight is scheduled on that date. |
+// | 409 | `flight_disruption_market_unavailable` | The request is valid but the market isn't offered: flight markets or the cover are switched off, the flight leaves too soon, departs from a country that isn't offered, or its market has closed. |
+// | 429 | `flight_disruption_market_limit_exceeded` | A daily limit on new flight markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /flight_disruption_markets (the `CreateFlightDisruptionMarket` operationId).
+func (c *Client) CreateFlightDisruptionMarket(ctx context.Context, body CreateFlightDisruptionMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateFlightDisruptionMarketRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetFlightDisruptionAvailability Get Flight Disruption Market Availability
+//
+// Returns which on-request flight markets can be created: whether
+// creation is on, the covers and delay bases offered, the delay
+// thresholds a market may use, how soon and how far ahead a flight may
+// be scheduled, and the countries it may depart from. A cover missing
+// from `covers` can't be created. Existing markets are unaffected.
+//
+// Corresponds with GET /flight_disruption_markets/availability (the `GetFlightDisruptionAvailability` operationId).
+func (c *Client) GetFlightDisruptionAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetFlightDisruptionAvailabilityRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetFlights Get Flights
+//
+// Looks up a flight number on a departure date and returns the flights
+// a disruption market can still be created for, in departure order. A
+// flight is one nonstop leg, so a number that flies several legs that
+// day returns several flights, and one that flies none returns an empty
+// list.
+//
+// `carrier` and `flight_number` may be the operating carrier's or a
+// codeshare number. Each flight returned is the operating flight, with
+// the number you asked for in `requested_carrier` and
+// `requested_flight_number` when it differs.
+//
+// Each flight carries the five fields
+// `POST /flight_disruption_markets` takes, and the series and event
+// tickers it has or would get for each offered cover. A ticker listed
+// here names an event or market that may not exist yet: create the
+// market before sending an RFQ.
+//
+// Lookups can be limited across all users. When the limit is reached
+// the request returns 429 `flight_lookup_limit_exceeded`; retry later.
+//
+// Corresponds with GET /flight_disruption_markets/flights (the `GetFlights` operationId).
+func (c *Client) GetFlights(ctx context.Context, params *GetFlightsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetFlightsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -10072,7 +11434,7 @@ func (c *Client) GetHistoricalMarket(ctx context.Context, ticker TickerPath, req
 
 // GetMarketCandlesticksHistorical Get Historical Market Candlesticks
 //
-//	Endpoint for fetching historical candlestick data for markets that have been archived from the live data set. Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day).
+//	Endpoint for fetching historical candlestick data for markets that have been archived from the live data set. Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day). One request can span at most 5,000 periods: if the minutes between `start_ts` and `end_ts` divided by `period_interval` exceed 5,000, the request is rejected with 400 `bad_request`. Split a longer range into several requests.
 //
 // Corresponds with GET /historical/markets/{ticker}/candlesticks (the `GetMarketCandlesticksHistorical` operationId).
 func (c *Client) GetMarketCandlesticksHistorical(ctx context.Context, ticker string, params *GetMarketCandlesticksHistoricalParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -10309,6 +11671,18 @@ func (c *Client) GetLiveData(ctx context.Context, pType string, milestoneId stri
 //
 //     Markets that settled before the historical cutoff are only available via `GET /historical/markets`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
 //
+//     Paging and ordering:
+//
+//   - When `event_ticker` or `tickers` is the only filter (no `status`, `series_ticker`, timestamp filter, `mve_filter` or `cursor`), every matching market is returned in one response, in no guaranteed order. `limit` is not applied and the returned `cursor` is empty.
+//
+//   - Otherwise results are sorted by creation time, newest first, with these exceptions. With `min_updated_ts` or `max_updated_ts` they are sorted by last update time, oldest first. When neither `event_ticker` nor `tickers` is supplied, `status=closed`, `min_close_ts` or `max_close_ts` sorts by close time, latest first, and `min_settled_ts` or `max_settled_ts` sorts by settlement time, latest first. A request that supplies `event_ticker` or `tickers` together with another filter is sorted by creation time, even when that filter is `status=closed` or a close-time or settlement-time filter. The unpaged case above, where `event_ticker` or `tickers` is the only filter, has no guaranteed order.
+//
+//   - A market whose close time changes while you page through a listing sorted by close time can be skipped or returned twice. Deduplicate by `ticker`.
+//
+//   - A `cursor` that cannot be decoded is ignored and the first page is returned, with no error. Pass the cursor exactly as it was returned, and stop when the returned `cursor` is empty.
+//
+//     Responses are cached for a short time, so prices, sizes and `status` can lag the exchange by several seconds, and filtered listings can lag longer than a read of a single market. Use the WebSocket API when you need current state.
+//
 // Corresponds with GET /markets (the `GetMarkets` operationId).
 func (c *Client) GetMarkets(ctx context.Context, params *GetMarketsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetMarketsRequest(c.Server, params)
@@ -10327,7 +11701,7 @@ func (c *Client) GetMarkets(ctx context.Context, params *GetMarketsParams, reqEd
 // Endpoint for retrieving candlestick data for multiple markets.
 //
 // - Accepts up to 100 market tickers per request
-// - Returns up to 10,000 candlesticks total across all markets
+// - The request may cover at most 10,000 candlestick periods in total: the minutes between `start_ts` and `end_ts`, divided by `period_interval`, multiplied by the number of tickers. A larger request is rejected with 400 `bad_request` (the `details` field gives the requested and maximum counts) even if fewer candlesticks exist; the response is never truncated
 // - Returns candlesticks grouped by market_id
 // - Optionally includes a synthetic initial candlestick for price continuity (see `include_latest_before_start` parameter)
 //
@@ -10346,7 +11720,7 @@ func (c *Client) BatchGetMarketCandlesticks(ctx context.Context, params *BatchGe
 
 // GetMarketOrderbooks Get Multiple Market Orderbooks
 //
-// Endpoint for getting the current order books for multiple markets in a single request. The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes. Each side shows price levels with their corresponding quantities and order counts, organized from best to worst prices. Returns one orderbook per requested market ticker.
+// Endpoint for getting the current order books for multiple markets in a single request. The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes. Each side lists price levels as [price, quantity] pairs sorted by price in ascending order, so the best (highest) bid is the last element. Order counts are not returned. Returns one orderbook per requested market ticker, in request order. A ticker that has no order book, including a ticker that does not match any market, is returned with empty arrays.
 //
 // Corresponds with GET /markets/orderbooks (the `GetMarketOrderbooks` operationId).
 func (c *Client) GetMarketOrderbooks(ctx context.Context, params *GetMarketOrderbooksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -10365,6 +11739,8 @@ func (c *Client) GetMarketOrderbooks(ctx context.Context, params *GetMarketOrder
 //
 // Endpoint for getting all trades for all markets. A trade represents a completed transaction between two users on a specific market. Each trade includes the market ticker, price, quantity, and timestamp information. Block trades are included in the response by default and identified by the `is_block_trade` field; use the `is_block_trade` query parameter to filter by block / non-block. This endpoint returns a paginated response. Use the 'limit' parameter to control page size (1-1000, defaults to 100). The response includes a 'cursor' field - pass this value in the 'cursor' parameter of your next request to get the next page. An empty cursor indicates no more pages are available.
 //
+// A `ticker` that does not match any market returns 200 with an empty `trades` list, not 404. A `cursor` that cannot be decoded is ignored and the first page is returned, so pass the cursor exactly as it was returned. `min_ts` and `max_ts` must be in seconds; millisecond values are rejected with 400 `bad_request`.
+//
 // Corresponds with GET /markets/trades (the `GetTrades` operationId).
 func (c *Client) GetTrades(ctx context.Context, params *GetTradesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetTradesRequest(c.Server, params)
@@ -10380,7 +11756,7 @@ func (c *Client) GetTrades(ctx context.Context, params *GetTradesParams, reqEdit
 
 // GetMarket Get Market
 //
-//	Endpoint for getting data about a specific market by its ticker. A market represents a specific binary outcome within an event that users can trade on (e.g., "Will candidate X win?"). Markets have yes/no positions, current prices, volume, and settlement rules.
+//	Endpoint for getting data about a specific market by its ticker. A market represents a specific binary outcome within an event that users can trade on (e.g., "Will candidate X win?"). Markets have yes/no positions, current prices, volume, and settlement rules. The response is cached for a short time, so prices, sizes and `status` can lag the exchange by a few seconds; use the WebSocket API when you need current state.
 //
 // Corresponds with GET /markets/{ticker} (the `GetMarket` operationId).
 func (c *Client) GetMarket(ctx context.Context, ticker TickerPath, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -10397,7 +11773,7 @@ func (c *Client) GetMarket(ctx context.Context, ticker TickerPath, reqEditors ..
 
 // GetMarketOrderbook Get Market Orderbook
 //
-//	Endpoint for getting the current order book for a specific market.  The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes.  Each side shows price levels with their corresponding quantities and order counts, organized from best to worst prices.
+//	Endpoint for getting the current order book for a specific market.  The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes.  Each side lists price levels as [price, quantity] pairs sorted by price in ascending order, so the best (highest) bid is the last element. Order counts are not returned. When `depth` is set, the best `depth` levels of each side are returned. A ticker that has no order book, including a ticker that does not match any market, returns 200 with empty arrays rather than 404.
 //
 // Corresponds with GET /markets/{ticker}/orderbook (the `GetMarketOrderbook` operationId).
 func (c *Client) GetMarketOrderbook(ctx context.Context, ticker TickerPath, params *GetMarketOrderbookParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -10482,7 +11858,7 @@ func (c *Client) GetMultivariateEventCollection(ctx context.Context, collectionT
 
 // CreateMarketInMultivariateEventCollectionWithBody Create Market In Multivariate Event Collection
 //
-// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before trading or looking up a market. Users are limited to 5000 creations per week.
+// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before a combo market can be quoted or traded. If the same legs were created before, it returns the existing market, which does not count toward the limit; the legs are still validated again, so a selection that worked before can later be rejected. On the production API, the standard limit is 5000 new markets per user per rolling 7 days, counted both across all collections and within each collection; over either limit the endpoint returns 429 `too_many_requests` until earlier creations pass the 7-day mark. Ordinary request-rate limiting returns the same status and code. A leg selection that cannot be combined returns 400 with `code` `conflicting_leg_outcomes`, `duplicated_legs` or `invalid_market_combination`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -10501,7 +11877,7 @@ func (c *Client) CreateMarketInMultivariateEventCollectionWithBody(ctx context.C
 
 // CreateMarketInMultivariateEventCollection Create Market In Multivariate Event Collection
 //
-// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before trading or looking up a market. Users are limited to 5000 creations per week.
+// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before a combo market can be quoted or traded. If the same legs were created before, it returns the existing market, which does not count toward the limit; the legs are still validated again, so a selection that worked before can later be rejected. On the production API, the standard limit is 5000 new markets per user per rolling 7 days, counted both across all collections and within each collection; over either limit the endpoint returns 429 `too_many_requests` until earlier creations pass the 7-day mark. Ordinary request-rate limiting returns the same status and code. A leg selection that cannot be combined returns 400 with `code` `conflicting_leg_outcomes`, `duplicated_legs` or `invalid_market_combination`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10593,7 +11969,7 @@ func (c *Client) CancelAllOrders(ctx context.Context, params *CancelAllOrdersPar
 
 // CreateOrderV2WithBody Create Order (V2)
 //
-// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` endpoint will be deprecated no earlier than May 6, 2026 — clients should migrate to this path.
+// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` write endpoints (create, cancel, amend, decrease and their batch forms) have been removed and now return `410 Gone` with code `deprecated_v1_order_endpoint`; use this path instead. A `201` means the order was accepted, not that it is resting: check `remaining_count`. See [Order Errors](/getting_started/order_errors) for the error codes this endpoint returns.
 //
 // Takes any type of body and a specified content type.
 //
@@ -10612,7 +11988,7 @@ func (c *Client) CreateOrderV2WithBody(ctx context.Context, contentType string, 
 
 // CreateOrderV2 Create Order (V2)
 //
-// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` endpoint will be deprecated no earlier than May 6, 2026 — clients should migrate to this path.
+// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` write endpoints (create, cancel, amend, decrease and their batch forms) have been removed and now return `410 Gone` with code `deprecated_v1_order_endpoint`; use this path instead. A `201` means the order was accepted, not that it is resting: check `remaining_count`. See [Order Errors](/getting_started/order_errors) for the error codes this endpoint returns.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10631,7 +12007,7 @@ func (c *Client) CreateOrderV2(ctx context.Context, body CreateOrderV2JSONReques
 
 // BatchCancelOrdersV2WithBody Batch Cancel Orders (V2)
 //
-// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). The batch is not atomic: the `200` response carries one entry per order, and a cancellation that failed has an `error` object and `reduced_by` of `0.00`. An entry error with a timeout or unavailable code does not prove the order was not cancelled. Some checks reject the whole batch before any cancellation is sent. See [Order Errors](/getting_started/order_errors#batch-requests).
 //
 // Takes any type of body and a specified content type.
 //
@@ -10650,7 +12026,7 @@ func (c *Client) BatchCancelOrdersV2WithBody(ctx context.Context, contentType st
 
 // BatchCancelOrdersV2 Batch Cancel Orders (V2)
 //
-// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). The batch is not atomic: the `200` response carries one entry per order, and a cancellation that failed has an `error` object and `reduced_by` of `0.00`. An entry error with a timeout or unavailable code does not prove the order was not cancelled. Some checks reject the whole batch before any cancellation is sent. See [Order Errors](/getting_started/order_errors#batch-requests).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10669,7 +12045,7 @@ func (c *Client) BatchCancelOrdersV2(ctx context.Context, body BatchCancelOrders
 
 // BatchCreateOrdersV2WithBody Batch Create Orders (V2)
 //
-// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). Orders are processed one at a time in request order and the batch is not atomic: a `201` response carries one entry per order, and an order that failed has an `error` object (`code`, `message`, `details`) in place of `order_id`. An entry error with a timeout or unavailable code does not prove the order was not placed. Some checks reject the whole batch before any order is sent. See [Order Errors](/getting_started/order_errors#batch-requests) for those cases and for the error body.
 //
 // Takes any type of body and a specified content type.
 //
@@ -10688,7 +12064,7 @@ func (c *Client) BatchCreateOrdersV2WithBody(ctx context.Context, contentType st
 
 // BatchCreateOrdersV2 Batch Create Orders (V2)
 //
-// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). Orders are processed one at a time in request order and the batch is not atomic: a `201` response carries one entry per order, and an order that failed has an `error` object (`code`, `message`, `details`) in place of `order_id`. An entry error with a timeout or unavailable code does not prove the order was not placed. Some checks reject the whole batch before any order is sent. See [Order Errors](/getting_started/order_errors#batch-requests) for those cases and for the error body.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10745,7 +12121,7 @@ func (c *Client) CreateOrderWithExitTrigger(ctx context.Context, body CreateOrde
 
 // CancelOrderV2 Cancel Order (V2)
 //
-// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object.
+// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object. A cancellation sent to an exchange shard other than the one the order rests on returns `404`, even though the order is still resting; see [Order Errors](/getting_started/order_errors#requests-sent-to-the-wrong-exchange-shard).
 //
 // Corresponds with DELETE /portfolio/events/orders/{order_id} (the `CancelOrderV2` operationId).
 func (c *Client) CancelOrderV2(ctx context.Context, orderId OrderIdPath, params *CancelOrderV2Params, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -10762,7 +12138,7 @@ func (c *Client) CancelOrderV2(ctx context.Context, orderId OrderIdPath, params 
 
 // AmendOrderV2WithBody Amend Order (V2)
 //
-// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. This behavior matches the v1 amend endpoints; only the request/response shape differs.
+// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. An amend that changes nothing returns `400` with code `AMEND_ORDER_NO_OP`. See [Order Errors](/getting_started/order_errors).
 //
 // Takes any type of body and a specified content type.
 //
@@ -10781,7 +12157,7 @@ func (c *Client) AmendOrderV2WithBody(ctx context.Context, orderId OrderIdPath, 
 
 // AmendOrderV2 Amend Order (V2)
 //
-// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. This behavior matches the v1 amend endpoints; only the request/response shape differs.
+// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. An amend that changes nothing returns `400` with code `AMEND_ORDER_NO_OP`. See [Order Errors](/getting_started/order_errors).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10841,6 +12217,7 @@ func (c *Client) DecreaseOrderV2(ctx context.Context, orderId OrderIdPath, param
 // Endpoint for getting all fills for the member. A fill is when a trade you have is matched.
 // Registered partners may also use a user OAuth access token with the explicitly granted read::compliance_partner scope.
 // Fills that occurred before the historical cutoff are only available via `GET /historical/fills`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
+// Available to direct member accounts. FCM member accounts receive 403 with code `permission_denied` here and use `GET /fcm/fills` instead.
 //
 // Corresponds with GET /portfolio/fills (the `GetFills` operationId).
 func (c *Client) GetFills(ctx context.Context, params *GetFillsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -10864,6 +12241,10 @@ func (c *Client) GetFills(ctx context.Context, params *GetFillsParams, reqEditor
 // When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 //
 // Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
+//
+// Naming a numbered subaccount requires the Advanced API tier or above; on the Basic tier the request returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`.
+//
+// **Rate limit:** this endpoint has its own bucket, separate from the Read and Write budgets and the same on every tier. It refills at 600 tokens per minute and holds 600 tokens; at the default cost of 10 tokens that is 60 transfers per minute. A request over the limit returns 429.
 //
 // Takes any type of body and a specified content type.
 //
@@ -10889,6 +12270,10 @@ func (c *Client) IntraExchangeInstanceTransferWithBody(ctx context.Context, cont
 // When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 //
 // Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
+//
+// Naming a numbered subaccount requires the Advanced API tier or above; on the Basic tier the request returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`.
+//
+// **Rate limit:** this endpoint has its own bucket, separate from the Read and Write budgets and the same on every tier. It refills at 600 tokens per minute and holds 600 tokens; at the default cost of 10 tokens that is 60 transfers per minute. A request over the limit returns 429.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -11179,7 +12564,7 @@ func (c *Client) GetOrderQueuePositions(ctx context.Context, params *GetOrderQue
 
 // GetOrder Get Order
 //
-//	Endpoint for getting a single order.
+//	Endpoint for getting a single order. Order reads are updated asynchronously after the matching engine processes a write, so an order created, amended or cancelled moments ago can briefly return `404 not_found` or its previous state. The response of the write itself is the only immediate result; the `user_orders` WebSocket channel is also asynchronous and is the stream to wait on for updates.
 //
 // Corresponds with GET /portfolio/orders/{order_id} (the `GetOrder` operationId).
 func (c *Client) GetOrder(ctx context.Context, orderId OrderIdPath, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -11310,6 +12695,7 @@ func (c *Client) SetEventContractExitTrigger(ctx context.Context, ticker string,
 //
 // Returns settlement records still in the live data set. Archived positions are available via `GET /historical/positions`, which has different fields; this endpoint does not return archived settlement records.
 // Resource-bound MCP OAuth tokens may read the owner's settlements with read::mcp_portfolio.
+// Available to direct member accounts. FCM member accounts receive 403 with code `permission_denied`.
 //
 // Corresponds with GET /portfolio/settlements (the `GetSettlements` operationId).
 func (c *Client) GetSettlements(ctx context.Context, params *GetSettlementsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -11326,7 +12712,7 @@ func (c *Client) GetSettlements(ctx context.Context, params *GetSettlementsParam
 
 // CreateSubaccountWithBody Create Subaccount
 //
-// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
+// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above; on the Basic tier it returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`. The demo environment does not enforce the tier requirement. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
 //
 // Takes any type of body and a specified content type.
 //
@@ -11345,7 +12731,7 @@ func (c *Client) CreateSubaccountWithBody(ctx context.Context, contentType strin
 
 // CreateSubaccount Create Subaccount
 //
-// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
+// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above; on the Basic tier it returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`. The demo environment does not enforce the tier requirement. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -11706,6 +13092,10 @@ func (c *Client) GetEventForecastPercentilesHistory(ctx context.Context, seriesT
 // Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day).
 // Candlesticks for markets that settled before the historical cutoff are only available via `GET /historical/markets/{ticker}/candlesticks`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
 //
+// One request can span at most 5,000 periods. If the minutes between `start_ts` and `end_ts` divided by `period_interval` exceed 5,000, the request is rejected with 400 `bad_request` and the `details` field gives the requested and maximum counts. For example, 1-minute candlesticks are limited to about 3.5 days per request; split a longer range into several requests. `start_ts` and `end_ts` must be in seconds; millisecond values are rejected with 400 `bad_request`.
+//
+// The most recent candlesticks can be a few seconds behind the latest trades and quotes.
+//
 // Corresponds with GET /series/{series_ticker}/markets/{ticker}/candlesticks (the `GetMarketCandlesticks` operationId).
 func (c *Client) GetMarketCandlesticks(ctx context.Context, seriesTicker string, ticker string, params *GetMarketCandlesticksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetMarketCandlesticksRequest(c.Server, seriesTicker, ticker, params)
@@ -11764,13 +13154,38 @@ func (c *Client) GetStructuredTarget(ctx context.Context, structuredTargetId str
 // are switched off entirely, the request can be refused whether or not
 // the market exists.
 //
-// The location snaps to the center of the NOAA MRMS grid cell containing
-// it; the response carries the snapped coordinates. Markets are only
-// offered where `GET /weather_point_markets/availability` says so, and
-// not over open water.
+// The market's location is the requested coordinates rounded to three
+// decimal places; requests that agree to three decimal places share a
+// market. A rounded location exactly on the boundary between two NOAA
+// MRMS grid cells is moved 0.001° north or east, into one of them. The
+// response carries the market's coordinates. Markets are only offered
+// where `GET /weather_point_markets/availability` says so, and only
+// where the market's grid cell touches land in a US state or territory:
+// a cell entirely over open water or outside the US is refused, while
+// any point in a coastal cell that touches land is accepted.
 //
-// The window is whole local hours on one calendar day. A new market's
-// window must start at least 15 minutes from now and within 365 days.
+// The window is whole local hours, on one calendar day or, with
+// `end_date` set to the day after `date`, from one day into the next.
+// A window that crosses midnight is at most 24 hours long, and only
+// offered where `GET /weather_point_markets/availability` returns
+// `max_window_days: 2`. A new market's window must start at least 6
+// hours from now (15 minutes on demo) and within 365 days.
+//
+// `timezone` only says which span of time `date` and the hours mean. The
+// market is described in the IANA time zone of its location, which
+// Kalshi determines from the coordinates: its title and `rules_primary`
+// give the window there, with the weekday and the zone abbreviation in
+// force (`on Thu, Nov 19, 2026, 8pm–12am PST`), whatever zone the
+// request used. The limits on a window's dates go by the location's
+// zone as well: where `max_window_days` is 1, a new market whose window
+// crosses midnight at the location is refused even when the request
+// names one date in another zone, and one within one date at the
+// location is accepted even with `end_date`; and a window that crosses
+// midnight at the location is at most 24 hours long there. A market
+// that already exists is returned either way. An event created before
+// this applied keeps its description and its dates, in the time zone of
+// its first request, and so do thresholds added to it later: for those,
+// the `max_window_days` limit goes by the dates the event stores.
 //
 // A market is traded through RFQs: pass the returned `market_ticker` to
 // `POST /communications/rfqs`. These markets are in series starting with
@@ -11785,9 +13200,9 @@ func (c *Client) GetStructuredTarget(ctx context.Context, structuredTargetId str
 // | --- | --- | --- |
 // | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
 // | 400 | `missing_parameters` | A required field is missing or empty. |
-// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
-// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
-// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour` on one day, an `end_date` other than `date` or the day after it, a window across midnight, in `timezone` or at the location, longer than 24 hours, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats in `timezone`. |
+// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the market's grid cell is entirely over open water or outside US land, the window starts in less than 6 hours (15 minutes on demo), the market's window crosses midnight in the location's time zone where `max_window_days` is 1, or the location's time zone can't be determined. |
+// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets for your account, the daily limit across all users, or 40 markets for one variable, location and window. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
 // | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
 //
 // Takes any type of body and a specified content type.
@@ -11816,13 +13231,38 @@ func (c *Client) CreateWeatherPointMarketWithBody(ctx context.Context, contentTy
 // are switched off entirely, the request can be refused whether or not
 // the market exists.
 //
-// The location snaps to the center of the NOAA MRMS grid cell containing
-// it; the response carries the snapped coordinates. Markets are only
-// offered where `GET /weather_point_markets/availability` says so, and
-// not over open water.
+// The market's location is the requested coordinates rounded to three
+// decimal places; requests that agree to three decimal places share a
+// market. A rounded location exactly on the boundary between two NOAA
+// MRMS grid cells is moved 0.001° north or east, into one of them. The
+// response carries the market's coordinates. Markets are only offered
+// where `GET /weather_point_markets/availability` says so, and only
+// where the market's grid cell touches land in a US state or territory:
+// a cell entirely over open water or outside the US is refused, while
+// any point in a coastal cell that touches land is accepted.
 //
-// The window is whole local hours on one calendar day. A new market's
-// window must start at least 15 minutes from now and within 365 days.
+// The window is whole local hours, on one calendar day or, with
+// `end_date` set to the day after `date`, from one day into the next.
+// A window that crosses midnight is at most 24 hours long, and only
+// offered where `GET /weather_point_markets/availability` returns
+// `max_window_days: 2`. A new market's window must start at least 6
+// hours from now (15 minutes on demo) and within 365 days.
+//
+// `timezone` only says which span of time `date` and the hours mean. The
+// market is described in the IANA time zone of its location, which
+// Kalshi determines from the coordinates: its title and `rules_primary`
+// give the window there, with the weekday and the zone abbreviation in
+// force (`on Thu, Nov 19, 2026, 8pm–12am PST`), whatever zone the
+// request used. The limits on a window's dates go by the location's
+// zone as well: where `max_window_days` is 1, a new market whose window
+// crosses midnight at the location is refused even when the request
+// names one date in another zone, and one within one date at the
+// location is accepted even with `end_date`; and a window that crosses
+// midnight at the location is at most 24 hours long there. A market
+// that already exists is returned either way. An event created before
+// this applied keeps its description and its dates, in the time zone of
+// its first request, and so do thresholds added to it later: for those,
+// the `max_window_days` limit goes by the dates the event stores.
 //
 // A market is traded through RFQs: pass the returned `market_ticker` to
 // `POST /communications/rfqs`. These markets are in series starting with
@@ -11837,9 +13277,9 @@ func (c *Client) CreateWeatherPointMarketWithBody(ctx context.Context, contentTy
 // | --- | --- | --- |
 // | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
 // | 400 | `missing_parameters` | A required field is missing or empty. |
-// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
-// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
-// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour` on one day, an `end_date` other than `date` or the day after it, a window across midnight, in `timezone` or at the location, longer than 24 hours, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats in `timezone`. |
+// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the market's grid cell is entirely over open water or outside US land, the window starts in less than 6 hours (15 minutes on demo), the market's window crosses midnight in the location's time zone where `max_window_days` is 1, or the location's time zone can't be determined. |
+// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets for your account, the daily limit across all users, or 40 markets for one variable, location and window. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
 // | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
 //
 // Takes a body of the `application/json` content type.
@@ -11862,10 +13302,12 @@ func (c *Client) CreateWeatherPointMarket(ctx context.Context, body CreateWeathe
 // Returns which on-request weather markets can be created: whether
 // creation is on, the NOAA MRMS domains a location may lie in, and the
 // domains each offered variable may use. A variable missing from
-// `variables` can't be created. Existing markets are unaffected.
+// `variables` can't be created. `max_window_days` and
+// `max_window_hours` say whether a window may cross midnight and how
+// long it may then be. Existing markets are unaffected.
 //
 // A location inside an offered domain can still be refused at creation
-// when it is over open water.
+// when its grid cell is entirely over open water or outside US land.
 //
 // Corresponds with GET /weather_point_markets/availability (the `GetWeatherPointAvailability` operationId).
 func (c *Client) GetWeatherPointAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -13643,6 +15085,248 @@ func NewConfirmRFQQuoteRequestWithBody(server string, rfqId RfqIdPath, quoteId Q
 	return req, nil
 }
 
+// NewCreateConcertCancellationMarketRequest calls the generic CreateConcertCancellationMarket builder with application/json body
+func NewCreateConcertCancellationMarketRequest(server string, body CreateConcertCancellationMarketJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateConcertCancellationMarketRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateConcertCancellationMarketRequestWithBody constructs an http.Request for the CreateConcertCancellationMarket method, with any body, and a specified content type
+func NewCreateConcertCancellationMarketRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/concert_cancellation_markets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetConcertCancellationAvailabilityRequest constructs an http.Request for the GetConcertCancellationAvailability method
+func NewGetConcertCancellationAvailabilityRequest(server string, params *GetConcertCancellationAvailabilityParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/concert_cancellation_markets/availability")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.DateFrom != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "date_from", *params.DateFrom, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.DateTo != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "date_to", *params.DateTo, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetConcertsRequest constructs an http.Request for the GetConcerts method
+func NewGetConcertsRequest(server string, params *GetConcertsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/concert_cancellation_markets/concerts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "metro_id", params.MetroId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.DateFrom != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "date_from", *params.DateFrom, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.DateTo != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "date_to", *params.DateTo, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Page != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int32"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSearchConcertsRequest constructs an http.Request for the SearchConcerts method
+func NewSearchConcertsRequest(server string, params *SearchConcertsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/concert_cancellation_markets/concerts/search")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "q", params.Q, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetEventsRequest constructs an http.Request for the GetEvents method
 func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request, error) {
 	var err error
@@ -14796,6 +16480,139 @@ func NewUpdateFCMEventContractDailyCapRequestWithBody(server string, contentType
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateFlightDisruptionMarketRequest calls the generic CreateFlightDisruptionMarket builder with application/json body
+func NewCreateFlightDisruptionMarketRequest(server string, body CreateFlightDisruptionMarketJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateFlightDisruptionMarketRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateFlightDisruptionMarketRequestWithBody constructs an http.Request for the CreateFlightDisruptionMarket method, with any body, and a specified content type
+func NewCreateFlightDisruptionMarketRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/flight_disruption_markets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetFlightDisruptionAvailabilityRequest constructs an http.Request for the GetFlightDisruptionAvailability method
+func NewGetFlightDisruptionAvailabilityRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/flight_disruption_markets/availability")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetFlightsRequest constructs an http.Request for the GetFlights method
+func NewGetFlightsRequest(server string, params *GetFlightsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/flight_disruption_markets/flights")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "carrier", params.Carrier, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "flight_number", params.FlightNumber, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "date", params.Date, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -18677,6 +20494,18 @@ func NewGetPositionsRequest(server string, params *GetPositionsParams) (*http.Re
 
 		}
 
+		if params.SortBy != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sort_by", *params.SortBy, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "ticker", params.Ticker, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 			return nil, err
 		} else {
@@ -20270,7 +22099,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateApiKeyWithBodyWithResponse Create API Key
 	//
-	//  Endpoint for creating a new API key with a user-provided public key.  This endpoint allows users with Premier or Market Maker API usage levels to create API keys by providing their own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys.
+	//  Endpoint for creating a new API key with a user-provided public key.  This endpoint is available on every API usage tier. Provide your own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -20279,7 +22108,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateApiKeyWithResponse Create API Key
 	//
-	//  Endpoint for creating a new API key with a user-provided public key.  This endpoint allows users with Premier or Market Maker API usage levels to create API keys by providing their own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys.
+	//  Endpoint for creating a new API key with a user-provided public key.  This endpoint is available on every API usage tier. Provide your own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -20288,7 +22117,7 @@ type ClientWithResponsesInterface interface {
 
 	// GenerateApiKeyWithBodyWithResponse Generate API Key
 	//
-	//  Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again.
+	//  Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -20297,7 +22126,7 @@ type ClientWithResponsesInterface interface {
 
 	// GenerateApiKeyWithResponse Generate API Key
 	//
-	//  Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again.
+	//  Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -20703,6 +22532,165 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /communications/rfqs/{rfq_id}/quotes/{quote_id}/confirm (the `ConfirmRFQQuote` operationId).
 	ConfirmRFQQuoteWithResponse(ctx context.Context, rfqId RfqIdPath, quoteId QuoteIdPath, body ConfirmRFQQuoteJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmRFQQuoteResponse, error)
 
+	// CreateConcertCancellationMarketWithBodyWithResponse Create Concert Cancellation Market
+	//
+	// Returns the on-request market on whether a concert is called off,
+	// creating it if it doesn't exist yet. A market is defined by the show
+	// (`jambase_event_id`), the date it is scheduled for and the `cover`:
+	// `postponed`, `cancelled` or `either`. The same request always returns
+	// the same market, so call this before sending an RFQ for a market you
+	// haven't seen. `created` tells you whether the market is new.
+	//
+	// Take `jambase_event_id` and `scheduled_date` from
+	// `GET /concert_cancellation_markets/concerts` or
+	// `GET /concert_cancellation_markets/concerts/search`. A new market is
+	// created from the show's listing as it stands now, so the request is
+	// refused when the show has moved to another date or has already been
+	// canceled or postponed.
+	//
+	// A new market's show must start more than 7 days from now and within
+	// the `max_days_ahead` that
+	// `GET /concert_cancellation_markets/availability` reports. An existing
+	// market is returned only while its show is more than 7 days away too:
+	// inside that, counted to the market's close time or the show's start as
+	// now listed, whichever is earlier, the request returns 409. Further
+	// out, an existing market is usually returned even when new markets are
+	// no longer offered; where creation or its cover is switched off, the
+	// request returns 409. A 409 here changes nothing about the market
+	// itself, which stays open until its close time and is still returned by
+	// `GET /markets/{ticker}`.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover, a `jambase_event_id` that isn't `jambase:<id>`, a `scheduled_date` that isn't YYYY-MM-DD, or a show scheduled further ahead than `max_days_ahead`. |
+	// | 404 | `not_found` | The listing source has no show with that id. |
+	// | 409 | `concert_cancellation_market_unavailable` | The request is valid but the market isn't offered: concert markets or the cover are switched off, the show is now listed on another date, has already been canceled or postponed, starts in 7 days or less (whether or not its market already exists), isn't a concert, or its market has closed. |
+	// | 429 | `concert_cancellation_market_limit_exceeded` | A daily limit on new concert markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /concert_cancellation_markets (the `CreateConcertCancellationMarket` operationId).
+	CreateConcertCancellationMarketWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateConcertCancellationMarketResponse2, error)
+
+	// CreateConcertCancellationMarketWithResponse Create Concert Cancellation Market
+	//
+	// Returns the on-request market on whether a concert is called off,
+	// creating it if it doesn't exist yet. A market is defined by the show
+	// (`jambase_event_id`), the date it is scheduled for and the `cover`:
+	// `postponed`, `cancelled` or `either`. The same request always returns
+	// the same market, so call this before sending an RFQ for a market you
+	// haven't seen. `created` tells you whether the market is new.
+	//
+	// Take `jambase_event_id` and `scheduled_date` from
+	// `GET /concert_cancellation_markets/concerts` or
+	// `GET /concert_cancellation_markets/concerts/search`. A new market is
+	// created from the show's listing as it stands now, so the request is
+	// refused when the show has moved to another date or has already been
+	// canceled or postponed.
+	//
+	// A new market's show must start more than 7 days from now and within
+	// the `max_days_ahead` that
+	// `GET /concert_cancellation_markets/availability` reports. An existing
+	// market is returned only while its show is more than 7 days away too:
+	// inside that, counted to the market's close time or the show's start as
+	// now listed, whichever is earlier, the request returns 409. Further
+	// out, an existing market is usually returned even when new markets are
+	// no longer offered; where creation or its cover is switched off, the
+	// request returns 409. A 409 here changes nothing about the market
+	// itself, which stays open until its close time and is still returned by
+	// `GET /markets/{ticker}`.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover, a `jambase_event_id` that isn't `jambase:<id>`, a `scheduled_date` that isn't YYYY-MM-DD, or a show scheduled further ahead than `max_days_ahead`. |
+	// | 404 | `not_found` | The listing source has no show with that id. |
+	// | 409 | `concert_cancellation_market_unavailable` | The request is valid but the market isn't offered: concert markets or the cover are switched off, the show is now listed on another date, has already been canceled or postponed, starts in 7 days or less (whether or not its market already exists), isn't a concert, or its market has closed. |
+	// | 429 | `concert_cancellation_market_limit_exceeded` | A daily limit on new concert markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /concert_cancellation_markets (the `CreateConcertCancellationMarket` operationId).
+	CreateConcertCancellationMarketWithResponse(ctx context.Context, body CreateConcertCancellationMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConcertCancellationMarketResponse2, error)
+
+	// GetConcertCancellationAvailabilityWithResponse Get Concert Cancellation Market Availability
+	//
+	// Returns which on-request concert markets are offered: whether they
+	// are listed, the covers offered, how far ahead a show may be
+	// scheduled, and the metros whose concerts
+	// `GET /concert_cancellation_markets/concerts` lists. A cover missing
+	// from `covers` can't be created. Where concerts are listed before
+	// markets are offered, `enabled` is true and every create request
+	// returns 409. Existing markets are unaffected.
+	//
+	// Each metro carries the number of upcoming shows listed for it. Pass
+	// `date_from` and `date_to` to count only the shows a listing with the
+	// same dates would return.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /concert_cancellation_markets/availability (the `GetConcertCancellationAvailability` operationId).
+	GetConcertCancellationAvailabilityWithResponse(ctx context.Context, params *GetConcertCancellationAvailabilityParams, reqEditors ...RequestEditorFn) (*GetConcertCancellationAvailabilityResponse2, error)
+
+	// GetConcertsWithResponse Get Concerts
+	//
+	// Lists a metro's upcoming concerts that a cancellation market can still
+	// be created for, soonest first, 50 to a page and at most 20 pages.
+	// Narrow the dates to reach later shows. Each concert carries the
+	// `jambase_event_id` and `scheduled_date` that
+	// `POST /concert_cancellation_markets` takes, and the event and market
+	// tickers it has or would get for each offered cover. A ticker listed
+	// here names a market that may not exist yet: create it before sending
+	// an RFQ.
+	//
+	// Dates and times are local to the venue.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /concert_cancellation_markets/concerts (the `GetConcerts` operationId).
+	GetConcertsWithResponse(ctx context.Context, params *GetConcertsParams, reqEditors ...RequestEditorFn) (*GetConcertsResponse2, error)
+
+	// SearchConcertsWithResponse Search Concerts
+	//
+	// Lists upcoming concerts matching a name, across the metros that
+	// availability lists, that a
+	// cancellation market can still be created for: up to 50, in the same
+	// shape as `GET /concert_cancellation_markets/concerts`. The name is
+	// matched against the acts on the bill, and may also match venues and
+	// cities.
+	//
+	// Searches can be limited across all users. When the limit is reached
+	// the request returns 429 `concert_search_limit_exceeded`; browse by
+	// metro instead, or retry later.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /concert_cancellation_markets/concerts/search (the `SearchConcerts` operationId).
+	SearchConcertsWithResponse(ctx context.Context, params *SearchConcertsParams, reqEditors ...RequestEditorFn) (*SearchConcertsResponse2, error)
+
 	// GetEventsWithResponse Get Events
 	//
 	// Get all events. This endpoint excludes multivariate events.
@@ -20763,7 +22751,11 @@ type ClientWithResponsesInterface interface {
 
 	// GetExchangeStatusWithResponse Get Exchange Status
 	//
-	//  Endpoint for getting the exchange status.
+	// Endpoint for getting the exchange status.
+	//
+	// The top-level fields describe the default exchange index (0). Read the flags only from a 200 response. When the status of the default index cannot be read, the response is a 500, 503 or 504; its body can be an `ExchangeStatus` with `exchange_active` and `trading_active` set to `false`, or an error object, and in neither case does it mean the exchange is paused.
+	//
+	// In `exchange_index_statuses` on a 200 response, an index other than 0 whose status request failed or timed out is reported with all of its flags `false`. Read the status again before treating a single `false` reading for one index as a pause.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -20995,7 +22987,7 @@ type ClientWithResponsesInterface interface {
 	// Returns the event-contract daily premium cap configured for an FCM member's subtrader,
 	// together with its live utilization. Executed utilization is the net premium deployed by
 	// fills today (sells and settlements credit back); resting and pending utilization reserve
-	// open and in-flight orders at their full worst-case cost plus fees. Executed utilization
+	// open orders and orders still being placed at their full worst-case cost plus fees. Executed utilization
 	// resets at midnight New York time on the returned cap date; resting and pending
 	// reservations persist for as long as their orders remain open, including across the reset.
 	// Returns 404 when the subtrader has no cap configured — in that state every order placed
@@ -21034,6 +23026,150 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PUT /fcm/subtraders/event_contract_daily_cap (the `UpdateFCMEventContractDailyCap` operationId).
 	UpdateFCMEventContractDailyCapWithResponse(ctx context.Context, body UpdateFCMEventContractDailyCapJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateFCMEventContractDailyCapResponse, error)
+
+	// CreateFlightDisruptionMarketWithBodyWithResponse Create Flight Disruption Market
+	//
+	// Returns the on-request market on whether a flight is canceled or
+	// delayed, creating it if it doesn't exist yet. A market is defined by
+	// the flight (`carrier`, `flight_number`, `departure_airport`,
+	// `arrival_airport` and `scheduled_date`), the `cover` (`cancelled`,
+	// `delayed` or `either`) and, for `delayed` and `either`, the
+	// `delay_basis` and `delay_minutes`. The same request always returns the
+	// same market, so call this before sending an RFQ for a market you
+	// haven't seen. `created` tells you whether the market is new.
+	//
+	// Take the flight's five fields from
+	// `GET /flight_disruption_markets/flights`. A flight is one nonstop leg:
+	// a flight number that flies several legs in a day is several flights.
+	// `carrier` and `flight_number` are the operating carrier's, which the
+	// lookup returns even when you searched by a codeshare number.
+	//
+	// `delay_minutes` is a multiple of `delay_step_minutes`, up to
+	// `max_delay_minutes`, both from
+	// `GET /flight_disruption_markets/availability`. A `cancelled` market
+	// takes neither `delay_basis` nor `delay_minutes`.
+	//
+	// An existing market is returned until it closes, even when new markets
+	// are no longer offered. A new market's flight must be scheduled to
+	// leave more than `min_lead_minutes` from now and within
+	// `max_days_ahead` days, from an airport in one of
+	// `departure_countries`.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover or delay basis, a carrier, flight number or airport code of the wrong form, a `scheduled_date` that isn't YYYY-MM-DD, a `delayed` or `either` request without `delay_basis` and `delay_minutes`, a `cancelled` request with either of them, a `delay_minutes` that isn't a multiple of `delay_step_minutes` or is above `max_delay_minutes`, or a flight scheduled further ahead than `max_days_ahead`. |
+	// | 404 | `not_found` | No such flight is scheduled on that date. |
+	// | 409 | `flight_disruption_market_unavailable` | The request is valid but the market isn't offered: flight markets or the cover are switched off, the flight leaves too soon, departs from a country that isn't offered, or its market has closed. |
+	// | 429 | `flight_disruption_market_limit_exceeded` | A daily limit on new flight markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /flight_disruption_markets (the `CreateFlightDisruptionMarket` operationId).
+	CreateFlightDisruptionMarketWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateFlightDisruptionMarketResponse2, error)
+
+	// CreateFlightDisruptionMarketWithResponse Create Flight Disruption Market
+	//
+	// Returns the on-request market on whether a flight is canceled or
+	// delayed, creating it if it doesn't exist yet. A market is defined by
+	// the flight (`carrier`, `flight_number`, `departure_airport`,
+	// `arrival_airport` and `scheduled_date`), the `cover` (`cancelled`,
+	// `delayed` or `either`) and, for `delayed` and `either`, the
+	// `delay_basis` and `delay_minutes`. The same request always returns the
+	// same market, so call this before sending an RFQ for a market you
+	// haven't seen. `created` tells you whether the market is new.
+	//
+	// Take the flight's five fields from
+	// `GET /flight_disruption_markets/flights`. A flight is one nonstop leg:
+	// a flight number that flies several legs in a day is several flights.
+	// `carrier` and `flight_number` are the operating carrier's, which the
+	// lookup returns even when you searched by a codeshare number.
+	//
+	// `delay_minutes` is a multiple of `delay_step_minutes`, up to
+	// `max_delay_minutes`, both from
+	// `GET /flight_disruption_markets/availability`. A `cancelled` market
+	// takes neither `delay_basis` nor `delay_minutes`.
+	//
+	// An existing market is returned until it closes, even when new markets
+	// are no longer offered. A new market's flight must be scheduled to
+	// leave more than `min_lead_minutes` from now and within
+	// `max_days_ahead` days, from an airport in one of
+	// `departure_countries`.
+	//
+	// A market is traded through RFQs: pass the returned `market_ticker` to
+	// `POST /communications/rfqs`. These markets are in series starting with
+	// `KXRFQ` and are left out of unscoped market listings.
+	//
+	// A market created a moment ago may not be readable yet: if
+	// `GET /markets/{ticker}` returns 404 right after creation, retry.
+	//
+	// Errors carry the specific reason in `details`:
+	//
+	// | Status | `code` | When |
+	// | --- | --- | --- |
+	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+	// | 400 | `missing_parameters` | A required field is missing or empty. |
+	// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover or delay basis, a carrier, flight number or airport code of the wrong form, a `scheduled_date` that isn't YYYY-MM-DD, a `delayed` or `either` request without `delay_basis` and `delay_minutes`, a `cancelled` request with either of them, a `delay_minutes` that isn't a multiple of `delay_step_minutes` or is above `max_delay_minutes`, or a flight scheduled further ahead than `max_days_ahead`. |
+	// | 404 | `not_found` | No such flight is scheduled on that date. |
+	// | 409 | `flight_disruption_market_unavailable` | The request is valid but the market isn't offered: flight markets or the cover are switched off, the flight leaves too soon, departs from a country that isn't offered, or its market has closed. |
+	// | 429 | `flight_disruption_market_limit_exceeded` | A daily limit on new flight markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /flight_disruption_markets (the `CreateFlightDisruptionMarket` operationId).
+	CreateFlightDisruptionMarketWithResponse(ctx context.Context, body CreateFlightDisruptionMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateFlightDisruptionMarketResponse2, error)
+
+	// GetFlightDisruptionAvailabilityWithResponse Get Flight Disruption Market Availability
+	//
+	// Returns which on-request flight markets can be created: whether
+	// creation is on, the covers and delay bases offered, the delay
+	// thresholds a market may use, how soon and how far ahead a flight may
+	// be scheduled, and the countries it may depart from. A cover missing
+	// from `covers` can't be created. Existing markets are unaffected.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /flight_disruption_markets/availability (the `GetFlightDisruptionAvailability` operationId).
+	GetFlightDisruptionAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetFlightDisruptionAvailabilityResponse2, error)
+
+	// GetFlightsWithResponse Get Flights
+	//
+	// Looks up a flight number on a departure date and returns the flights
+	// a disruption market can still be created for, in departure order. A
+	// flight is one nonstop leg, so a number that flies several legs that
+	// day returns several flights, and one that flies none returns an empty
+	// list.
+	//
+	// `carrier` and `flight_number` may be the operating carrier's or a
+	// codeshare number. Each flight returned is the operating flight, with
+	// the number you asked for in `requested_carrier` and
+	// `requested_flight_number` when it differs.
+	//
+	// Each flight carries the five fields
+	// `POST /flight_disruption_markets` takes, and the series and event
+	// tickers it has or would get for each offered cover. A ticker listed
+	// here names an event or market that may not exist yet: create the
+	// market before sending an RFQ.
+	//
+	// Lookups can be limited across all users. When the limit is reached
+	// the request returns 429 `flight_lookup_limit_exceeded`; retry later.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /flight_disruption_markets/flights (the `GetFlights` operationId).
+	GetFlightsWithResponse(ctx context.Context, params *GetFlightsParams, reqEditors ...RequestEditorFn) (*GetFlightsResponse2, error)
 
 	// GetHistoricalCutoffWithResponse Get Historical Cutoff Timestamps
 	//
@@ -21081,7 +23217,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetMarketCandlesticksHistoricalWithResponse Get Historical Market Candlesticks
 	//
-	//  Endpoint for fetching historical candlestick data for markets that have been archived from the live data set. Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day).
+	//  Endpoint for fetching historical candlestick data for markets that have been archived from the live data set. Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day). One request can span at most 5,000 periods: if the minutes between `start_ts` and `end_ts` divided by `period_interval` exceed 5,000, the request is rejected with 400 `bad_request`. Split a longer range into several requests.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -21212,6 +23348,14 @@ type ClientWithResponsesInterface interface {
 	//
 	//  Markets that settled before the historical cutoff are only available via `GET /historical/markets`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
 	//
+	//  Paging and ordering:
+	//  - When `event_ticker` or `tickers` is the only filter (no `status`, `series_ticker`, timestamp filter, `mve_filter` or `cursor`), every matching market is returned in one response, in no guaranteed order. `limit` is not applied and the returned `cursor` is empty.
+	//  - Otherwise results are sorted by creation time, newest first, with these exceptions. With `min_updated_ts` or `max_updated_ts` they are sorted by last update time, oldest first. When neither `event_ticker` nor `tickers` is supplied, `status=closed`, `min_close_ts` or `max_close_ts` sorts by close time, latest first, and `min_settled_ts` or `max_settled_ts` sorts by settlement time, latest first. A request that supplies `event_ticker` or `tickers` together with another filter is sorted by creation time, even when that filter is `status=closed` or a close-time or settlement-time filter. The unpaged case above, where `event_ticker` or `tickers` is the only filter, has no guaranteed order.
+	//  - A market whose close time changes while you page through a listing sorted by close time can be skipped or returned twice. Deduplicate by `ticker`.
+	//  - A `cursor` that cannot be decoded is ignored and the first page is returned, with no error. Pass the cursor exactly as it was returned, and stop when the returned `cursor` is empty.
+	//
+	//  Responses are cached for a short time, so prices, sizes and `status` can lag the exchange by several seconds, and filtered listings can lag longer than a read of a single market. Use the WebSocket API when you need current state.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /markets (the `GetMarkets` operationId).
@@ -21222,7 +23366,7 @@ type ClientWithResponsesInterface interface {
 	// Endpoint for retrieving candlestick data for multiple markets.
 	//
 	// - Accepts up to 100 market tickers per request
-	// - Returns up to 10,000 candlesticks total across all markets
+	// - The request may cover at most 10,000 candlestick periods in total: the minutes between `start_ts` and `end_ts`, divided by `period_interval`, multiplied by the number of tickers. A larger request is rejected with 400 `bad_request` (the `details` field gives the requested and maximum counts) even if fewer candlesticks exist; the response is never truncated
 	// - Returns candlesticks grouped by market_id
 	// - Optionally includes a synthetic initial candlestick for price continuity (see `include_latest_before_start` parameter)
 	//
@@ -21233,7 +23377,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetMarketOrderbooksWithResponse Get Multiple Market Orderbooks
 	//
-	// Endpoint for getting the current order books for multiple markets in a single request. The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes. Each side shows price levels with their corresponding quantities and order counts, organized from best to worst prices. Returns one orderbook per requested market ticker.
+	// Endpoint for getting the current order books for multiple markets in a single request. The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes. Each side lists price levels as [price, quantity] pairs sorted by price in ascending order, so the best (highest) bid is the last element. Order counts are not returned. Returns one orderbook per requested market ticker, in request order. A ticker that has no order book, including a ticker that does not match any market, is returned with empty arrays.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -21244,6 +23388,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Endpoint for getting all trades for all markets. A trade represents a completed transaction between two users on a specific market. Each trade includes the market ticker, price, quantity, and timestamp information. Block trades are included in the response by default and identified by the `is_block_trade` field; use the `is_block_trade` query parameter to filter by block / non-block. This endpoint returns a paginated response. Use the 'limit' parameter to control page size (1-1000, defaults to 100). The response includes a 'cursor' field - pass this value in the 'cursor' parameter of your next request to get the next page. An empty cursor indicates no more pages are available.
 	//
+	// A `ticker` that does not match any market returns 200 with an empty `trades` list, not 404. A `cursor` that cannot be decoded is ignored and the first page is returned, so pass the cursor exactly as it was returned. `min_ts` and `max_ts` must be in seconds; millisecond values are rejected with 400 `bad_request`.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /markets/trades (the `GetTrades` operationId).
@@ -21251,7 +23397,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetMarketWithResponse Get Market
 	//
-	//  Endpoint for getting data about a specific market by its ticker. A market represents a specific binary outcome within an event that users can trade on (e.g., "Will candidate X win?"). Markets have yes/no positions, current prices, volume, and settlement rules.
+	//  Endpoint for getting data about a specific market by its ticker. A market represents a specific binary outcome within an event that users can trade on (e.g., "Will candidate X win?"). Markets have yes/no positions, current prices, volume, and settlement rules. The response is cached for a short time, so prices, sizes and `status` can lag the exchange by a few seconds; use the WebSocket API when you need current state.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -21260,7 +23406,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetMarketOrderbookWithResponse Get Market Orderbook
 	//
-	//  Endpoint for getting the current order book for a specific market.  The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes.  Each side shows price levels with their corresponding quantities and order counts, organized from best to worst prices.
+	//  Endpoint for getting the current order book for a specific market.  The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes.  Each side lists price levels as [price, quantity] pairs sorted by price in ascending order, so the best (highest) bid is the last element. Order counts are not returned. When `depth` is set, the best `depth` levels of each side are returned. A ticker that has no order book, including a ticker that does not match any market, returns 200 with empty arrays rather than 404.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -21305,7 +23451,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateMarketInMultivariateEventCollectionWithBodyWithResponse Create Market In Multivariate Event Collection
 	//
-	// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before trading or looking up a market. Users are limited to 5000 creations per week.
+	// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before a combo market can be quoted or traded. If the same legs were created before, it returns the existing market, which does not count toward the limit; the legs are still validated again, so a selection that worked before can later be rejected. On the production API, the standard limit is 5000 new markets per user per rolling 7 days, counted both across all collections and within each collection; over either limit the endpoint returns 429 `too_many_requests` until earlier creations pass the 7-day mark. Ordinary request-rate limiting returns the same status and code. A leg selection that cannot be combined returns 400 with `code` `conflicting_leg_outcomes`, `duplicated_legs` or `invalid_market_combination`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21314,7 +23460,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateMarketInMultivariateEventCollectionWithResponse Create Market In Multivariate Event Collection
 	//
-	// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before trading or looking up a market. Users are limited to 5000 creations per week.
+	// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before a combo market can be quoted or traded. If the same legs were created before, it returns the existing market, which does not count toward the limit; the legs are still validated again, so a selection that worked before can later be rejected. On the production API, the standard limit is 5000 new markets per user per rolling 7 days, counted both across all collections and within each collection; over either limit the endpoint returns 429 `too_many_requests` until earlier creations pass the 7-day mark. Ordinary request-rate limiting returns the same status and code. A leg selection that cannot be combined returns 400 with `code` `conflicting_leg_outcomes`, `duplicated_legs` or `invalid_market_combination`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21364,7 +23510,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateOrderV2WithBodyWithResponse Create Order (V2)
 	//
-	// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` endpoint will be deprecated no earlier than May 6, 2026 — clients should migrate to this path.
+	// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` write endpoints (create, cancel, amend, decrease and their batch forms) have been removed and now return `410 Gone` with code `deprecated_v1_order_endpoint`; use this path instead. A `201` means the order was accepted, not that it is resting: check `remaining_count`. See [Order Errors](/getting_started/order_errors) for the error codes this endpoint returns.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21373,7 +23519,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateOrderV2WithResponse Create Order (V2)
 	//
-	// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` endpoint will be deprecated no earlier than May 6, 2026 — clients should migrate to this path.
+	// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` write endpoints (create, cancel, amend, decrease and their batch forms) have been removed and now return `410 Gone` with code `deprecated_v1_order_endpoint`; use this path instead. A `201` means the order was accepted, not that it is resting: check `remaining_count`. See [Order Errors](/getting_started/order_errors) for the error codes this endpoint returns.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21382,7 +23528,7 @@ type ClientWithResponsesInterface interface {
 
 	// BatchCancelOrdersV2WithBodyWithResponse Batch Cancel Orders (V2)
 	//
-	// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+	// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). The batch is not atomic: the `200` response carries one entry per order, and a cancellation that failed has an `error` object and `reduced_by` of `0.00`. An entry error with a timeout or unavailable code does not prove the order was not cancelled. Some checks reject the whole batch before any cancellation is sent. See [Order Errors](/getting_started/order_errors#batch-requests).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21391,7 +23537,7 @@ type ClientWithResponsesInterface interface {
 
 	// BatchCancelOrdersV2WithResponse Batch Cancel Orders (V2)
 	//
-	// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+	// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). The batch is not atomic: the `200` response carries one entry per order, and a cancellation that failed has an `error` object and `reduced_by` of `0.00`. An entry error with a timeout or unavailable code does not prove the order was not cancelled. Some checks reject the whole batch before any cancellation is sent. See [Order Errors](/getting_started/order_errors#batch-requests).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21400,7 +23546,7 @@ type ClientWithResponsesInterface interface {
 
 	// BatchCreateOrdersV2WithBodyWithResponse Batch Create Orders (V2)
 	//
-	// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+	// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). Orders are processed one at a time in request order and the batch is not atomic: a `201` response carries one entry per order, and an order that failed has an `error` object (`code`, `message`, `details`) in place of `order_id`. An entry error with a timeout or unavailable code does not prove the order was not placed. Some checks reject the whole batch before any order is sent. See [Order Errors](/getting_started/order_errors#batch-requests) for those cases and for the error body.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21409,7 +23555,7 @@ type ClientWithResponsesInterface interface {
 
 	// BatchCreateOrdersV2WithResponse Batch Create Orders (V2)
 	//
-	// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+	// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). Orders are processed one at a time in request order and the batch is not atomic: a `201` response carries one entry per order, and an order that failed has an `error` object (`code`, `message`, `details`) in place of `order_id`. An entry error with a timeout or unavailable code does not prove the order was not placed. Some checks reject the whole batch before any order is sent. See [Order Errors](/getting_started/order_errors#batch-requests) for those cases and for the error body.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21436,7 +23582,7 @@ type ClientWithResponsesInterface interface {
 
 	// CancelOrderV2WithResponse Cancel Order (V2)
 	//
-	// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object.
+	// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object. A cancellation sent to an exchange shard other than the one the order rests on returns `404`, even though the order is still resting; see [Order Errors](/getting_started/order_errors#requests-sent-to-the-wrong-exchange-shard).
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -21445,7 +23591,7 @@ type ClientWithResponsesInterface interface {
 
 	// AmendOrderV2WithBodyWithResponse Amend Order (V2)
 	//
-	// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. This behavior matches the v1 amend endpoints; only the request/response shape differs.
+	// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. An amend that changes nothing returns `400` with code `AMEND_ORDER_NO_OP`. See [Order Errors](/getting_started/order_errors).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21454,7 +23600,7 @@ type ClientWithResponsesInterface interface {
 
 	// AmendOrderV2WithResponse Amend Order (V2)
 	//
-	// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. This behavior matches the v1 amend endpoints; only the request/response shape differs.
+	// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. An amend that changes nothing returns `400` with code `AMEND_ORDER_NO_OP`. See [Order Errors](/getting_started/order_errors).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21484,6 +23630,7 @@ type ClientWithResponsesInterface interface {
 	// Endpoint for getting all fills for the member. A fill is when a trade you have is matched.
 	// Registered partners may also use a user OAuth access token with the explicitly granted read::compliance_partner scope.
 	// Fills that occurred before the historical cutoff are only available via `GET /historical/fills`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
+	// Available to direct member accounts. FCM member accounts receive 403 with code `permission_denied` here and use `GET /fcm/fills` instead.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -21500,6 +23647,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
 	//
+	// Naming a numbered subaccount requires the Advanced API tier or above; on the Basic tier the request returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`.
+	//
+	// **Rate limit:** this endpoint has its own bucket, separate from the Read and Write budgets and the same on every tier. It refills at 600 tokens per minute and holds 600 tokens; at the default cost of 10 tokens that is 60 transfers per minute. A request over the limit returns 429.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /portfolio/intra_exchange_instance_transfer (the `IntraExchangeInstanceTransfer` operationId).
@@ -21514,6 +23665,10 @@ type ClientWithResponsesInterface interface {
 	// When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 	//
 	// Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
+	//
+	// Naming a numbered subaccount requires the Advanced API tier or above; on the Basic tier the request returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`.
+	//
+	// **Rate limit:** this endpoint has its own bucket, separate from the Read and Write budgets and the same on every tier. It refills at 600 tokens per minute and holds 600 tokens; at the default cost of 10 tokens that is 60 transfers per minute. A request over the limit returns 429.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21658,7 +23813,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetOrderWithResponse Get Order
 	//
-	//  Endpoint for getting a single order.
+	//  Endpoint for getting a single order. Order reads are updated asynchronously after the matching engine processes a write, so an order created, amended or cancelled moments ago can briefly return `404 not_found` or its previous state. The response of the write itself is the only immediate result; the `user_orders` WebSocket channel is also asynchronous and is the stream to wait on for updates.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -21729,6 +23884,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Returns settlement records still in the live data set. Archived positions are available via `GET /historical/positions`, which has different fields; this endpoint does not return archived settlement records.
 	// Resource-bound MCP OAuth tokens may read the owner's settlements with read::mcp_portfolio.
+	// Available to direct member accounts. FCM member accounts receive 403 with code `permission_denied`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -21737,7 +23893,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateSubaccountWithBodyWithResponse Create Subaccount
 	//
-	// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
+	// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above; on the Basic tier it returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`. The demo environment does not enforce the tier requirement. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21746,7 +23902,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateSubaccountWithResponse Create Subaccount
 	//
-	// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
+	// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above; on the Basic tier it returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`. The demo environment does not enforce the tier requirement. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -21933,6 +24089,10 @@ type ClientWithResponsesInterface interface {
 	// Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day).
 	// Candlesticks for markets that settled before the historical cutoff are only available via `GET /historical/markets/{ticker}/candlesticks`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
 	//
+	// One request can span at most 5,000 periods. If the minutes between `start_ts` and `end_ts` divided by `period_interval` exceed 5,000, the request is rejected with 400 `bad_request` and the `details` field gives the requested and maximum counts. For example, 1-minute candlesticks are limited to about 3.5 days per request; split a longer range into several requests. `start_ts` and `end_ts` must be in seconds; millisecond values are rejected with 400 `bad_request`.
+	//
+	// The most recent candlesticks can be a few seconds behind the latest trades and quotes.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /series/{series_ticker}/markets/{ticker}/candlesticks (the `GetMarketCandlesticks` operationId).
@@ -21967,13 +24127,38 @@ type ClientWithResponsesInterface interface {
 	// are switched off entirely, the request can be refused whether or not
 	// the market exists.
 	//
-	// The location snaps to the center of the NOAA MRMS grid cell containing
-	// it; the response carries the snapped coordinates. Markets are only
-	// offered where `GET /weather_point_markets/availability` says so, and
-	// not over open water.
+	// The market's location is the requested coordinates rounded to three
+	// decimal places; requests that agree to three decimal places share a
+	// market. A rounded location exactly on the boundary between two NOAA
+	// MRMS grid cells is moved 0.001° north or east, into one of them. The
+	// response carries the market's coordinates. Markets are only offered
+	// where `GET /weather_point_markets/availability` says so, and only
+	// where the market's grid cell touches land in a US state or territory:
+	// a cell entirely over open water or outside the US is refused, while
+	// any point in a coastal cell that touches land is accepted.
 	//
-	// The window is whole local hours on one calendar day. A new market's
-	// window must start at least 15 minutes from now and within 365 days.
+	// The window is whole local hours, on one calendar day or, with
+	// `end_date` set to the day after `date`, from one day into the next.
+	// A window that crosses midnight is at most 24 hours long, and only
+	// offered where `GET /weather_point_markets/availability` returns
+	// `max_window_days: 2`. A new market's window must start at least 6
+	// hours from now (15 minutes on demo) and within 365 days.
+	//
+	// `timezone` only says which span of time `date` and the hours mean. The
+	// market is described in the IANA time zone of its location, which
+	// Kalshi determines from the coordinates: its title and `rules_primary`
+	// give the window there, with the weekday and the zone abbreviation in
+	// force (`on Thu, Nov 19, 2026, 8pm–12am PST`), whatever zone the
+	// request used. The limits on a window's dates go by the location's
+	// zone as well: where `max_window_days` is 1, a new market whose window
+	// crosses midnight at the location is refused even when the request
+	// names one date in another zone, and one within one date at the
+	// location is accepted even with `end_date`; and a window that crosses
+	// midnight at the location is at most 24 hours long there. A market
+	// that already exists is returned either way. An event created before
+	// this applied keeps its description and its dates, in the time zone of
+	// its first request, and so do thresholds added to it later: for those,
+	// the `max_window_days` limit goes by the dates the event stores.
 	//
 	// A market is traded through RFQs: pass the returned `market_ticker` to
 	// `POST /communications/rfqs`. These markets are in series starting with
@@ -21988,9 +24173,9 @@ type ClientWithResponsesInterface interface {
 	// | --- | --- | --- |
 	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
 	// | 400 | `missing_parameters` | A required field is missing or empty. |
-	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
-	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
-	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour` on one day, an `end_date` other than `date` or the day after it, a window across midnight, in `timezone` or at the location, longer than 24 hours, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats in `timezone`. |
+	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the market's grid cell is entirely over open water or outside US land, the window starts in less than 6 hours (15 minutes on demo), the market's window crosses midnight in the location's time zone where `max_window_days` is 1, or the location's time zone can't be determined. |
+	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets for your account, the daily limit across all users, or 40 markets for one variable, location and window. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
 	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -22009,13 +24194,38 @@ type ClientWithResponsesInterface interface {
 	// are switched off entirely, the request can be refused whether or not
 	// the market exists.
 	//
-	// The location snaps to the center of the NOAA MRMS grid cell containing
-	// it; the response carries the snapped coordinates. Markets are only
-	// offered where `GET /weather_point_markets/availability` says so, and
-	// not over open water.
+	// The market's location is the requested coordinates rounded to three
+	// decimal places; requests that agree to three decimal places share a
+	// market. A rounded location exactly on the boundary between two NOAA
+	// MRMS grid cells is moved 0.001° north or east, into one of them. The
+	// response carries the market's coordinates. Markets are only offered
+	// where `GET /weather_point_markets/availability` says so, and only
+	// where the market's grid cell touches land in a US state or territory:
+	// a cell entirely over open water or outside the US is refused, while
+	// any point in a coastal cell that touches land is accepted.
 	//
-	// The window is whole local hours on one calendar day. A new market's
-	// window must start at least 15 minutes from now and within 365 days.
+	// The window is whole local hours, on one calendar day or, with
+	// `end_date` set to the day after `date`, from one day into the next.
+	// A window that crosses midnight is at most 24 hours long, and only
+	// offered where `GET /weather_point_markets/availability` returns
+	// `max_window_days: 2`. A new market's window must start at least 6
+	// hours from now (15 minutes on demo) and within 365 days.
+	//
+	// `timezone` only says which span of time `date` and the hours mean. The
+	// market is described in the IANA time zone of its location, which
+	// Kalshi determines from the coordinates: its title and `rules_primary`
+	// give the window there, with the weekday and the zone abbreviation in
+	// force (`on Thu, Nov 19, 2026, 8pm–12am PST`), whatever zone the
+	// request used. The limits on a window's dates go by the location's
+	// zone as well: where `max_window_days` is 1, a new market whose window
+	// crosses midnight at the location is refused even when the request
+	// names one date in another zone, and one within one date at the
+	// location is accepted even with `end_date`; and a window that crosses
+	// midnight at the location is at most 24 hours long there. A market
+	// that already exists is returned either way. An event created before
+	// this applied keeps its description and its dates, in the time zone of
+	// its first request, and so do thresholds added to it later: for those,
+	// the `max_window_days` limit goes by the dates the event stores.
 	//
 	// A market is traded through RFQs: pass the returned `market_ticker` to
 	// `POST /communications/rfqs`. These markets are in series starting with
@@ -22030,9 +24240,9 @@ type ClientWithResponsesInterface interface {
 	// | --- | --- | --- |
 	// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
 	// | 400 | `missing_parameters` | A required field is missing or empty. |
-	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
-	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
-	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+	// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour` on one day, an `end_date` other than `date` or the day after it, a window across midnight, in `timezone` or at the location, longer than 24 hours, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats in `timezone`. |
+	// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the market's grid cell is entirely over open water or outside US land, the window starts in less than 6 hours (15 minutes on demo), the market's window crosses midnight in the location's time zone where `max_window_days` is 1, or the location's time zone can't be determined. |
+	// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets for your account, the daily limit across all users, or 40 markets for one variable, location and window. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
 	// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
@@ -22045,10 +24255,12 @@ type ClientWithResponsesInterface interface {
 	// Returns which on-request weather markets can be created: whether
 	// creation is on, the NOAA MRMS domains a location may lie in, and the
 	// domains each offered variable may use. A variable missing from
-	// `variables` can't be created. Existing markets are unaffected.
+	// `variables` can't be created. `max_window_days` and
+	// `max_window_hours` say whether a window may cross midnight and how
+	// long it may then be. Existing markets are unaffected.
 	//
 	// A location inside an offered domain can still be refused at creation
-	// when it is over open water.
+	// when its grid cell is entirely over open water or outside US land.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -24363,6 +26575,331 @@ func (r ConfirmRFQQuoteResponse) ContentType() string {
 	return ""
 }
 
+type CreateConcertCancellationMarketResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CreateConcertCancellationMarketResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ServiceUnavailableError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateConcertCancellationMarketResponse2) GetJSON200() *CreateConcertCancellationMarketResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateConcertCancellationMarketResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateConcertCancellationMarketResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateConcertCancellationMarketResponse2) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateConcertCancellationMarketResponse2) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateConcertCancellationMarketResponse2) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r CreateConcertCancellationMarketResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateConcertCancellationMarketResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r CreateConcertCancellationMarketResponse2) GetJSON503() *ServiceUnavailableError {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateConcertCancellationMarketResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateConcertCancellationMarketResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateConcertCancellationMarketResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateConcertCancellationMarketResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetConcertCancellationAvailabilityResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetConcertCancellationAvailabilityResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetConcertCancellationAvailabilityResponse2) GetJSON200() *GetConcertCancellationAvailabilityResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetConcertCancellationAvailabilityResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r GetConcertCancellationAvailabilityResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetConcertCancellationAvailabilityResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetConcertCancellationAvailabilityResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConcertCancellationAvailabilityResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConcertCancellationAvailabilityResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetConcertCancellationAvailabilityResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetConcertsResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetConcertsResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ServiceUnavailableError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetConcertsResponse2) GetJSON200() *GetConcertsResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetConcertsResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetConcertsResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r GetConcertsResponse2) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r GetConcertsResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetConcertsResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r GetConcertsResponse2) GetJSON503() *ServiceUnavailableError {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r GetConcertsResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConcertsResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConcertsResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetConcertsResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SearchConcertsResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *SearchConcertsResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ServiceUnavailableError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SearchConcertsResponse2) GetJSON200() *SearchConcertsResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SearchConcertsResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SearchConcertsResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r SearchConcertsResponse2) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r SearchConcertsResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SearchConcertsResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r SearchConcertsResponse2) GetJSON503() *ServiceUnavailableError {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r SearchConcertsResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SearchConcertsResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SearchConcertsResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SearchConcertsResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetEventsResponse2 struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -25444,6 +27981,248 @@ func (r UpdateFCMEventContractDailyCapResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateFCMEventContractDailyCapResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateFlightDisruptionMarketResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CreateFlightDisruptionMarketResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ServiceUnavailableError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateFlightDisruptionMarketResponse2) GetJSON200() *CreateFlightDisruptionMarketResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateFlightDisruptionMarketResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateFlightDisruptionMarketResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateFlightDisruptionMarketResponse2) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateFlightDisruptionMarketResponse2) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateFlightDisruptionMarketResponse2) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r CreateFlightDisruptionMarketResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateFlightDisruptionMarketResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r CreateFlightDisruptionMarketResponse2) GetJSON503() *ServiceUnavailableError {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateFlightDisruptionMarketResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateFlightDisruptionMarketResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateFlightDisruptionMarketResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateFlightDisruptionMarketResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetFlightDisruptionAvailabilityResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetFlightDisruptionAvailabilityResponse
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetFlightDisruptionAvailabilityResponse2) GetJSON200() *GetFlightDisruptionAvailabilityResponse {
+	return r.JSON200
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r GetFlightDisruptionAvailabilityResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetFlightDisruptionAvailabilityResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetFlightDisruptionAvailabilityResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetFlightDisruptionAvailabilityResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetFlightDisruptionAvailabilityResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetFlightDisruptionAvailabilityResponse2) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetFlightsResponse2 struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetFlightsResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequestError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *RateLimitError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalServerError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ServiceUnavailableError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetFlightsResponse2) GetJSON200() *GetFlightsResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetFlightsResponse2) GetJSON400() *BadRequestError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetFlightsResponse2) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetFlightsResponse2) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r GetFlightsResponse2) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r GetFlightsResponse2) GetJSON429() *RateLimitError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetFlightsResponse2) GetJSON500() *InternalServerError {
+	return r.JSON500
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r GetFlightsResponse2) GetJSON503() *ServiceUnavailableError {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r GetFlightsResponse2) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetFlightsResponse2) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetFlightsResponse2) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetFlightsResponse2) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -30156,7 +32935,7 @@ func (c *ClientWithResponses) GetApiKeysWithResponse(ctx context.Context, params
 
 // CreateApiKeyWithBodyWithResponse Create API Key
 //
-//	Endpoint for creating a new API key with a user-provided public key.  This endpoint allows users with Premier or Market Maker API usage levels to create API keys by providing their own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys.
+//	Endpoint for creating a new API key with a user-provided public key.  This endpoint is available on every API usage tier. Provide your own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -30171,7 +32950,7 @@ func (c *ClientWithResponses) CreateApiKeyWithBodyWithResponse(ctx context.Conte
 
 // CreateApiKeyWithResponse Create API Key
 //
-//	Endpoint for creating a new API key with a user-provided public key.  This endpoint allows users with Premier or Market Maker API usage levels to create API keys by providing their own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys.
+//	Endpoint for creating a new API key with a user-provided public key.  This endpoint is available on every API usage tier. Provide your own RSA or Ed25519 public key in PEM format. The platform will use this public key to verify signatures on API requests: RSA-PSS with SHA-256 for RSA keys, Ed25519 for Ed25519 keys. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -30186,7 +32965,7 @@ func (c *ClientWithResponses) CreateApiKeyWithResponse(ctx context.Context, body
 
 // GenerateApiKeyWithBodyWithResponse Generate API Key
 //
-//	Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again.
+//	Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -30201,7 +32980,7 @@ func (c *ClientWithResponses) GenerateApiKeyWithBodyWithResponse(ctx context.Con
 
 // GenerateApiKeyWithResponse Generate API Key
 //
-//	Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again.
+//	Endpoint for generating a new API key with an automatically created key pair.  This endpoint generates a key pair of the requested key_type (RSA when omitted). The public key is stored on the platform, while the private key is returned to the user and must be stored securely. The private key cannot be retrieved again. In production, an account can hold up to 100 directly managed API keys (keys created on the account settings page or through the API key endpoints).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -30869,6 +33648,195 @@ func (c *ClientWithResponses) ConfirmRFQQuoteWithResponse(ctx context.Context, r
 	return ParseConfirmRFQQuoteResponse(rsp)
 }
 
+// CreateConcertCancellationMarketWithBodyWithResponse Create Concert Cancellation Market
+//
+// Returns the on-request market on whether a concert is called off,
+// creating it if it doesn't exist yet. A market is defined by the show
+// (`jambase_event_id`), the date it is scheduled for and the `cover`:
+// `postponed`, `cancelled` or `either`. The same request always returns
+// the same market, so call this before sending an RFQ for a market you
+// haven't seen. `created` tells you whether the market is new.
+//
+// Take `jambase_event_id` and `scheduled_date` from
+// `GET /concert_cancellation_markets/concerts` or
+// `GET /concert_cancellation_markets/concerts/search`. A new market is
+// created from the show's listing as it stands now, so the request is
+// refused when the show has moved to another date or has already been
+// canceled or postponed.
+//
+// A new market's show must start more than 7 days from now and within
+// the `max_days_ahead` that
+// `GET /concert_cancellation_markets/availability` reports. An existing
+// market is returned only while its show is more than 7 days away too:
+// inside that, counted to the market's close time or the show's start as
+// now listed, whichever is earlier, the request returns 409. Further
+// out, an existing market is usually returned even when new markets are
+// no longer offered; where creation or its cover is switched off, the
+// request returns 409. A 409 here changes nothing about the market
+// itself, which stays open until its close time and is still returned by
+// `GET /markets/{ticker}`.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover, a `jambase_event_id` that isn't `jambase:<id>`, a `scheduled_date` that isn't YYYY-MM-DD, or a show scheduled further ahead than `max_days_ahead`. |
+// | 404 | `not_found` | The listing source has no show with that id. |
+// | 409 | `concert_cancellation_market_unavailable` | The request is valid but the market isn't offered: concert markets or the cover are switched off, the show is now listed on another date, has already been canceled or postponed, starts in 7 days or less (whether or not its market already exists), isn't a concert, or its market has closed. |
+// | 429 | `concert_cancellation_market_limit_exceeded` | A daily limit on new concert markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /concert_cancellation_markets (the `CreateConcertCancellationMarket` operationId).
+func (c *ClientWithResponses) CreateConcertCancellationMarketWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateConcertCancellationMarketResponse2, error) {
+	rsp, err := c.CreateConcertCancellationMarketWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateConcertCancellationMarketResponse2(rsp)
+}
+
+// CreateConcertCancellationMarketWithResponse Create Concert Cancellation Market
+//
+// Returns the on-request market on whether a concert is called off,
+// creating it if it doesn't exist yet. A market is defined by the show
+// (`jambase_event_id`), the date it is scheduled for and the `cover`:
+// `postponed`, `cancelled` or `either`. The same request always returns
+// the same market, so call this before sending an RFQ for a market you
+// haven't seen. `created` tells you whether the market is new.
+//
+// Take `jambase_event_id` and `scheduled_date` from
+// `GET /concert_cancellation_markets/concerts` or
+// `GET /concert_cancellation_markets/concerts/search`. A new market is
+// created from the show's listing as it stands now, so the request is
+// refused when the show has moved to another date or has already been
+// canceled or postponed.
+//
+// A new market's show must start more than 7 days from now and within
+// the `max_days_ahead` that
+// `GET /concert_cancellation_markets/availability` reports. An existing
+// market is returned only while its show is more than 7 days away too:
+// inside that, counted to the market's close time or the show's start as
+// now listed, whichever is earlier, the request returns 409. Further
+// out, an existing market is usually returned even when new markets are
+// no longer offered; where creation or its cover is switched off, the
+// request returns 409. A 409 here changes nothing about the market
+// itself, which stays open until its close time and is still returned by
+// `GET /markets/{ticker}`.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover, a `jambase_event_id` that isn't `jambase:<id>`, a `scheduled_date` that isn't YYYY-MM-DD, or a show scheduled further ahead than `max_days_ahead`. |
+// | 404 | `not_found` | The listing source has no show with that id. |
+// | 409 | `concert_cancellation_market_unavailable` | The request is valid but the market isn't offered: concert markets or the cover are switched off, the show is now listed on another date, has already been canceled or postponed, starts in 7 days or less (whether or not its market already exists), isn't a concert, or its market has closed. |
+// | 429 | `concert_cancellation_market_limit_exceeded` | A daily limit on new concert markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /concert_cancellation_markets (the `CreateConcertCancellationMarket` operationId).
+func (c *ClientWithResponses) CreateConcertCancellationMarketWithResponse(ctx context.Context, body CreateConcertCancellationMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConcertCancellationMarketResponse2, error) {
+	rsp, err := c.CreateConcertCancellationMarket(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateConcertCancellationMarketResponse2(rsp)
+}
+
+// GetConcertCancellationAvailabilityWithResponse Get Concert Cancellation Market Availability
+//
+// Returns which on-request concert markets are offered: whether they
+// are listed, the covers offered, how far ahead a show may be
+// scheduled, and the metros whose concerts
+// `GET /concert_cancellation_markets/concerts` lists. A cover missing
+// from `covers` can't be created. Where concerts are listed before
+// markets are offered, `enabled` is true and every create request
+// returns 409. Existing markets are unaffected.
+//
+// Each metro carries the number of upcoming shows listed for it. Pass
+// `date_from` and `date_to` to count only the shows a listing with the
+// same dates would return.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /concert_cancellation_markets/availability (the `GetConcertCancellationAvailability` operationId).
+func (c *ClientWithResponses) GetConcertCancellationAvailabilityWithResponse(ctx context.Context, params *GetConcertCancellationAvailabilityParams, reqEditors ...RequestEditorFn) (*GetConcertCancellationAvailabilityResponse2, error) {
+	rsp, err := c.GetConcertCancellationAvailability(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConcertCancellationAvailabilityResponse2(rsp)
+}
+
+// GetConcertsWithResponse Get Concerts
+//
+// Lists a metro's upcoming concerts that a cancellation market can still
+// be created for, soonest first, 50 to a page and at most 20 pages.
+// Narrow the dates to reach later shows. Each concert carries the
+// `jambase_event_id` and `scheduled_date` that
+// `POST /concert_cancellation_markets` takes, and the event and market
+// tickers it has or would get for each offered cover. A ticker listed
+// here names a market that may not exist yet: create it before sending
+// an RFQ.
+//
+// Dates and times are local to the venue.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /concert_cancellation_markets/concerts (the `GetConcerts` operationId).
+func (c *ClientWithResponses) GetConcertsWithResponse(ctx context.Context, params *GetConcertsParams, reqEditors ...RequestEditorFn) (*GetConcertsResponse2, error) {
+	rsp, err := c.GetConcerts(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConcertsResponse2(rsp)
+}
+
+// SearchConcertsWithResponse Search Concerts
+//
+// Lists upcoming concerts matching a name, across the metros that
+// availability lists, that a
+// cancellation market can still be created for: up to 50, in the same
+// shape as `GET /concert_cancellation_markets/concerts`. The name is
+// matched against the acts on the bill, and may also match venues and
+// cities.
+//
+// Searches can be limited across all users. When the limit is reached
+// the request returns 429 `concert_search_limit_exceeded`; browse by
+// metro instead, or retry later.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /concert_cancellation_markets/concerts/search (the `SearchConcerts` operationId).
+func (c *ClientWithResponses) SearchConcertsWithResponse(ctx context.Context, params *SearchConcertsParams, reqEditors ...RequestEditorFn) (*SearchConcertsResponse2, error) {
+	rsp, err := c.SearchConcerts(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSearchConcertsResponse2(rsp)
+}
+
 // GetEventsWithResponse Get Events
 //
 // Get all events. This endpoint excludes multivariate events.
@@ -30965,7 +33933,11 @@ func (c *ClientWithResponses) GetExchangeScheduleWithResponse(ctx context.Contex
 
 // GetExchangeStatusWithResponse Get Exchange Status
 //
-//	Endpoint for getting the exchange status.
+// Endpoint for getting the exchange status.
+//
+// The top-level fields describe the default exchange index (0). Read the flags only from a 200 response. When the status of the default index cannot be read, the response is a 500, 503 or 504; its body can be an `ExchangeStatus` with `exchange_active` and `trading_active` set to `false`, or an error object, and in neither case does it mean the exchange is paused.
+//
+// In `exchange_index_statuses` on a 200 response, an index other than 0 whose status request failed or timed out is reported with all of its flags `false`. Read the status again before treating a single `false` reading for one index as a pause.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31281,7 +34253,7 @@ func (c *ClientWithResponses) DeleteFCMEventContractDailyCapWithResponse(ctx con
 // Returns the event-contract daily premium cap configured for an FCM member's subtrader,
 // together with its live utilization. Executed utilization is the net premium deployed by
 // fills today (sells and settlements credit back); resting and pending utilization reserve
-// open and in-flight orders at their full worst-case cost plus fees. Executed utilization
+// open orders and orders still being placed at their full worst-case cost plus fees. Executed utilization
 // resets at midnight New York time on the returned cap date; resting and pending
 // reservations persist for as long as their orders remain open, including across the reset.
 // Returns 404 when the subtrader has no cap configured — in that state every order placed
@@ -31337,6 +34309,174 @@ func (c *ClientWithResponses) UpdateFCMEventContractDailyCapWithResponse(ctx con
 		return nil, err
 	}
 	return ParseUpdateFCMEventContractDailyCapResponse(rsp)
+}
+
+// CreateFlightDisruptionMarketWithBodyWithResponse Create Flight Disruption Market
+//
+// Returns the on-request market on whether a flight is canceled or
+// delayed, creating it if it doesn't exist yet. A market is defined by
+// the flight (`carrier`, `flight_number`, `departure_airport`,
+// `arrival_airport` and `scheduled_date`), the `cover` (`cancelled`,
+// `delayed` or `either`) and, for `delayed` and `either`, the
+// `delay_basis` and `delay_minutes`. The same request always returns the
+// same market, so call this before sending an RFQ for a market you
+// haven't seen. `created` tells you whether the market is new.
+//
+// Take the flight's five fields from
+// `GET /flight_disruption_markets/flights`. A flight is one nonstop leg:
+// a flight number that flies several legs in a day is several flights.
+// `carrier` and `flight_number` are the operating carrier's, which the
+// lookup returns even when you searched by a codeshare number.
+//
+// `delay_minutes` is a multiple of `delay_step_minutes`, up to
+// `max_delay_minutes`, both from
+// `GET /flight_disruption_markets/availability`. A `cancelled` market
+// takes neither `delay_basis` nor `delay_minutes`.
+//
+// An existing market is returned until it closes, even when new markets
+// are no longer offered. A new market's flight must be scheduled to
+// leave more than `min_lead_minutes` from now and within
+// `max_days_ahead` days, from an airport in one of
+// `departure_countries`.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover or delay basis, a carrier, flight number or airport code of the wrong form, a `scheduled_date` that isn't YYYY-MM-DD, a `delayed` or `either` request without `delay_basis` and `delay_minutes`, a `cancelled` request with either of them, a `delay_minutes` that isn't a multiple of `delay_step_minutes` or is above `max_delay_minutes`, or a flight scheduled further ahead than `max_days_ahead`. |
+// | 404 | `not_found` | No such flight is scheduled on that date. |
+// | 409 | `flight_disruption_market_unavailable` | The request is valid but the market isn't offered: flight markets or the cover are switched off, the flight leaves too soon, departs from a country that isn't offered, or its market has closed. |
+// | 429 | `flight_disruption_market_limit_exceeded` | A daily limit on new flight markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /flight_disruption_markets (the `CreateFlightDisruptionMarket` operationId).
+func (c *ClientWithResponses) CreateFlightDisruptionMarketWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateFlightDisruptionMarketResponse2, error) {
+	rsp, err := c.CreateFlightDisruptionMarketWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateFlightDisruptionMarketResponse2(rsp)
+}
+
+// CreateFlightDisruptionMarketWithResponse Create Flight Disruption Market
+//
+// Returns the on-request market on whether a flight is canceled or
+// delayed, creating it if it doesn't exist yet. A market is defined by
+// the flight (`carrier`, `flight_number`, `departure_airport`,
+// `arrival_airport` and `scheduled_date`), the `cover` (`cancelled`,
+// `delayed` or `either`) and, for `delayed` and `either`, the
+// `delay_basis` and `delay_minutes`. The same request always returns the
+// same market, so call this before sending an RFQ for a market you
+// haven't seen. `created` tells you whether the market is new.
+//
+// Take the flight's five fields from
+// `GET /flight_disruption_markets/flights`. A flight is one nonstop leg:
+// a flight number that flies several legs in a day is several flights.
+// `carrier` and `flight_number` are the operating carrier's, which the
+// lookup returns even when you searched by a codeshare number.
+//
+// `delay_minutes` is a multiple of `delay_step_minutes`, up to
+// `max_delay_minutes`, both from
+// `GET /flight_disruption_markets/availability`. A `cancelled` market
+// takes neither `delay_basis` nor `delay_minutes`.
+//
+// An existing market is returned until it closes, even when new markets
+// are no longer offered. A new market's flight must be scheduled to
+// leave more than `min_lead_minutes` from now and within
+// `max_days_ahead` days, from an airport in one of
+// `departure_countries`.
+//
+// A market is traded through RFQs: pass the returned `market_ticker` to
+// `POST /communications/rfqs`. These markets are in series starting with
+// `KXRFQ` and are left out of unscoped market listings.
+//
+// A market created a moment ago may not be readable yet: if
+// `GET /markets/{ticker}` returns 404 right after creation, retry.
+//
+// Errors carry the specific reason in `details`:
+//
+// | Status | `code` | When |
+// | --- | --- | --- |
+// | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
+// | 400 | `missing_parameters` | A required field is missing or empty. |
+// | 400 | `invalid_parameters` | A field is present but unusable: an unknown cover or delay basis, a carrier, flight number or airport code of the wrong form, a `scheduled_date` that isn't YYYY-MM-DD, a `delayed` or `either` request without `delay_basis` and `delay_minutes`, a `cancelled` request with either of them, a `delay_minutes` that isn't a multiple of `delay_step_minutes` or is above `max_delay_minutes`, or a flight scheduled further ahead than `max_days_ahead`. |
+// | 404 | `not_found` | No such flight is scheduled on that date. |
+// | 409 | `flight_disruption_market_unavailable` | The request is valid but the market isn't offered: flight markets or the cover are switched off, the flight leaves too soon, departs from a country that isn't offered, or its market has closed. |
+// | 429 | `flight_disruption_market_limit_exceeded` | A daily limit on new flight markets was reached: your account's, or the one across all users. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
+// | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /flight_disruption_markets (the `CreateFlightDisruptionMarket` operationId).
+func (c *ClientWithResponses) CreateFlightDisruptionMarketWithResponse(ctx context.Context, body CreateFlightDisruptionMarketJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateFlightDisruptionMarketResponse2, error) {
+	rsp, err := c.CreateFlightDisruptionMarket(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateFlightDisruptionMarketResponse2(rsp)
+}
+
+// GetFlightDisruptionAvailabilityWithResponse Get Flight Disruption Market Availability
+//
+// Returns which on-request flight markets can be created: whether
+// creation is on, the covers and delay bases offered, the delay
+// thresholds a market may use, how soon and how far ahead a flight may
+// be scheduled, and the countries it may depart from. A cover missing
+// from `covers` can't be created. Existing markets are unaffected.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /flight_disruption_markets/availability (the `GetFlightDisruptionAvailability` operationId).
+func (c *ClientWithResponses) GetFlightDisruptionAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetFlightDisruptionAvailabilityResponse2, error) {
+	rsp, err := c.GetFlightDisruptionAvailability(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetFlightDisruptionAvailabilityResponse2(rsp)
+}
+
+// GetFlightsWithResponse Get Flights
+//
+// Looks up a flight number on a departure date and returns the flights
+// a disruption market can still be created for, in departure order. A
+// flight is one nonstop leg, so a number that flies several legs that
+// day returns several flights, and one that flies none returns an empty
+// list.
+//
+// `carrier` and `flight_number` may be the operating carrier's or a
+// codeshare number. Each flight returned is the operating flight, with
+// the number you asked for in `requested_carrier` and
+// `requested_flight_number` when it differs.
+//
+// Each flight carries the five fields
+// `POST /flight_disruption_markets` takes, and the series and event
+// tickers it has or would get for each offered cover. A ticker listed
+// here names an event or market that may not exist yet: create the
+// market before sending an RFQ.
+//
+// Lookups can be limited across all users. When the limit is reached
+// the request returns 429 `flight_lookup_limit_exceeded`; retry later.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /flight_disruption_markets/flights (the `GetFlights` operationId).
+func (c *ClientWithResponses) GetFlightsWithResponse(ctx context.Context, params *GetFlightsParams, reqEditors ...RequestEditorFn) (*GetFlightsResponse2, error) {
+	rsp, err := c.GetFlights(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetFlightsResponse2(rsp)
 }
 
 // GetHistoricalCutoffWithResponse Get Historical Cutoff Timestamps
@@ -31409,7 +34549,7 @@ func (c *ClientWithResponses) GetHistoricalMarketWithResponse(ctx context.Contex
 
 // GetMarketCandlesticksHistoricalWithResponse Get Historical Market Candlesticks
 //
-//	Endpoint for fetching historical candlestick data for markets that have been archived from the live data set. Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day).
+//	Endpoint for fetching historical candlestick data for markets that have been archived from the live data set. Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day). One request can span at most 5,000 periods: if the minutes between `start_ts` and `end_ts` divided by `period_interval` exceed 5,000, the request is rejected with 400 `bad_request`. Split a longer range into several requests.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31620,6 +34760,18 @@ func (c *ClientWithResponses) GetLiveDataWithResponse(ctx context.Context, pType
 //
 //     Markets that settled before the historical cutoff are only available via `GET /historical/markets`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
 //
+//     Paging and ordering:
+//
+//   - When `event_ticker` or `tickers` is the only filter (no `status`, `series_ticker`, timestamp filter, `mve_filter` or `cursor`), every matching market is returned in one response, in no guaranteed order. `limit` is not applied and the returned `cursor` is empty.
+//
+//   - Otherwise results are sorted by creation time, newest first, with these exceptions. With `min_updated_ts` or `max_updated_ts` they are sorted by last update time, oldest first. When neither `event_ticker` nor `tickers` is supplied, `status=closed`, `min_close_ts` or `max_close_ts` sorts by close time, latest first, and `min_settled_ts` or `max_settled_ts` sorts by settlement time, latest first. A request that supplies `event_ticker` or `tickers` together with another filter is sorted by creation time, even when that filter is `status=closed` or a close-time or settlement-time filter. The unpaged case above, where `event_ticker` or `tickers` is the only filter, has no guaranteed order.
+//
+//   - A market whose close time changes while you page through a listing sorted by close time can be skipped or returned twice. Deduplicate by `ticker`.
+//
+//   - A `cursor` that cannot be decoded is ignored and the first page is returned, with no error. Pass the cursor exactly as it was returned, and stop when the returned `cursor` is empty.
+//
+//     Responses are cached for a short time, so prices, sizes and `status` can lag the exchange by several seconds, and filtered listings can lag longer than a read of a single market. Use the WebSocket API when you need current state.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /markets (the `GetMarkets` operationId).
@@ -31636,7 +34788,7 @@ func (c *ClientWithResponses) GetMarketsWithResponse(ctx context.Context, params
 // Endpoint for retrieving candlestick data for multiple markets.
 //
 // - Accepts up to 100 market tickers per request
-// - Returns up to 10,000 candlesticks total across all markets
+// - The request may cover at most 10,000 candlestick periods in total: the minutes between `start_ts` and `end_ts`, divided by `period_interval`, multiplied by the number of tickers. A larger request is rejected with 400 `bad_request` (the `details` field gives the requested and maximum counts) even if fewer candlesticks exist; the response is never truncated
 // - Returns candlesticks grouped by market_id
 // - Optionally includes a synthetic initial candlestick for price continuity (see `include_latest_before_start` parameter)
 //
@@ -31653,7 +34805,7 @@ func (c *ClientWithResponses) BatchGetMarketCandlesticksWithResponse(ctx context
 
 // GetMarketOrderbooksWithResponse Get Multiple Market Orderbooks
 //
-// Endpoint for getting the current order books for multiple markets in a single request. The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes. Each side shows price levels with their corresponding quantities and order counts, organized from best to worst prices. Returns one orderbook per requested market ticker.
+// Endpoint for getting the current order books for multiple markets in a single request. The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes. Each side lists price levels as [price, quantity] pairs sorted by price in ascending order, so the best (highest) bid is the last element. Order counts are not returned. Returns one orderbook per requested market ticker, in request order. A ticker that has no order book, including a ticker that does not match any market, is returned with empty arrays.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31670,6 +34822,8 @@ func (c *ClientWithResponses) GetMarketOrderbooksWithResponse(ctx context.Contex
 //
 // Endpoint for getting all trades for all markets. A trade represents a completed transaction between two users on a specific market. Each trade includes the market ticker, price, quantity, and timestamp information. Block trades are included in the response by default and identified by the `is_block_trade` field; use the `is_block_trade` query parameter to filter by block / non-block. This endpoint returns a paginated response. Use the 'limit' parameter to control page size (1-1000, defaults to 100). The response includes a 'cursor' field - pass this value in the 'cursor' parameter of your next request to get the next page. An empty cursor indicates no more pages are available.
 //
+// A `ticker` that does not match any market returns 200 with an empty `trades` list, not 404. A `cursor` that cannot be decoded is ignored and the first page is returned, so pass the cursor exactly as it was returned. `min_ts` and `max_ts` must be in seconds; millisecond values are rejected with 400 `bad_request`.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /markets/trades (the `GetTrades` operationId).
@@ -31683,7 +34837,7 @@ func (c *ClientWithResponses) GetTradesWithResponse(ctx context.Context, params 
 
 // GetMarketWithResponse Get Market
 //
-//	Endpoint for getting data about a specific market by its ticker. A market represents a specific binary outcome within an event that users can trade on (e.g., "Will candidate X win?"). Markets have yes/no positions, current prices, volume, and settlement rules.
+//	Endpoint for getting data about a specific market by its ticker. A market represents a specific binary outcome within an event that users can trade on (e.g., "Will candidate X win?"). Markets have yes/no positions, current prices, volume, and settlement rules. The response is cached for a short time, so prices, sizes and `status` can lag the exchange by a few seconds; use the WebSocket API when you need current state.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31698,7 +34852,7 @@ func (c *ClientWithResponses) GetMarketWithResponse(ctx context.Context, ticker 
 
 // GetMarketOrderbookWithResponse Get Market Orderbook
 //
-//	Endpoint for getting the current order book for a specific market.  The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes.  Each side shows price levels with their corresponding quantities and order counts, organized from best to worst prices.
+//	Endpoint for getting the current order book for a specific market.  The order book shows all active bid orders for both yes and no sides of a binary market. It returns yes bids and no bids only (no asks are returned). This is because in binary markets, a bid for yes at price X is equivalent to an ask for no at price (100-X). For example, a yes bid at 7¢ is the same as a no ask at 93¢, with identical contract sizes.  Each side lists price levels as [price, quantity] pairs sorted by price in ascending order, so the best (highest) bid is the last element. Order counts are not returned. When `depth` is set, the best `depth` levels of each side are returned. A ticker that has no order book, including a ticker that does not match any market, returns 200 with empty arrays rather than 404.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31773,7 +34927,7 @@ func (c *ClientWithResponses) GetMultivariateEventCollectionWithResponse(ctx con
 
 // CreateMarketInMultivariateEventCollectionWithBodyWithResponse Create Market In Multivariate Event Collection
 //
-// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before trading or looking up a market. Users are limited to 5000 creations per week.
+// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before a combo market can be quoted or traded. If the same legs were created before, it returns the existing market, which does not count toward the limit; the legs are still validated again, so a selection that worked before can later be rejected. On the production API, the standard limit is 5000 new markets per user per rolling 7 days, counted both across all collections and within each collection; over either limit the endpoint returns 429 `too_many_requests` until earlier creations pass the 7-day mark. Ordinary request-rate limiting returns the same status and code. A leg selection that cannot be combined returns 400 with `code` `conflicting_leg_outcomes`, `duplicated_legs` or `invalid_market_combination`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31788,7 +34942,7 @@ func (c *ClientWithResponses) CreateMarketInMultivariateEventCollectionWithBodyW
 
 // CreateMarketInMultivariateEventCollectionWithResponse Create Market In Multivariate Event Collection
 //
-// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before trading or looking up a market. Users are limited to 5000 creations per week.
+// Endpoint for creating an individual market in a multivariate event collection. This endpoint must be hit at least once before a combo market can be quoted or traded. If the same legs were created before, it returns the existing market, which does not count toward the limit; the legs are still validated again, so a selection that worked before can later be rejected. On the production API, the standard limit is 5000 new markets per user per rolling 7 days, counted both across all collections and within each collection; over either limit the endpoint returns 429 `too_many_requests` until earlier creations pass the 7-day mark. Ordinary request-rate limiting returns the same status and code. A leg selection that cannot be combined returns 400 with `code` `conflicting_leg_outcomes`, `duplicated_legs` or `invalid_market_combination`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31868,7 +35022,7 @@ func (c *ClientWithResponses) CancelAllOrdersWithResponse(ctx context.Context, p
 
 // CreateOrderV2WithBodyWithResponse Create Order (V2)
 //
-// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` endpoint will be deprecated no earlier than May 6, 2026 — clients should migrate to this path.
+// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` write endpoints (create, cancel, amend, decrease and their batch forms) have been removed and now return `410 Gone` with code `deprecated_v1_order_endpoint`; use this path instead. A `201` means the order was accepted, not that it is resting: check `remaining_count`. See [Order Errors](/getting_started/order_errors) for the error codes this endpoint returns.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31883,7 +35037,7 @@ func (c *ClientWithResponses) CreateOrderV2WithBodyWithResponse(ctx context.Cont
 
 // CreateOrderV2WithResponse Create Order (V2)
 //
-// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` endpoint will be deprecated no earlier than May 6, 2026 — clients should migrate to this path.
+// Endpoint for submitting event-market orders using the V2 request/response shape (single-book `bid`/`ask` side and fixed-point dollar prices). The legacy `/portfolio/orders` write endpoints (create, cancel, amend, decrease and their batch forms) have been removed and now return `410 Gone` with code `deprecated_v1_order_endpoint`; use this path instead. A `201` means the order was accepted, not that it is resting: check `remaining_count`. See [Order Errors](/getting_started/order_errors) for the error codes this endpoint returns.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31898,7 +35052,7 @@ func (c *ClientWithResponses) CreateOrderV2WithResponse(ctx context.Context, bod
 
 // BatchCancelOrdersV2WithBodyWithResponse Batch Cancel Orders (V2)
 //
-// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). The batch is not atomic: the `200` response carries one entry per order, and a cancellation that failed has an `error` object and `reduced_by` of `0.00`. An entry error with a timeout or unavailable code does not prove the order was not cancelled. Some checks reject the whole batch before any cancellation is sent. See [Order Errors](/getting_started/order_errors#batch-requests).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31913,7 +35067,7 @@ func (c *ClientWithResponses) BatchCancelOrdersV2WithBodyWithResponse(ctx contex
 
 // BatchCancelOrdersV2WithResponse Batch Cancel Orders (V2)
 //
-// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+// Endpoint for cancelling a batch of event-market orders using the V2 response shape. To auto-route a cancellation, provide its `market_ticker` and omit `exchange_index` or set it to `-1`. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). The batch is not atomic: the `200` response carries one entry per order, and a cancellation that failed has an `error` object and `reduced_by` of `0.00`. An entry error with a timeout or unavailable code does not prove the order was not cancelled. Some checks reject the whole batch before any cancellation is sent. See [Order Errors](/getting_started/order_errors#batch-requests).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31928,7 +35082,7 @@ func (c *ClientWithResponses) BatchCancelOrdersV2WithResponse(ctx context.Contex
 
 // BatchCreateOrdersV2WithBodyWithResponse Batch Create Orders (V2)
 //
-// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). Orders are processed one at a time in request order and the batch is not atomic: a `201` response carries one entry per order, and an order that failed has an `error` object (`code`, `message`, `details`) in place of `order_id`. An entry error with a timeout or unavailable code does not prove the order was not placed. Some checks reject the whole batch before any order is sent. See [Order Errors](/getting_started/order_errors#batch-requests) for those cases and for the error body.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31943,7 +35097,7 @@ func (c *ClientWithResponses) BatchCreateOrdersV2WithBodyWithResponse(ctx contex
 
 // BatchCreateOrdersV2WithResponse Batch Create Orders (V2)
 //
-// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits).
+// Endpoint for submitting a batch of event-market orders using the V2 request/response shape. The maximum batch size scales with your tier's write budget — see [Rate Limits and Tiers](/getting_started/rate_limits). Orders are processed one at a time in request order and the batch is not atomic: a `201` response carries one entry per order, and an order that failed has an `error` object (`code`, `message`, `details`) in place of `order_id`. An entry error with a timeout or unavailable code does not prove the order was not placed. Some checks reject the whole batch before any order is sent. See [Order Errors](/getting_started/order_errors#batch-requests) for those cases and for the error body.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31988,7 +35142,7 @@ func (c *ClientWithResponses) CreateOrderWithExitTriggerWithResponse(ctx context
 
 // CancelOrderV2WithResponse Cancel Order (V2)
 //
-// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object.
+// Endpoint for cancelling event-market orders using the V2 response shape. To auto-route the cancellation, provide `market_ticker` and omit `exchange_index` or set it to `-1`. Returns `{order_id, client_order_id, reduced_by}` rather than a full order object. A cancellation sent to an exchange shard other than the one the order rests on returns `404`, even though the order is still resting; see [Order Errors](/getting_started/order_errors#requests-sent-to-the-wrong-exchange-shard).
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32003,7 +35157,7 @@ func (c *ClientWithResponses) CancelOrderV2WithResponse(ctx context.Context, ord
 
 // AmendOrderV2WithBodyWithResponse Amend Order (V2)
 //
-// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. This behavior matches the v1 amend endpoints; only the request/response shape differs.
+// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. An amend that changes nothing returns `400` with code `AMEND_ORDER_NO_OP`. See [Order Errors](/getting_started/order_errors).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32018,7 +35172,7 @@ func (c *ClientWithResponses) AmendOrderV2WithBodyWithResponse(ctx context.Conte
 
 // AmendOrderV2WithResponse Amend Order (V2)
 //
-// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. This behavior matches the v1 amend endpoints; only the request/response shape differs.
+// Endpoint for amending the price, max fillable count, and/or expiration time of an existing event-market order. The request `count` is the updated total/max fillable count, equal to already filled count plus desired resting remaining count. An amend that changes nothing returns `400` with code `AMEND_ORDER_NO_OP`. See [Order Errors](/getting_started/order_errors).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32066,6 +35220,7 @@ func (c *ClientWithResponses) DecreaseOrderV2WithResponse(ctx context.Context, o
 // Endpoint for getting all fills for the member. A fill is when a trade you have is matched.
 // Registered partners may also use a user OAuth access token with the explicitly granted read::compliance_partner scope.
 // Fills that occurred before the historical cutoff are only available via `GET /historical/fills`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
+// Available to direct member accounts. FCM member accounts receive 403 with code `permission_denied` here and use `GET /fcm/fills` instead.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32088,6 +35243,10 @@ func (c *ClientWithResponses) GetFillsWithResponse(ctx context.Context, params *
 //
 // Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
 //
+// Naming a numbered subaccount requires the Advanced API tier or above; on the Basic tier the request returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`.
+//
+// **Rate limit:** this endpoint has its own bucket, separate from the Read and Write budgets and the same on every tier. It refills at 600 tokens per minute and holds 600 tokens; at the default cost of 10 tokens that is 60 transfers per minute. A request over the limit returns 429.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /portfolio/intra_exchange_instance_transfer (the `IntraExchangeInstanceTransfer` operationId).
@@ -32108,6 +35267,10 @@ func (c *ClientWithResponses) IntraExchangeInstanceTransferWithBodyWithResponse(
 // When `source_exchange_shard` and `destination_exchange_shard` are the same, Kalshi treats the request as a subaccount transfer. The returned transfer ID appears in the subaccount transfer history.
 //
 // Cross-exchange-index subaccount transfers run in up to three non-atomic steps. If a later step fails, completed steps are not undone, so funds may remain in the primary account on the source or destination exchange index.
+//
+// Naming a numbered subaccount requires the Advanced API tier or above; on the Basic tier the request returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`.
+//
+// **Rate limit:** this endpoint has its own bucket, separate from the Read and Write budgets and the same on every tier. It refills at 600 tokens per minute and holds 600 tokens; at the default cost of 10 tokens that is 60 transfers per minute. A request over the limit returns 429.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32348,7 +35511,7 @@ func (c *ClientWithResponses) GetOrderQueuePositionsWithResponse(ctx context.Con
 
 // GetOrderWithResponse Get Order
 //
-//	Endpoint for getting a single order.
+//	Endpoint for getting a single order. Order reads are updated asynchronously after the matching engine processes a write, so an order created, amended or cancelled moments ago can briefly return `404 not_found` or its previous state. The response of the write itself is the only immediate result; the `user_orders` WebSocket channel is also asynchronous and is the stream to wait on for updates.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32461,6 +35624,7 @@ func (c *ClientWithResponses) SetEventContractExitTriggerWithResponse(ctx contex
 //
 // Returns settlement records still in the live data set. Archived positions are available via `GET /historical/positions`, which has different fields; this endpoint does not return archived settlement records.
 // Resource-bound MCP OAuth tokens may read the owner's settlements with read::mcp_portfolio.
+// Available to direct member accounts. FCM member accounts receive 403 with code `permission_denied`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32475,7 +35639,7 @@ func (c *ClientWithResponses) GetSettlementsWithResponse(ctx context.Context, pa
 
 // CreateSubaccountWithBodyWithResponse Create Subaccount
 //
-// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
+// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above; on the Basic tier it returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`. The demo environment does not enforce the tier requirement. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32490,7 +35654,7 @@ func (c *ClientWithResponses) CreateSubaccountWithBodyWithResponse(ctx context.C
 
 // CreateSubaccountWithResponse Create Subaccount
 //
-// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
+// Creates a new subaccount for the authenticated user. This endpoint is available to all users on the Advanced API tier and above; on the Basic tier it returns 403 with code `subaccount_creation_requires_advanced_api_usage_level`. The demo environment does not enforce the tier requirement. Subaccounts are numbered sequentially starting from 1. Maximum 63 numbered subaccounts per user (64 including the primary account).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32797,6 +35961,10 @@ func (c *ClientWithResponses) GetEventForecastPercentilesHistoryWithResponse(ctx
 // Time period length of each candlestick in minutes. Valid values: 1 (1 minute), 60 (1 hour), 1440 (1 day).
 // Candlesticks for markets that settled before the historical cutoff are only available via `GET /historical/markets/{ticker}/candlesticks`. See [Historical Data](https://docs.kalshi.com/getting_started/historical_data) for details.
 //
+// One request can span at most 5,000 periods. If the minutes between `start_ts` and `end_ts` divided by `period_interval` exceed 5,000, the request is rejected with 400 `bad_request` and the `details` field gives the requested and maximum counts. For example, 1-minute candlesticks are limited to about 3.5 days per request; split a longer range into several requests. `start_ts` and `end_ts` must be in seconds; millisecond values are rejected with 400 `bad_request`.
+//
+// The most recent candlesticks can be a few seconds behind the latest trades and quotes.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /series/{series_ticker}/markets/{ticker}/candlesticks (the `GetMarketCandlesticks` operationId).
@@ -32849,13 +36017,38 @@ func (c *ClientWithResponses) GetStructuredTargetWithResponse(ctx context.Contex
 // are switched off entirely, the request can be refused whether or not
 // the market exists.
 //
-// The location snaps to the center of the NOAA MRMS grid cell containing
-// it; the response carries the snapped coordinates. Markets are only
-// offered where `GET /weather_point_markets/availability` says so, and
-// not over open water.
+// The market's location is the requested coordinates rounded to three
+// decimal places; requests that agree to three decimal places share a
+// market. A rounded location exactly on the boundary between two NOAA
+// MRMS grid cells is moved 0.001° north or east, into one of them. The
+// response carries the market's coordinates. Markets are only offered
+// where `GET /weather_point_markets/availability` says so, and only
+// where the market's grid cell touches land in a US state or territory:
+// a cell entirely over open water or outside the US is refused, while
+// any point in a coastal cell that touches land is accepted.
 //
-// The window is whole local hours on one calendar day. A new market's
-// window must start at least 15 minutes from now and within 365 days.
+// The window is whole local hours, on one calendar day or, with
+// `end_date` set to the day after `date`, from one day into the next.
+// A window that crosses midnight is at most 24 hours long, and only
+// offered where `GET /weather_point_markets/availability` returns
+// `max_window_days: 2`. A new market's window must start at least 6
+// hours from now (15 minutes on demo) and within 365 days.
+//
+// `timezone` only says which span of time `date` and the hours mean. The
+// market is described in the IANA time zone of its location, which
+// Kalshi determines from the coordinates: its title and `rules_primary`
+// give the window there, with the weekday and the zone abbreviation in
+// force (`on Thu, Nov 19, 2026, 8pm–12am PST`), whatever zone the
+// request used. The limits on a window's dates go by the location's
+// zone as well: where `max_window_days` is 1, a new market whose window
+// crosses midnight at the location is refused even when the request
+// names one date in another zone, and one within one date at the
+// location is accepted even with `end_date`; and a window that crosses
+// midnight at the location is at most 24 hours long there. A market
+// that already exists is returned either way. An event created before
+// this applied keeps its description and its dates, in the time zone of
+// its first request, and so do thresholds added to it later: for those,
+// the `max_window_days` limit goes by the dates the event stores.
 //
 // A market is traded through RFQs: pass the returned `market_ticker` to
 // `POST /communications/rfqs`. These markets are in series starting with
@@ -32870,9 +36063,9 @@ func (c *ClientWithResponses) GetStructuredTargetWithResponse(ctx context.Contex
 // | --- | --- | --- |
 // | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
 // | 400 | `missing_parameters` | A required field is missing or empty. |
-// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
-// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
-// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour` on one day, an `end_date` other than `date` or the day after it, a window across midnight, in `timezone` or at the location, longer than 24 hours, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats in `timezone`. |
+// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the market's grid cell is entirely over open water or outside US land, the window starts in less than 6 hours (15 minutes on demo), the market's window crosses midnight in the location's time zone where `max_window_days` is 1, or the location's time zone can't be determined. |
+// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets for your account, the daily limit across all users, or 40 markets for one variable, location and window. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
 // | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -32897,13 +36090,38 @@ func (c *ClientWithResponses) CreateWeatherPointMarketWithBodyWithResponse(ctx c
 // are switched off entirely, the request can be refused whether or not
 // the market exists.
 //
-// The location snaps to the center of the NOAA MRMS grid cell containing
-// it; the response carries the snapped coordinates. Markets are only
-// offered where `GET /weather_point_markets/availability` says so, and
-// not over open water.
+// The market's location is the requested coordinates rounded to three
+// decimal places; requests that agree to three decimal places share a
+// market. A rounded location exactly on the boundary between two NOAA
+// MRMS grid cells is moved 0.001° north or east, into one of them. The
+// response carries the market's coordinates. Markets are only offered
+// where `GET /weather_point_markets/availability` says so, and only
+// where the market's grid cell touches land in a US state or territory:
+// a cell entirely over open water or outside the US is refused, while
+// any point in a coastal cell that touches land is accepted.
 //
-// The window is whole local hours on one calendar day. A new market's
-// window must start at least 15 minutes from now and within 365 days.
+// The window is whole local hours, on one calendar day or, with
+// `end_date` set to the day after `date`, from one day into the next.
+// A window that crosses midnight is at most 24 hours long, and only
+// offered where `GET /weather_point_markets/availability` returns
+// `max_window_days: 2`. A new market's window must start at least 6
+// hours from now (15 minutes on demo) and within 365 days.
+//
+// `timezone` only says which span of time `date` and the hours mean. The
+// market is described in the IANA time zone of its location, which
+// Kalshi determines from the coordinates: its title and `rules_primary`
+// give the window there, with the weekday and the zone abbreviation in
+// force (`on Thu, Nov 19, 2026, 8pm–12am PST`), whatever zone the
+// request used. The limits on a window's dates go by the location's
+// zone as well: where `max_window_days` is 1, a new market whose window
+// crosses midnight at the location is refused even when the request
+// names one date in another zone, and one within one date at the
+// location is accepted even with `end_date`; and a window that crosses
+// midnight at the location is at most 24 hours long there. A market
+// that already exists is returned either way. An event created before
+// this applied keeps its description and its dates, in the time zone of
+// its first request, and so do thresholds added to it later: for those,
+// the `max_window_days` limit goes by the dates the event stores.
 //
 // A market is traded through RFQs: pass the returned `market_ticker` to
 // `POST /communications/rfqs`. These markets are in series starting with
@@ -32918,9 +36136,9 @@ func (c *ClientWithResponses) CreateWeatherPointMarketWithBodyWithResponse(ctx c
 // | --- | --- | --- |
 // | 400 | `bad_request` | The body isn't valid JSON, or a field has the wrong type. |
 // | 400 | `missing_parameters` | A required field is missing or empty. |
-// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour`, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats. |
-// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the location is over open water, or the window starts in less than 15 minutes. |
-// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets across all users, or 40 markets for one variable, location and window. Retrying at once doesn't help. |
+// | 400 | `invalid_parameters` | A field is present but unusable, or the request can't define a market: a latitude or hour out of range, an `end_hour` not after `start_hour` on one day, an `end_date` other than `date` or the day after it, a window across midnight, in `timezone` or at the location, longer than 24 hours, an unknown variable or strike type, thresholds that don't fit the strike type or the variable's range, a location outside NOAA MRMS coverage, an unknown time zone, a window that doesn't start and end on whole UTC hours, has already ended or starts more than 365 days out, or an hour that a clock change skips or repeats in `timezone`. |
+// | 409 | `weather_point_market_unavailable` | The request is valid but the market isn't offered: the variable isn't offered at that location, the market's grid cell is entirely over open water or outside US land, the window starts in less than 6 hours (15 minutes on demo), the market's window crosses midnight in the location's time zone where `max_window_days` is 1, or the location's time zone can't be determined. |
+// | 429 | `weather_point_market_limit_exceeded` | A creation limit was reached: the daily limit on new weather markets for your account, the daily limit across all users, or 40 markets for one variable, location and window. Returning an existing market never counts toward your account's limit. Retrying at once doesn't help. |
 // | 429 | `too_many_requests` | Your API rate limit. This endpoint is charged against your write budget. |
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
@@ -32939,10 +36157,12 @@ func (c *ClientWithResponses) CreateWeatherPointMarketWithResponse(ctx context.C
 // Returns which on-request weather markets can be created: whether
 // creation is on, the NOAA MRMS domains a location may lie in, and the
 // domains each offered variable may use. A variable missing from
-// `variables` can't be created. Existing markets are unaffected.
+// `variables` can't be created. `max_window_days` and
+// `max_window_hours` say whether a window may cross midnight and how
+// long it may then be. Existing markets are unaffected.
 //
 // A location inside an offered domain can still be refused at creation
-// when it is over open water.
+// when its grid cell is entirely over open water or outside US land.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -34776,6 +37996,271 @@ func ParseConfirmRFQQuoteResponse(rsp *http.Response) (*ConfirmRFQQuoteResponse,
 	return response, nil
 }
 
+// ParseCreateConcertCancellationMarketResponse2 parses an HTTP response from a CreateConcertCancellationMarketWithResponse call
+func ParseCreateConcertCancellationMarketResponse2(rsp *http.Response) (*CreateConcertCancellationMarketResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateConcertCancellationMarketResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreateConcertCancellationMarketResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ServiceUnavailableError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConcertCancellationAvailabilityResponse2 parses an HTTP response from a GetConcertCancellationAvailabilityWithResponse call
+func ParseGetConcertCancellationAvailabilityResponse2(rsp *http.Response) (*GetConcertCancellationAvailabilityResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConcertCancellationAvailabilityResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetConcertCancellationAvailabilityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConcertsResponse2 parses an HTTP response from a GetConcertsWithResponse call
+func ParseGetConcertsResponse2(rsp *http.Response) (*GetConcertsResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConcertsResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetConcertsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ServiceUnavailableError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSearchConcertsResponse2 parses an HTTP response from a SearchConcertsWithResponse call
+func ParseSearchConcertsResponse2(rsp *http.Response) (*SearchConcertsResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SearchConcertsResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SearchConcertsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ServiceUnavailableError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetEventsResponse2 parses an HTTP response from a GetEventsWithResponse call
 func ParseGetEventsResponse2(rsp *http.Response) (*GetEventsResponse2, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -35662,6 +39147,203 @@ func ParseUpdateFCMEventContractDailyCapResponse(rsp *http.Response) (*UpdateFCM
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateFlightDisruptionMarketResponse2 parses an HTTP response from a CreateFlightDisruptionMarketWithResponse call
+func ParseCreateFlightDisruptionMarketResponse2(rsp *http.Response) (*CreateFlightDisruptionMarketResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateFlightDisruptionMarketResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreateFlightDisruptionMarketResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ServiceUnavailableError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetFlightDisruptionAvailabilityResponse2 parses an HTTP response from a GetFlightDisruptionAvailabilityWithResponse call
+func ParseGetFlightDisruptionAvailabilityResponse2(rsp *http.Response) (*GetFlightDisruptionAvailabilityResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetFlightDisruptionAvailabilityResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetFlightDisruptionAvailabilityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetFlightsResponse2 parses an HTTP response from a GetFlightsWithResponse call
+func ParseGetFlightsResponse2(rsp *http.Response) (*GetFlightsResponse2, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetFlightsResponse2{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetFlightsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest RateLimitError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ServiceUnavailableError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 

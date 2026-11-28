@@ -2,6 +2,19 @@
 
 All notable changes per release. Versions follow [semver](https://semver.org).
 
+## v0.13.0, 2026-11-28
+
+- The REST client adds flight disruption market endpoints: `GetFlights`, `GetFlightDisruptionAvailability` and `CreateFlightDisruptionMarket` (also `CreateFlightDisruptionMarketWithBody`), each with a `WithResponse` variant on `ClientWithResponses`. New types: `Flight`, `FlightCover` (`cancelled`, `delayed`, `either`), `FlightCoverEvent`, `FlightDelayBasis` (`arrival`, `departure`), `GetFlightsParams` and the request and response types.
+- The REST client adds concert cancellation endpoints: `GetConcerts`, `SearchConcerts`, `GetConcertCancellationAvailability` and `CreateConcertCancellationMarket` (also `CreateConcertCancellationMarketWithBody`), each with a `WithResponse` variant. New types: `Concert`, `ConcertMarket`, `ConcertMetro`, `ConcertCover` (`cancelled`, `postponed`, `either`), `GetConcertsParams`, `SearchConcertsParams` and the request and response types.
+- `CreateWeatherPointMarketRequest` adds `EndDate` for windows that cross midnight. `GetWeatherPointAvailabilityResponse` adds `MaxWindowDays` and `MaxWindowHours`.
+- `GetPositionsParams` adds `SortBy` with the type `GetPositionsParamsSortBy` and the value `GetPositionsParamsSortByEventTicker`.
+- Breaking: `Market.ExpirationTime` is removed because Kalshi's OpenAPI spec 3.38.0 no longer has `expiration_time`. Code that reads it must use `ExpectedExpirationTime` or another field.
+- Breaking: `ClientInterface` gains the nine new methods and `ClientWithResponsesInterface` gains the nine matching `WithResponse` methods. Code that implements either interface, for example a mock, must add them. `Client` and `ClientWithResponses` already have them.
+- `perpsws` adds an exchange status channel: `ExchangeStatusAddressTemplate`, `MessageExchangeStatus`, `SubscribeCommandPayloadParamsChannelsItemExchangeStatus`, `MarginExchangeStatusPayload` and `MarginExchangeStatusPayloadMsg`. It also adds `SubaccountType` (`SubaccountTypeCross`, `SubaccountTypeIsolated`, `SubaccountTypeManagedIsolated`) as a field on `MarginFillPayloadMsg`, `MarginOrderbookDeltaPayloadMsg` and `MarginUserOrderPayloadMsg`, and the value `LastUpdateReasonSettlementBoundsCancel`.
+- Breaking: `perpsws.Handler` gains `HandleExchangeStatus`. Types that implement `Handler` without embedding `UnimplementedHandler` must add it. `UnimplementedHandler` has a no-op version.
+- Doc comments: the API key creation endpoints say they are open to every usage tier and that a production account can hold up to 100 directly managed keys. `ExpectedExpirationTime` is documented as never later than `latest_expiration_time`.
+- Build: the generation step no longer applies `overlay.yaml`, which targeted the removed `Market.expiration_time` field. `overlay.yaml` is deleted and `config.yaml` and the README no longer mention it.
+
 ## v0.12.0, 2026-11-12
 
 - The REST client adds the incentive schedules endpoint: `GetIncentiveSchedules` (`GET /incentive_schedules`) on `Client`, with the `GetIncentiveSchedulesWithResponse` variant on `ClientWithResponses`. `NewGetIncentiveSchedulesRequest` and `ParseGetIncentiveSchedulesResponse2` build and parse the call.

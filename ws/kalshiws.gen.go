@@ -28,13 +28,26 @@ const (
 // Authentication is required to establish the connection; include API key headers during the WebSocket handshake.
 // Some channels carry only public market data, but the connection itself still requires authentication.
 // Use the subscribe command to subscribe to specific data channels. For more information, see the [Getting Started](https://docs.kalshi.com/getting_started/quick_start_websockets) guide.
+//
+// **Handshake errors:** a rejected handshake returns an HTTP error instead of upgrading. `429 Too Many Requests` with code
+// `too_many_requests` has two causes: you have reached your tier's [concurrent connection limit](https://docs.kalshi.com/getting_started/rate_limits#websocket-connection-limits),
+// or you are opening connections too quickly. The HTTP status and error code are the same for both, so reconnect with
+// exponential backoff rather than in a tight loop, and close connections you no longer use.
+//
+// **One subscription per channel:** a connection holds at most one subscription to each channel. A `subscribe` naming a channel
+// you are already subscribed to does not create a second subscription or return `subscribed`. It is applied to the existing `sid`:
+// on channels with a market filter it adds the listed markets and returns `ok`, or returns an `error`. To change other parameters,
+// `unsubscribe`, wait for `unsubscribed`, then `subscribe` again.
 const RootAddressTemplate = "/"
 
 // ControlFramesAddressTemplate is the address of the ControlFrames channel.
 //
 // WebSocket control frames for connection management.
 //
-// Kalshi sends Ping frames (`0x9`) every 10 seconds with body `heartbeat` to maintain the connection.
+// Kalshi sends a Ping frame (`0x9`) with body `heartbeat` after 10 seconds without sending a data message (a JSON text frame) on the connection.
+// Every data message Kalshi sends, and each heartbeat Ping, restarts that 10 seconds, so a connection that is receiving data can go a long time without a Ping.
+// Pong frames Kalshi sends in reply to your Pings do not restart it.
+// Do not treat a missing Ping as a dead connection; treat the connection as idle only when neither messages nor Pings arrive.
 // Clients should respond with Pong frames (`0xA`). Clients may also send Ping frames to which Kalshi will respond with Pong.
 const ControlFramesAddressTemplate = "/"
 
@@ -47,12 +60,14 @@ const ControlFramesAddressTemplate = "/"
 // - Market specification required:
 //   - Use `market_ticker` (string) for a single market
 //   - Use `market_tickers` (array of strings) for multiple markets
-//   - `market_id`/`market_ids` are not supported for this channel
+//   - `market_id`/`market_ids` are not supported for this channel and never select a market. A first `subscribe` that gives only `market_id`/`market_ids` is acknowledged with `subscribed` but receives no snapshots or deltas. On an existing subscription, a `subscribe`, `add_markets` or `delete_markets` that gives only IDs returns `ok` and changes nothing, so the markets already subscribed keep streaming; `get_snapshot` with only IDs returns error code 14
 //
 // - Sends `orderbook_snapshot` first, then incremental `orderbook_delta` updates
 // - Supports `update_subscription` with `add_markets` / `delete_markets` / `get_snapshot` actions
 // - `get_snapshot` returns an `orderbook_snapshot` for the requested `market_tickers` without changing the subscribed markets. Apply every returned snapshot as a replacement for that market's local book
 // - Each connection has one `orderbook_delta` subscription. A repeated `subscribe` adds new markets to its existing `sid`; it does not resend snapshots for markets already subscribed
+// - A subscription holds at most 500,000 markets. A `subscribe` or `add_markets` that would exceed this returns error code 26 and adds none of its markets
+// - When a market is determined, the server sends an empty `orderbook_snapshot` for it and removes it from the subscription. No further messages follow for that market and there is no separate notification; replace your local book with the empty snapshot
 // - A repeated `subscribe` must use the existing `update_interval_ms` (omitting it means `0`). A different valid interval returns error code 11 without adding markets. Use `update_subscription` with `add_markets` to add markets without respecifying the interval. To change the interval, `unsubscribe`, wait for `unsubscribed`, then `subscribe` again
 //
 // **Matching real-time updates across connections:**
@@ -85,9 +100,10 @@ const OrderbookDeltaAddressTemplate = "orderbook_delta"
 //
 // **Requirements:**
 // - No additional channel-level authentication beyond the authenticated WebSocket connection
-// - Market specification optional (omit to receive all markets)
+// - Market specification optional (omit to receive all markets except those whose ticker starts with `KXRFQ`, which are sent only to subscriptions that name them)
 // - Supports `market_ticker`/`market_tickers` and `market_id`/`market_ids`
-// - Updates sent whenever any ticker field changes
+// - Changes are combined and sent on a flush scheduled every second: each flush sends one message per changed market, carrying its current values, so intermediate values are not sent. This is a schedule, not a guaranteed minimum gap; two updates for one market can arrive less than a second apart. For every trade or book change, use the `trade` or `orderbook_delta` channel
+// - A subscription created without a market filter cannot be changed: `update_subscription` and a repeated `subscribe` return error code 13. To filter, or to receive `KXRFQ` markets, `unsubscribe` and `subscribe` again with a market filter
 //
 // **Use case:** Displaying current market prices and statistics
 const TickerAddressTemplate = "ticker"
@@ -100,6 +116,7 @@ const TickerAddressTemplate = "ticker"
 // - No additional channel-level authentication beyond the authenticated WebSocket connection
 // - Market specification optional (omit to receive all trades)
 // - Updates sent immediately after trade execution
+// - A repeated `subscribe` or an `update_subscription` without `market_ticker`/`market_tickers` returns error code 14. That error and error code 13 on this channel carry no `id`
 //
 // **Use case:** Trade feed, volume analysis
 const TradeAddressTemplate = "trade"
@@ -126,6 +143,7 @@ const FillAddressTemplate = "fill"
 // - Market specification optional (omit to receive all positions)
 // - Filters are by `market_ticker`/`market_tickers` only; `market_id`/`market_ids` are not supported
 // - Updates sent when your position changes due to trades, settlements, etc.
+// - Messages carry no `seq` and are not ordered against the `fill` channel: the position update for a trade can arrive after its `fill` message. Do not assume your position is current when a fill arrives
 //
 // **Monetary Values:**
 // All monetary values are returned as fixed-point dollar strings (`_dollars` suffix).
@@ -382,7 +400,7 @@ const CfbenchmarksValue5hzAddressTemplate = "cfbenchmarks_value_5hz"
 //
 // ## Underlying tickers
 //
-// The reference table below lists supported underlyings: spot metals, metal and commodity indices, an equity index, FX pairs, and Treasury yields. Index descriptions note Pyth's publishing schedule (24/7, 24/5, or 23/5); spot metals, FX pairs, and Treasury yields follow their market sessions.
+// The reference table below lists supported underlyings: spot metals, metal, commodity and agriculture indices, an equity index, FX pairs, and Treasury yields. Index descriptions note Pyth's publishing schedule (24/7, 24/5, or 23/5); spot metals, agriculture indices, FX pairs, and Treasury yields follow their market sessions. Agriculture indices marked `/USc` are quoted in US cents.
 //
 // | Pyth feed ID | Pyth symbol                     | Description                                             |
 // |--------------|---------------------------------|---------------------------------------------------------|
@@ -399,9 +417,16 @@ const CfbenchmarksValue5hzAddressTemplate = "cfbenchmarks_value_5hz"
 // | 3265         | `Commodities.Index.NATGAS/USD`  | Natural Gas Index in USD (24/7)                         |
 // | 3525         | `Commodities.Index.CU/USD`      | Copper Index in USD (24/7)                              |
 // | 3266         | `Commodities.Index.COPPER/USD`  | Copper Index in USD (23/5)                              |
+// | 3967         | `Commodities.Index.RCOFFEE/USc` | Coffee Index in US cents (exchange session hours)       |
+// | 3977         | `Commodities.Index.RCOCOA/USD`  | Cocoa Index in USD (exchange session hours)             |
+// | 3978         | `Commodities.Index.RCORN/USc`   | Corn Index in US cents (exchange session hours)         |
+// | 3979         | `Commodities.Index.RWHEAT/USc`  | Wheat Index in US cents (exchange session hours)        |
+// | 3980         | `Commodities.Index.RSOYBEANS/USc` | Soybeans Index in US cents (exchange session hours)   |
+// | 3981         | `Commodities.Index.RLIVECATTLE/USc` | Live Cattle Index in US cents (exchange session hours) |
 // | 3292         | `Equity.Index.US30/USD`         | US30 (Dow Jones Industrial Average) Index in USD (24/5) |
 // | 1530         | `InterestRate.US2Y`             | US 2-year Treasury yield in percent                     |
 // | 1534         | `InterestRate.US5Y`             | US 5-year Treasury yield in percent                     |
+// | 1536         | `InterestRate.US7Y`             | US 7-year Treasury yield in percent                     |
 // | 1527         | `InterestRate.US10Y`            | US 10-year Treasury yield in percent                    |
 // | 1531         | `InterestRate.US30Y`            | US 30-year Treasury yield in percent                    |
 // | 327          | `FX.EUR/USD`                    | Euro / US Dollar                                        |
@@ -421,7 +446,7 @@ const CfbenchmarksValue5hzAddressTemplate = "cfbenchmarks_value_5hz"
 //
 // Use `underlying_list` to discover recently streamed tickers on your connection. Availability can change, including as futures contracts expire; the table does not guarantee that every feed is streaming in every environment.
 //
-// Treasury yields use the exact symbols above, without a `/USD` suffix. They are included in `["all"]` subscriptions and can also be requested individually, for example with `underlying_tickers: ["InterestRate.US2Y"]`. These are the yield feeds behind the `KX{2,5,10,30}YRRATE15M` and `KX{2,5,10,30}YRRATEH` markets; `/USD` symbols identify separate bond-price feeds.
+// Treasury yields use the exact symbols above, without a `/USD` suffix. They are included in `["all"]` subscriptions and can also be requested individually, for example with `underlying_tickers: ["InterestRate.US2Y"]`. These are the yield feeds behind the `KX{2,5,10,30}YRRATE15M` and `KX{2,5,7,10,30}YRRATEH` markets; `/USD` symbols identify separate bond-price feeds.
 //
 // ## Requirements
 //
@@ -2680,10 +2705,8 @@ type OrderbookSnapshotPayloadMsg struct {
 	//
 	// Examples: "FED-23DEC-T3.00", "HIGHNY-22DEC23-B53.5"
 	MarketTicker MarketTicker `json:"market_ticker"`
-	// Unique market UUID
-	//
-	// Not enforced by the generated code: format uuid.
-	MarketID MarketID `json:"market_id"`
+	// Unique market UUID. Can be an empty string for a market with no recorded change.
+	MarketID string `json:"market_id"`
 	// Exchange clock of the newest change this snapshot includes, or 0 if the market has no recorded change.
 	// The snapshot includes every change to this market with a clock at or below this one, and none above it.
 	Clock int64 `json:"clock"`
@@ -2723,6 +2746,9 @@ func (v *OrderbookSnapshotPayloadMsg) UnmarshalJSON(data []byte) error {
 
 // Validate checks the constraints the schema declares for OrderbookSnapshotPayloadMsg.
 func (v OrderbookSnapshotPayloadMsg) Validate() error {
+	if err := asyncapirt.CheckPattern("market_id", string(v.MarketID), "^$|^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"); err != nil {
+		return err
+	}
 	if err := asyncapirt.CheckMinimum("clock", float64(v.Clock), 0); err != nil {
 		return err
 	}
@@ -7499,7 +7525,7 @@ func (v PythValuePayload) Validate() error {
 type PythValuePayloadMsg struct {
 	// Qualified Pyth underlying ticker
 	UnderlyingTicker string `json:"underlying_ticker"`
-	// Value formatted to 8 decimal places in the underlying's quoted units. For Treasury yields (InterestRate.US2Y, InterestRate.US5Y, InterestRate.US10Y, InterestRate.US30Y), this is percent: "4.25000000" means 4.25%. The field name is retained for compatibility.
+	// Value formatted to 8 decimal places in the underlying's quoted units. For Treasury yields (InterestRate.US2Y, InterestRate.US5Y, InterestRate.US7Y, InterestRate.US10Y, InterestRate.US30Y), this is percent: "4.25000000" means 4.25%. The field name is retained for compatibility.
 	ValueUsd string `json:"value_usd"`
 	// Pyth source timestamp (unix ms)
 	SourceTsMs int64 `json:"source_ts_ms"`
